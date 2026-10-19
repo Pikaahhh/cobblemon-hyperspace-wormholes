@@ -1,0 +1,60 @@
+package dev.hyperspacewormholes.hyperspace;
+
+import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Hides other people's bosses from you in Hyperspace. The server tells each client which bosses aren't theirs, and
+ * those don't get drawn and can't be clicked.
+ */
+public class OtherPlayersLegendaries {
+    public static final Set<Integer> hidden = ConcurrentHashMap.newKeySet();
+
+    public record Payload(List<Integer> ids) implements CustomPacketPayload {
+        public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "hidden_bosses"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC =
+                StreamCodec.composite(ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list()), Payload::ids, Payload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public static void register() {
+        PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
+    }
+
+    public static void sync(ServerLevel level) {
+        List<PokemonEntity> bosses = new ArrayList<>();
+        for (PokemonEntity entity : Spawns.wild(level)) {
+            if (Spawns.isBoss(entity.getPokemon()) && Spawns.owner(entity.getPokemon()) != null) bosses.add(entity);
+        }
+        for (ServerPlayer player : level.players()) {
+            if (!ServerPlayNetworking.canSend(player, Payload.TYPE)) continue;
+            List<Integer> ids = new ArrayList<>();
+            for (PokemonEntity boss : bosses) {
+                if (!player.getUUID().equals(Spawns.owner(boss.getPokemon()))) ids.add(boss.getId());
+            }
+            ServerPlayNetworking.send(player, new Payload(ids));
+        }
+    }
+
+    public static boolean hides(Entity entity) {
+        return entity.level().isClientSide() && entity.level().dimension().equals(Hyperspace.HYPERSPACE) && hidden.contains(entity.getId());
+    }
+}

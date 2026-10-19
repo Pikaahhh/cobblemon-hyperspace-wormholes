@@ -1,0 +1,64 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://maven.impactdev.net/repository/development/' }
+    exclusiveContent {
+        forRepository { maven { url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Cobblemon, CobbleNav and Radical Cobblemon Trainers are only needed at compile time; we only compile against them.
+    modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
+    modCompileOnly("maven.modrinth:cobblemon-pokenav:BV5KiAcY") { transitive = false }  // CobbleNav 2.4.1
+    modCompileOnly("maven.modrinth:rctmod:rgfBfnW9") { transitive = false }  // RCT 0.19.2-beta
+    modCompileOnly("maven.modrinth:rctapi:bgmxNN26") { transitive = false }  // RCT API 0.16.1-beta
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
+
+    // Dev-only runtime so runServer/runClient boot with Cobblemon; never bundled.
+    modLocalRuntime("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
+    modLocalRuntime 'net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+// The mod is two halves (hyperspace, wormholes), each with its own code and resources; only fabric.mod.json
+// (in src/main/resources) is shared.
+sourceSets {
+    main {
+        java.srcDirs = ['hyperspace/src/main/java', 'wormholes/src/main/java']
+        resources.srcDirs = ['src/main/resources', 'hyperspace/src/main/resources', 'wormholes/src/main/resources']
+    }
+}

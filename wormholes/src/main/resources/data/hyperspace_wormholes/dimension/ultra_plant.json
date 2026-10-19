@@ -1,0 +1,11 @@
+{
+  "type": "hyperspace_wormholes:ultra_plant",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "hyperspace_wormholes:ultra_plant"
+    },
+    "settings": "hyperspace_wormholes:ultra_plant"
+  }
+}

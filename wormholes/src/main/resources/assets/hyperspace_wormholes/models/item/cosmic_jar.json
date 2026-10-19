@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "hyperspace_wormholes:item/cosmic_jar_0" },
+  "overrides": [
+    { "predicate": { "hyperspace_wormholes:energy": 0.25 }, "model": "hyperspace_wormholes:item/cosmic_jar_1" },
+    { "predicate": { "hyperspace_wormholes:energy": 0.5 }, "model": "hyperspace_wormholes:item/cosmic_jar_2" },
+    { "predicate": { "hyperspace_wormholes:energy": 0.75 }, "model": "hyperspace_wormholes:item/cosmic_jar_3" },
+    { "predicate": { "hyperspace_wormholes:energy": 1.0 }, "model": "hyperspace_wormholes:item/cosmic_jar_4" }
+  ]
+}

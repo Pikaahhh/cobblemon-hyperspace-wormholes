@@ -1,0 +1,32 @@
+{
+  "has_precipitation": true,
+  "temperature": 0.95,
+  "downfall": 0.9,
+  "effects": {
+    "fog_color": 9101690,
+    "sky_color": 6737536,
+    "water_color": 3521160,
+    "water_fog_color": 329011,
+    "grass_color": 3399747,
+    "foliage_color": 2276906,
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": false,
+      "sound": "minecraft:music.overworld.jungle"
+    }
+  },
+  "spawners": {
+    "creature": [
+      { "type": "minecraft:parrot", "weight": 40, "minCount": 1, "maxCount": 2 },
+      { "type": "minecraft:ocelot", "weight": 2, "minCount": 1, "maxCount": 3 }
+    ]
+  },
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [], [], ["hyperspace_wormholes:ultra_jungle_volcano"], [], [], [], [], [], [],
+    ["minecraft:trees_jungle", "hyperspace_wormholes:ultra_jungle_bushes", "minecraft:bamboo_light", "minecraft:patch_grass_jungle", "minecraft:flower_warm", "minecraft:vines", "minecraft:patch_melon", "hyperspace_wormholes:swole_trees"],
+    []
+  ]
+}

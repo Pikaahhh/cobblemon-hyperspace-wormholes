@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " A ",
+    "G G",
+    "GGG"
+  ],
+  "key": {
+    "A": { "item": "minecraft:amethyst_shard" },
+    "G": { "item": "minecraft:glass" }
+  },
+  "result": { "id": "hyperspace_wormholes:cosmic_jar", "count": 1 }
+}

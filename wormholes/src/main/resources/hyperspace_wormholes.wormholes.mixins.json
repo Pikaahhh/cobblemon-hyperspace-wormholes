@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.hyperspacewormholes.wormholes.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["EntityMoveMixin", "DeepSeaJumpMixin", "TextDisplayAccessor", "DeepSeaSwimMixin", "DeepSeaWalkMixin", "EntityStopRidingMixin", "EntityTurnMixin", "PlayerDismountMixin", "PokemonEntityMoveMixin", "RidingTakeOffMixin", "UltraNoStructuresMixin", "UltraPlantWeatherMixin"],
+  "client": ["CameraZoomMixin", "EntityEmergenceRenderMixin", "FlashOverlayMixin", "LivingEntityTiltMixin", "MusicManagerMixin", "PosableModelRoarMixin", "MinecraftLevelChangeSoundMixin", "GuiRideBarMixin", "PartyOverlayMixin", "SoundManagerAccessor", "SoundEngineAccessor", "UltraNoFogMixin", "DawnWingsCameraMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

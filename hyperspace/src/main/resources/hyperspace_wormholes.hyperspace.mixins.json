@@ -1,0 +1,42 @@
+{
+  "required": true,
+  "package": "dev.hyperspacewormholes.hyperspace.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BlockItemMixin",
+    "BucketItemMixin",
+    "DisplayAccessor",
+    "TextDisplayAccessor",
+    "ItemDisplayAccessor",
+    "SeasoningSlotMixin",
+    "PlayerMixin",
+    "PokemonMixin",
+    "EntityMixin",
+    "ActivateInstructionMixin",
+    "AlphaLevelMatchingMixin",
+    "CookingPotShapelessRecipeMixin",
+    "ErraticMixin",
+    "GroundedPokemonMixin",
+    "FitPathMixin",
+    "StructureBlockSizeMixin",
+    "StructureBlockPacketMixin"
+  ],
+  "client": [
+    "PostChainAccessor",
+    "EntityRenderDispatcherMixin",
+    "PosableStateMixin",
+    "LivingEntityMixin",
+    "MountedCameraMixin",
+    "SoundManagerAccessor",
+    "SoundEngineAccessor",
+    "BattleMusicControllerMixin",
+    "BattleOverlayMixin",
+    "ParticleEngineMixin",
+    "FogRendererMixin",
+    "MinecraftAccessor",
+    "MoveTileMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

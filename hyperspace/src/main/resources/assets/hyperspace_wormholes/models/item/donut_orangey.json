@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hyperspace_wormholes:item/donut_orangey",
+    "layer1": "hyperspace_wormholes:item/donut_edges"
+  }
+}

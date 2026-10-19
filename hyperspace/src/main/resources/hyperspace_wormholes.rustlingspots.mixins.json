@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "dev.hyperspacewormholes.hyperspace.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "RustlingSpotSpawnerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

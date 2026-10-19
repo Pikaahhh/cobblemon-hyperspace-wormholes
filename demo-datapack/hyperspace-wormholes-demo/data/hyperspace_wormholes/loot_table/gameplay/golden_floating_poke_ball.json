@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:chest",
+  "functions": [{ "function": "hyperspace_wormholes:hoopa_stars_count" }],
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item", "name": "minecraft:golden_carrot",
+          "functions": [{ "function": "minecraft:set_count", "count": 10 }]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{ "condition": "hyperspace_wormholes:hoopa_stars", "min": 5 }],
+      "entries": [{ "type": "minecraft:item", "name": "cobblemon:master_ball" }]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.1 }],
+      "entries": [{ "type": "minecraft:item", "name": "minecraft:nether_star" }]
+    }
+  ]
+}

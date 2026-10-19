@@ -1,0 +1,6786 @@
+{
+  "music.hyperspace": {
+    "sounds": [
+      {
+        "name": "hyperspace_wormholes:music/hyperspace",
+        "stream": true
+      }
+    ]
+  },
+  "music.dream_az": {
+    "sounds": [
+      {
+        "name": "hyperspace_wormholes:music/dream_az",
+        "stream": true
+      }
+    ]
+  },
+  "hyperspace.wall_bump": {
+    "sounds": [
+      "hyperspace_wormholes:hyperspace/wall_bump"
+    ]
+  },
+  "cry.1": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1"
+    ]
+  },
+  "cry.2": {
+    "sounds": [
+      "hyperspace_wormholes:cries/2"
+    ]
+  },
+  "cry.3": {
+    "sounds": [
+      "hyperspace_wormholes:cries/3"
+    ]
+  },
+  "cry.4": {
+    "sounds": [
+      "hyperspace_wormholes:cries/4"
+    ]
+  },
+  "cry.5": {
+    "sounds": [
+      "hyperspace_wormholes:cries/5"
+    ]
+  },
+  "cry.6": {
+    "sounds": [
+      "hyperspace_wormholes:cries/6"
+    ]
+  },
+  "cry.7": {
+    "sounds": [
+      "hyperspace_wormholes:cries/7"
+    ]
+  },
+  "cry.8": {
+    "sounds": [
+      "hyperspace_wormholes:cries/8"
+    ]
+  },
+  "cry.9": {
+    "sounds": [
+      "hyperspace_wormholes:cries/9"
+    ]
+  },
+  "cry.10": {
+    "sounds": [
+      "hyperspace_wormholes:cries/10"
+    ]
+  },
+  "cry.11": {
+    "sounds": [
+      "hyperspace_wormholes:cries/11"
+    ]
+  },
+  "cry.12": {
+    "sounds": [
+      "hyperspace_wormholes:cries/12"
+    ]
+  },
+  "cry.13": {
+    "sounds": [
+      "hyperspace_wormholes:cries/13"
+    ]
+  },
+  "cry.14": {
+    "sounds": [
+      "hyperspace_wormholes:cries/14"
+    ]
+  },
+  "cry.15": {
+    "sounds": [
+      "hyperspace_wormholes:cries/15"
+    ]
+  },
+  "cry.16": {
+    "sounds": [
+      "hyperspace_wormholes:cries/16"
+    ]
+  },
+  "cry.17": {
+    "sounds": [
+      "hyperspace_wormholes:cries/17"
+    ]
+  },
+  "cry.18": {
+    "sounds": [
+      "hyperspace_wormholes:cries/18"
+    ]
+  },
+  "cry.19": {
+    "sounds": [
+      "hyperspace_wormholes:cries/19"
+    ]
+  },
+  "cry.20": {
+    "sounds": [
+      "hyperspace_wormholes:cries/20"
+    ]
+  },
+  "cry.21": {
+    "sounds": [
+      "hyperspace_wormholes:cries/21"
+    ]
+  },
+  "cry.22": {
+    "sounds": [
+      "hyperspace_wormholes:cries/22"
+    ]
+  },
+  "cry.23": {
+    "sounds": [
+      "hyperspace_wormholes:cries/23"
+    ]
+  },
+  "cry.24": {
+    "sounds": [
+      "hyperspace_wormholes:cries/24"
+    ]
+  },
+  "cry.25": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25"
+    ]
+  },
+  "cry.26": {
+    "sounds": [
+      "hyperspace_wormholes:cries/26"
+    ]
+  },
+  "cry.27": {
+    "sounds": [
+      "hyperspace_wormholes:cries/27"
+    ]
+  },
+  "cry.28": {
+    "sounds": [
+      "hyperspace_wormholes:cries/28"
+    ]
+  },
+  "cry.29": {
+    "sounds": [
+      "hyperspace_wormholes:cries/29"
+    ]
+  },
+  "cry.30": {
+    "sounds": [
+      "hyperspace_wormholes:cries/30"
+    ]
+  },
+  "cry.31": {
+    "sounds": [
+      "hyperspace_wormholes:cries/31"
+    ]
+  },
+  "cry.32": {
+    "sounds": [
+      "hyperspace_wormholes:cries/32"
+    ]
+  },
+  "cry.33": {
+    "sounds": [
+      "hyperspace_wormholes:cries/33"
+    ]
+  },
+  "cry.34": {
+    "sounds": [
+      "hyperspace_wormholes:cries/34"
+    ]
+  },
+  "cry.35": {
+    "sounds": [
+      "hyperspace_wormholes:cries/35"
+    ]
+  },
+  "cry.36": {
+    "sounds": [
+      "hyperspace_wormholes:cries/36"
+    ]
+  },
+  "cry.37": {
+    "sounds": [
+      "hyperspace_wormholes:cries/37"
+    ]
+  },
+  "cry.38": {
+    "sounds": [
+      "hyperspace_wormholes:cries/38"
+    ]
+  },
+  "cry.39": {
+    "sounds": [
+      "hyperspace_wormholes:cries/39"
+    ]
+  },
+  "cry.40": {
+    "sounds": [
+      "hyperspace_wormholes:cries/40"
+    ]
+  },
+  "cry.41": {
+    "sounds": [
+      "hyperspace_wormholes:cries/41"
+    ]
+  },
+  "cry.42": {
+    "sounds": [
+      "hyperspace_wormholes:cries/42"
+    ]
+  },
+  "cry.43": {
+    "sounds": [
+      "hyperspace_wormholes:cries/43"
+    ]
+  },
+  "cry.44": {
+    "sounds": [
+      "hyperspace_wormholes:cries/44"
+    ]
+  },
+  "cry.45": {
+    "sounds": [
+      "hyperspace_wormholes:cries/45"
+    ]
+  },
+  "cry.46": {
+    "sounds": [
+      "hyperspace_wormholes:cries/46"
+    ]
+  },
+  "cry.47": {
+    "sounds": [
+      "hyperspace_wormholes:cries/47"
+    ]
+  },
+  "cry.48": {
+    "sounds": [
+      "hyperspace_wormholes:cries/48"
+    ]
+  },
+  "cry.49": {
+    "sounds": [
+      "hyperspace_wormholes:cries/49"
+    ]
+  },
+  "cry.50": {
+    "sounds": [
+      "hyperspace_wormholes:cries/50"
+    ]
+  },
+  "cry.51": {
+    "sounds": [
+      "hyperspace_wormholes:cries/51"
+    ]
+  },
+  "cry.52": {
+    "sounds": [
+      "hyperspace_wormholes:cries/52"
+    ]
+  },
+  "cry.53": {
+    "sounds": [
+      "hyperspace_wormholes:cries/53"
+    ]
+  },
+  "cry.54": {
+    "sounds": [
+      "hyperspace_wormholes:cries/54"
+    ]
+  },
+  "cry.55": {
+    "sounds": [
+      "hyperspace_wormholes:cries/55"
+    ]
+  },
+  "cry.56": {
+    "sounds": [
+      "hyperspace_wormholes:cries/56"
+    ]
+  },
+  "cry.57": {
+    "sounds": [
+      "hyperspace_wormholes:cries/57"
+    ]
+  },
+  "cry.58": {
+    "sounds": [
+      "hyperspace_wormholes:cries/58"
+    ]
+  },
+  "cry.59": {
+    "sounds": [
+      "hyperspace_wormholes:cries/59"
+    ]
+  },
+  "cry.60": {
+    "sounds": [
+      "hyperspace_wormholes:cries/60"
+    ]
+  },
+  "cry.61": {
+    "sounds": [
+      "hyperspace_wormholes:cries/61"
+    ]
+  },
+  "cry.62": {
+    "sounds": [
+      "hyperspace_wormholes:cries/62"
+    ]
+  },
+  "cry.63": {
+    "sounds": [
+      "hyperspace_wormholes:cries/63"
+    ]
+  },
+  "cry.64": {
+    "sounds": [
+      "hyperspace_wormholes:cries/64"
+    ]
+  },
+  "cry.65": {
+    "sounds": [
+      "hyperspace_wormholes:cries/65"
+    ]
+  },
+  "cry.66": {
+    "sounds": [
+      "hyperspace_wormholes:cries/66"
+    ]
+  },
+  "cry.67": {
+    "sounds": [
+      "hyperspace_wormholes:cries/67"
+    ]
+  },
+  "cry.68": {
+    "sounds": [
+      "hyperspace_wormholes:cries/68"
+    ]
+  },
+  "cry.69": {
+    "sounds": [
+      "hyperspace_wormholes:cries/69"
+    ]
+  },
+  "cry.70": {
+    "sounds": [
+      "hyperspace_wormholes:cries/70"
+    ]
+  },
+  "cry.71": {
+    "sounds": [
+      "hyperspace_wormholes:cries/71"
+    ]
+  },
+  "cry.72": {
+    "sounds": [
+      "hyperspace_wormholes:cries/72"
+    ]
+  },
+  "cry.73": {
+    "sounds": [
+      "hyperspace_wormholes:cries/73"
+    ]
+  },
+  "cry.74": {
+    "sounds": [
+      "hyperspace_wormholes:cries/74"
+    ]
+  },
+  "cry.75": {
+    "sounds": [
+      "hyperspace_wormholes:cries/75"
+    ]
+  },
+  "cry.76": {
+    "sounds": [
+      "hyperspace_wormholes:cries/76"
+    ]
+  },
+  "cry.77": {
+    "sounds": [
+      "hyperspace_wormholes:cries/77"
+    ]
+  },
+  "cry.78": {
+    "sounds": [
+      "hyperspace_wormholes:cries/78"
+    ]
+  },
+  "cry.79": {
+    "sounds": [
+      "hyperspace_wormholes:cries/79"
+    ]
+  },
+  "cry.80": {
+    "sounds": [
+      "hyperspace_wormholes:cries/80"
+    ]
+  },
+  "cry.81": {
+    "sounds": [
+      "hyperspace_wormholes:cries/81"
+    ]
+  },
+  "cry.82": {
+    "sounds": [
+      "hyperspace_wormholes:cries/82"
+    ]
+  },
+  "cry.83": {
+    "sounds": [
+      "hyperspace_wormholes:cries/83"
+    ]
+  },
+  "cry.84": {
+    "sounds": [
+      "hyperspace_wormholes:cries/84"
+    ]
+  },
+  "cry.85": {
+    "sounds": [
+      "hyperspace_wormholes:cries/85"
+    ]
+  },
+  "cry.86": {
+    "sounds": [
+      "hyperspace_wormholes:cries/86"
+    ]
+  },
+  "cry.87": {
+    "sounds": [
+      "hyperspace_wormholes:cries/87"
+    ]
+  },
+  "cry.88": {
+    "sounds": [
+      "hyperspace_wormholes:cries/88"
+    ]
+  },
+  "cry.89": {
+    "sounds": [
+      "hyperspace_wormholes:cries/89"
+    ]
+  },
+  "cry.90": {
+    "sounds": [
+      "hyperspace_wormholes:cries/90"
+    ]
+  },
+  "cry.91": {
+    "sounds": [
+      "hyperspace_wormholes:cries/91"
+    ]
+  },
+  "cry.92": {
+    "sounds": [
+      "hyperspace_wormholes:cries/92"
+    ]
+  },
+  "cry.93": {
+    "sounds": [
+      "hyperspace_wormholes:cries/93"
+    ]
+  },
+  "cry.94": {
+    "sounds": [
+      "hyperspace_wormholes:cries/94"
+    ]
+  },
+  "cry.95": {
+    "sounds": [
+      "hyperspace_wormholes:cries/95"
+    ]
+  },
+  "cry.96": {
+    "sounds": [
+      "hyperspace_wormholes:cries/96"
+    ]
+  },
+  "cry.97": {
+    "sounds": [
+      "hyperspace_wormholes:cries/97"
+    ]
+  },
+  "cry.98": {
+    "sounds": [
+      "hyperspace_wormholes:cries/98"
+    ]
+  },
+  "cry.99": {
+    "sounds": [
+      "hyperspace_wormholes:cries/99"
+    ]
+  },
+  "cry.100": {
+    "sounds": [
+      "hyperspace_wormholes:cries/100"
+    ]
+  },
+  "cry.101": {
+    "sounds": [
+      "hyperspace_wormholes:cries/101"
+    ]
+  },
+  "cry.102": {
+    "sounds": [
+      "hyperspace_wormholes:cries/102"
+    ]
+  },
+  "cry.103": {
+    "sounds": [
+      "hyperspace_wormholes:cries/103"
+    ]
+  },
+  "cry.104": {
+    "sounds": [
+      "hyperspace_wormholes:cries/104"
+    ]
+  },
+  "cry.105": {
+    "sounds": [
+      "hyperspace_wormholes:cries/105"
+    ]
+  },
+  "cry.106": {
+    "sounds": [
+      "hyperspace_wormholes:cries/106"
+    ]
+  },
+  "cry.107": {
+    "sounds": [
+      "hyperspace_wormholes:cries/107"
+    ]
+  },
+  "cry.108": {
+    "sounds": [
+      "hyperspace_wormholes:cries/108"
+    ]
+  },
+  "cry.109": {
+    "sounds": [
+      "hyperspace_wormholes:cries/109"
+    ]
+  },
+  "cry.110": {
+    "sounds": [
+      "hyperspace_wormholes:cries/110"
+    ]
+  },
+  "cry.111": {
+    "sounds": [
+      "hyperspace_wormholes:cries/111"
+    ]
+  },
+  "cry.112": {
+    "sounds": [
+      "hyperspace_wormholes:cries/112"
+    ]
+  },
+  "cry.113": {
+    "sounds": [
+      "hyperspace_wormholes:cries/113"
+    ]
+  },
+  "cry.114": {
+    "sounds": [
+      "hyperspace_wormholes:cries/114"
+    ]
+  },
+  "cry.115": {
+    "sounds": [
+      "hyperspace_wormholes:cries/115"
+    ]
+  },
+  "cry.116": {
+    "sounds": [
+      "hyperspace_wormholes:cries/116"
+    ]
+  },
+  "cry.117": {
+    "sounds": [
+      "hyperspace_wormholes:cries/117"
+    ]
+  },
+  "cry.118": {
+    "sounds": [
+      "hyperspace_wormholes:cries/118"
+    ]
+  },
+  "cry.119": {
+    "sounds": [
+      "hyperspace_wormholes:cries/119"
+    ]
+  },
+  "cry.120": {
+    "sounds": [
+      "hyperspace_wormholes:cries/120"
+    ]
+  },
+  "cry.121": {
+    "sounds": [
+      "hyperspace_wormholes:cries/121"
+    ]
+  },
+  "cry.122": {
+    "sounds": [
+      "hyperspace_wormholes:cries/122"
+    ]
+  },
+  "cry.123": {
+    "sounds": [
+      "hyperspace_wormholes:cries/123"
+    ]
+  },
+  "cry.124": {
+    "sounds": [
+      "hyperspace_wormholes:cries/124"
+    ]
+  },
+  "cry.125": {
+    "sounds": [
+      "hyperspace_wormholes:cries/125"
+    ]
+  },
+  "cry.126": {
+    "sounds": [
+      "hyperspace_wormholes:cries/126"
+    ]
+  },
+  "cry.127": {
+    "sounds": [
+      "hyperspace_wormholes:cries/127"
+    ]
+  },
+  "cry.128": {
+    "sounds": [
+      "hyperspace_wormholes:cries/128"
+    ]
+  },
+  "cry.129": {
+    "sounds": [
+      "hyperspace_wormholes:cries/129"
+    ]
+  },
+  "cry.130": {
+    "sounds": [
+      "hyperspace_wormholes:cries/130"
+    ]
+  },
+  "cry.131": {
+    "sounds": [
+      "hyperspace_wormholes:cries/131"
+    ]
+  },
+  "cry.132": {
+    "sounds": [
+      "hyperspace_wormholes:cries/132"
+    ]
+  },
+  "cry.133": {
+    "sounds": [
+      "hyperspace_wormholes:cries/133"
+    ]
+  },
+  "cry.134": {
+    "sounds": [
+      "hyperspace_wormholes:cries/134"
+    ]
+  },
+  "cry.135": {
+    "sounds": [
+      "hyperspace_wormholes:cries/135"
+    ]
+  },
+  "cry.136": {
+    "sounds": [
+      "hyperspace_wormholes:cries/136"
+    ]
+  },
+  "cry.137": {
+    "sounds": [
+      "hyperspace_wormholes:cries/137"
+    ]
+  },
+  "cry.138": {
+    "sounds": [
+      "hyperspace_wormholes:cries/138"
+    ]
+  },
+  "cry.139": {
+    "sounds": [
+      "hyperspace_wormholes:cries/139"
+    ]
+  },
+  "cry.140": {
+    "sounds": [
+      "hyperspace_wormholes:cries/140"
+    ]
+  },
+  "cry.141": {
+    "sounds": [
+      "hyperspace_wormholes:cries/141"
+    ]
+  },
+  "cry.142": {
+    "sounds": [
+      "hyperspace_wormholes:cries/142"
+    ]
+  },
+  "cry.143": {
+    "sounds": [
+      "hyperspace_wormholes:cries/143"
+    ]
+  },
+  "cry.144": {
+    "sounds": [
+      "hyperspace_wormholes:cries/144"
+    ]
+  },
+  "cry.145": {
+    "sounds": [
+      "hyperspace_wormholes:cries/145"
+    ]
+  },
+  "cry.146": {
+    "sounds": [
+      "hyperspace_wormholes:cries/146"
+    ]
+  },
+  "cry.147": {
+    "sounds": [
+      "hyperspace_wormholes:cries/147"
+    ]
+  },
+  "cry.148": {
+    "sounds": [
+      "hyperspace_wormholes:cries/148"
+    ]
+  },
+  "cry.149": {
+    "sounds": [
+      "hyperspace_wormholes:cries/149"
+    ]
+  },
+  "cry.150": {
+    "sounds": [
+      "hyperspace_wormholes:cries/150"
+    ]
+  },
+  "cry.151": {
+    "sounds": [
+      "hyperspace_wormholes:cries/151"
+    ]
+  },
+  "cry.152": {
+    "sounds": [
+      "hyperspace_wormholes:cries/152"
+    ]
+  },
+  "cry.153": {
+    "sounds": [
+      "hyperspace_wormholes:cries/153"
+    ]
+  },
+  "cry.154": {
+    "sounds": [
+      "hyperspace_wormholes:cries/154"
+    ]
+  },
+  "cry.155": {
+    "sounds": [
+      "hyperspace_wormholes:cries/155"
+    ]
+  },
+  "cry.156": {
+    "sounds": [
+      "hyperspace_wormholes:cries/156"
+    ]
+  },
+  "cry.157": {
+    "sounds": [
+      "hyperspace_wormholes:cries/157"
+    ]
+  },
+  "cry.158": {
+    "sounds": [
+      "hyperspace_wormholes:cries/158"
+    ]
+  },
+  "cry.159": {
+    "sounds": [
+      "hyperspace_wormholes:cries/159"
+    ]
+  },
+  "cry.160": {
+    "sounds": [
+      "hyperspace_wormholes:cries/160"
+    ]
+  },
+  "cry.161": {
+    "sounds": [
+      "hyperspace_wormholes:cries/161"
+    ]
+  },
+  "cry.162": {
+    "sounds": [
+      "hyperspace_wormholes:cries/162"
+    ]
+  },
+  "cry.163": {
+    "sounds": [
+      "hyperspace_wormholes:cries/163"
+    ]
+  },
+  "cry.164": {
+    "sounds": [
+      "hyperspace_wormholes:cries/164"
+    ]
+  },
+  "cry.165": {
+    "sounds": [
+      "hyperspace_wormholes:cries/165"
+    ]
+  },
+  "cry.166": {
+    "sounds": [
+      "hyperspace_wormholes:cries/166"
+    ]
+  },
+  "cry.167": {
+    "sounds": [
+      "hyperspace_wormholes:cries/167"
+    ]
+  },
+  "cry.168": {
+    "sounds": [
+      "hyperspace_wormholes:cries/168"
+    ]
+  },
+  "cry.169": {
+    "sounds": [
+      "hyperspace_wormholes:cries/169"
+    ]
+  },
+  "cry.170": {
+    "sounds": [
+      "hyperspace_wormholes:cries/170"
+    ]
+  },
+  "cry.171": {
+    "sounds": [
+      "hyperspace_wormholes:cries/171"
+    ]
+  },
+  "cry.172": {
+    "sounds": [
+      "hyperspace_wormholes:cries/172"
+    ]
+  },
+  "cry.173": {
+    "sounds": [
+      "hyperspace_wormholes:cries/173"
+    ]
+  },
+  "cry.174": {
+    "sounds": [
+      "hyperspace_wormholes:cries/174"
+    ]
+  },
+  "cry.175": {
+    "sounds": [
+      "hyperspace_wormholes:cries/175"
+    ]
+  },
+  "cry.176": {
+    "sounds": [
+      "hyperspace_wormholes:cries/176"
+    ]
+  },
+  "cry.177": {
+    "sounds": [
+      "hyperspace_wormholes:cries/177"
+    ]
+  },
+  "cry.178": {
+    "sounds": [
+      "hyperspace_wormholes:cries/178"
+    ]
+  },
+  "cry.179": {
+    "sounds": [
+      "hyperspace_wormholes:cries/179"
+    ]
+  },
+  "cry.180": {
+    "sounds": [
+      "hyperspace_wormholes:cries/180"
+    ]
+  },
+  "cry.181": {
+    "sounds": [
+      "hyperspace_wormholes:cries/181"
+    ]
+  },
+  "cry.182": {
+    "sounds": [
+      "hyperspace_wormholes:cries/182"
+    ]
+  },
+  "cry.183": {
+    "sounds": [
+      "hyperspace_wormholes:cries/183"
+    ]
+  },
+  "cry.184": {
+    "sounds": [
+      "hyperspace_wormholes:cries/184"
+    ]
+  },
+  "cry.185": {
+    "sounds": [
+      "hyperspace_wormholes:cries/185"
+    ]
+  },
+  "cry.186": {
+    "sounds": [
+      "hyperspace_wormholes:cries/186"
+    ]
+  },
+  "cry.187": {
+    "sounds": [
+      "hyperspace_wormholes:cries/187"
+    ]
+  },
+  "cry.188": {
+    "sounds": [
+      "hyperspace_wormholes:cries/188"
+    ]
+  },
+  "cry.189": {
+    "sounds": [
+      "hyperspace_wormholes:cries/189"
+    ]
+  },
+  "cry.190": {
+    "sounds": [
+      "hyperspace_wormholes:cries/190"
+    ]
+  },
+  "cry.191": {
+    "sounds": [
+      "hyperspace_wormholes:cries/191"
+    ]
+  },
+  "cry.192": {
+    "sounds": [
+      "hyperspace_wormholes:cries/192"
+    ]
+  },
+  "cry.193": {
+    "sounds": [
+      "hyperspace_wormholes:cries/193"
+    ]
+  },
+  "cry.194": {
+    "sounds": [
+      "hyperspace_wormholes:cries/194"
+    ]
+  },
+  "cry.195": {
+    "sounds": [
+      "hyperspace_wormholes:cries/195"
+    ]
+  },
+  "cry.196": {
+    "sounds": [
+      "hyperspace_wormholes:cries/196"
+    ]
+  },
+  "cry.197": {
+    "sounds": [
+      "hyperspace_wormholes:cries/197"
+    ]
+  },
+  "cry.198": {
+    "sounds": [
+      "hyperspace_wormholes:cries/198"
+    ]
+  },
+  "cry.199": {
+    "sounds": [
+      "hyperspace_wormholes:cries/199"
+    ]
+  },
+  "cry.200": {
+    "sounds": [
+      "hyperspace_wormholes:cries/200"
+    ]
+  },
+  "cry.201": {
+    "sounds": [
+      "hyperspace_wormholes:cries/201"
+    ]
+  },
+  "cry.202": {
+    "sounds": [
+      "hyperspace_wormholes:cries/202"
+    ]
+  },
+  "cry.203": {
+    "sounds": [
+      "hyperspace_wormholes:cries/203"
+    ]
+  },
+  "cry.204": {
+    "sounds": [
+      "hyperspace_wormholes:cries/204"
+    ]
+  },
+  "cry.205": {
+    "sounds": [
+      "hyperspace_wormholes:cries/205"
+    ]
+  },
+  "cry.206": {
+    "sounds": [
+      "hyperspace_wormholes:cries/206"
+    ]
+  },
+  "cry.207": {
+    "sounds": [
+      "hyperspace_wormholes:cries/207"
+    ]
+  },
+  "cry.208": {
+    "sounds": [
+      "hyperspace_wormholes:cries/208"
+    ]
+  },
+  "cry.209": {
+    "sounds": [
+      "hyperspace_wormholes:cries/209"
+    ]
+  },
+  "cry.210": {
+    "sounds": [
+      "hyperspace_wormholes:cries/210"
+    ]
+  },
+  "cry.211": {
+    "sounds": [
+      "hyperspace_wormholes:cries/211"
+    ]
+  },
+  "cry.212": {
+    "sounds": [
+      "hyperspace_wormholes:cries/212"
+    ]
+  },
+  "cry.213": {
+    "sounds": [
+      "hyperspace_wormholes:cries/213"
+    ]
+  },
+  "cry.214": {
+    "sounds": [
+      "hyperspace_wormholes:cries/214"
+    ]
+  },
+  "cry.215": {
+    "sounds": [
+      "hyperspace_wormholes:cries/215"
+    ]
+  },
+  "cry.216": {
+    "sounds": [
+      "hyperspace_wormholes:cries/216"
+    ]
+  },
+  "cry.217": {
+    "sounds": [
+      "hyperspace_wormholes:cries/217"
+    ]
+  },
+  "cry.218": {
+    "sounds": [
+      "hyperspace_wormholes:cries/218"
+    ]
+  },
+  "cry.219": {
+    "sounds": [
+      "hyperspace_wormholes:cries/219"
+    ]
+  },
+  "cry.220": {
+    "sounds": [
+      "hyperspace_wormholes:cries/220"
+    ]
+  },
+  "cry.221": {
+    "sounds": [
+      "hyperspace_wormholes:cries/221"
+    ]
+  },
+  "cry.222": {
+    "sounds": [
+      "hyperspace_wormholes:cries/222"
+    ]
+  },
+  "cry.223": {
+    "sounds": [
+      "hyperspace_wormholes:cries/223"
+    ]
+  },
+  "cry.224": {
+    "sounds": [
+      "hyperspace_wormholes:cries/224"
+    ]
+  },
+  "cry.225": {
+    "sounds": [
+      "hyperspace_wormholes:cries/225"
+    ]
+  },
+  "cry.226": {
+    "sounds": [
+      "hyperspace_wormholes:cries/226"
+    ]
+  },
+  "cry.227": {
+    "sounds": [
+      "hyperspace_wormholes:cries/227"
+    ]
+  },
+  "cry.228": {
+    "sounds": [
+      "hyperspace_wormholes:cries/228"
+    ]
+  },
+  "cry.229": {
+    "sounds": [
+      "hyperspace_wormholes:cries/229"
+    ]
+  },
+  "cry.230": {
+    "sounds": [
+      "hyperspace_wormholes:cries/230"
+    ]
+  },
+  "cry.231": {
+    "sounds": [
+      "hyperspace_wormholes:cries/231"
+    ]
+  },
+  "cry.232": {
+    "sounds": [
+      "hyperspace_wormholes:cries/232"
+    ]
+  },
+  "cry.233": {
+    "sounds": [
+      "hyperspace_wormholes:cries/233"
+    ]
+  },
+  "cry.234": {
+    "sounds": [
+      "hyperspace_wormholes:cries/234"
+    ]
+  },
+  "cry.235": {
+    "sounds": [
+      "hyperspace_wormholes:cries/235"
+    ]
+  },
+  "cry.236": {
+    "sounds": [
+      "hyperspace_wormholes:cries/236"
+    ]
+  },
+  "cry.237": {
+    "sounds": [
+      "hyperspace_wormholes:cries/237"
+    ]
+  },
+  "cry.238": {
+    "sounds": [
+      "hyperspace_wormholes:cries/238"
+    ]
+  },
+  "cry.239": {
+    "sounds": [
+      "hyperspace_wormholes:cries/239"
+    ]
+  },
+  "cry.240": {
+    "sounds": [
+      "hyperspace_wormholes:cries/240"
+    ]
+  },
+  "cry.241": {
+    "sounds": [
+      "hyperspace_wormholes:cries/241"
+    ]
+  },
+  "cry.242": {
+    "sounds": [
+      "hyperspace_wormholes:cries/242"
+    ]
+  },
+  "cry.243": {
+    "sounds": [
+      "hyperspace_wormholes:cries/243"
+    ]
+  },
+  "cry.244": {
+    "sounds": [
+      "hyperspace_wormholes:cries/244"
+    ]
+  },
+  "cry.245": {
+    "sounds": [
+      "hyperspace_wormholes:cries/245"
+    ]
+  },
+  "cry.246": {
+    "sounds": [
+      "hyperspace_wormholes:cries/246"
+    ]
+  },
+  "cry.247": {
+    "sounds": [
+      "hyperspace_wormholes:cries/247"
+    ]
+  },
+  "cry.248": {
+    "sounds": [
+      "hyperspace_wormholes:cries/248"
+    ]
+  },
+  "cry.249": {
+    "sounds": [
+      "hyperspace_wormholes:cries/249"
+    ]
+  },
+  "cry.250": {
+    "sounds": [
+      "hyperspace_wormholes:cries/250"
+    ]
+  },
+  "cry.251": {
+    "sounds": [
+      "hyperspace_wormholes:cries/251"
+    ]
+  },
+  "cry.252": {
+    "sounds": [
+      "hyperspace_wormholes:cries/252"
+    ]
+  },
+  "cry.253": {
+    "sounds": [
+      "hyperspace_wormholes:cries/253"
+    ]
+  },
+  "cry.254": {
+    "sounds": [
+      "hyperspace_wormholes:cries/254"
+    ]
+  },
+  "cry.255": {
+    "sounds": [
+      "hyperspace_wormholes:cries/255"
+    ]
+  },
+  "cry.256": {
+    "sounds": [
+      "hyperspace_wormholes:cries/256"
+    ]
+  },
+  "cry.257": {
+    "sounds": [
+      "hyperspace_wormholes:cries/257"
+    ]
+  },
+  "cry.258": {
+    "sounds": [
+      "hyperspace_wormholes:cries/258"
+    ]
+  },
+  "cry.259": {
+    "sounds": [
+      "hyperspace_wormholes:cries/259"
+    ]
+  },
+  "cry.260": {
+    "sounds": [
+      "hyperspace_wormholes:cries/260"
+    ]
+  },
+  "cry.261": {
+    "sounds": [
+      "hyperspace_wormholes:cries/261"
+    ]
+  },
+  "cry.262": {
+    "sounds": [
+      "hyperspace_wormholes:cries/262"
+    ]
+  },
+  "cry.263": {
+    "sounds": [
+      "hyperspace_wormholes:cries/263"
+    ]
+  },
+  "cry.264": {
+    "sounds": [
+      "hyperspace_wormholes:cries/264"
+    ]
+  },
+  "cry.265": {
+    "sounds": [
+      "hyperspace_wormholes:cries/265"
+    ]
+  },
+  "cry.266": {
+    "sounds": [
+      "hyperspace_wormholes:cries/266"
+    ]
+  },
+  "cry.267": {
+    "sounds": [
+      "hyperspace_wormholes:cries/267"
+    ]
+  },
+  "cry.268": {
+    "sounds": [
+      "hyperspace_wormholes:cries/268"
+    ]
+  },
+  "cry.269": {
+    "sounds": [
+      "hyperspace_wormholes:cries/269"
+    ]
+  },
+  "cry.270": {
+    "sounds": [
+      "hyperspace_wormholes:cries/270"
+    ]
+  },
+  "cry.271": {
+    "sounds": [
+      "hyperspace_wormholes:cries/271"
+    ]
+  },
+  "cry.272": {
+    "sounds": [
+      "hyperspace_wormholes:cries/272"
+    ]
+  },
+  "cry.273": {
+    "sounds": [
+      "hyperspace_wormholes:cries/273"
+    ]
+  },
+  "cry.274": {
+    "sounds": [
+      "hyperspace_wormholes:cries/274"
+    ]
+  },
+  "cry.275": {
+    "sounds": [
+      "hyperspace_wormholes:cries/275"
+    ]
+  },
+  "cry.276": {
+    "sounds": [
+      "hyperspace_wormholes:cries/276"
+    ]
+  },
+  "cry.277": {
+    "sounds": [
+      "hyperspace_wormholes:cries/277"
+    ]
+  },
+  "cry.278": {
+    "sounds": [
+      "hyperspace_wormholes:cries/278"
+    ]
+  },
+  "cry.279": {
+    "sounds": [
+      "hyperspace_wormholes:cries/279"
+    ]
+  },
+  "cry.280": {
+    "sounds": [
+      "hyperspace_wormholes:cries/280"
+    ]
+  },
+  "cry.281": {
+    "sounds": [
+      "hyperspace_wormholes:cries/281"
+    ]
+  },
+  "cry.282": {
+    "sounds": [
+      "hyperspace_wormholes:cries/282"
+    ]
+  },
+  "cry.283": {
+    "sounds": [
+      "hyperspace_wormholes:cries/283"
+    ]
+  },
+  "cry.284": {
+    "sounds": [
+      "hyperspace_wormholes:cries/284"
+    ]
+  },
+  "cry.285": {
+    "sounds": [
+      "hyperspace_wormholes:cries/285"
+    ]
+  },
+  "cry.286": {
+    "sounds": [
+      "hyperspace_wormholes:cries/286"
+    ]
+  },
+  "cry.287": {
+    "sounds": [
+      "hyperspace_wormholes:cries/287"
+    ]
+  },
+  "cry.288": {
+    "sounds": [
+      "hyperspace_wormholes:cries/288"
+    ]
+  },
+  "cry.289": {
+    "sounds": [
+      "hyperspace_wormholes:cries/289"
+    ]
+  },
+  "cry.290": {
+    "sounds": [
+      "hyperspace_wormholes:cries/290"
+    ]
+  },
+  "cry.291": {
+    "sounds": [
+      "hyperspace_wormholes:cries/291"
+    ]
+  },
+  "cry.292": {
+    "sounds": [
+      "hyperspace_wormholes:cries/292"
+    ]
+  },
+  "cry.293": {
+    "sounds": [
+      "hyperspace_wormholes:cries/293"
+    ]
+  },
+  "cry.294": {
+    "sounds": [
+      "hyperspace_wormholes:cries/294"
+    ]
+  },
+  "cry.295": {
+    "sounds": [
+      "hyperspace_wormholes:cries/295"
+    ]
+  },
+  "cry.296": {
+    "sounds": [
+      "hyperspace_wormholes:cries/296"
+    ]
+  },
+  "cry.297": {
+    "sounds": [
+      "hyperspace_wormholes:cries/297"
+    ]
+  },
+  "cry.298": {
+    "sounds": [
+      "hyperspace_wormholes:cries/298"
+    ]
+  },
+  "cry.299": {
+    "sounds": [
+      "hyperspace_wormholes:cries/299"
+    ]
+  },
+  "cry.300": {
+    "sounds": [
+      "hyperspace_wormholes:cries/300"
+    ]
+  },
+  "cry.301": {
+    "sounds": [
+      "hyperspace_wormholes:cries/301"
+    ]
+  },
+  "cry.302": {
+    "sounds": [
+      "hyperspace_wormholes:cries/302"
+    ]
+  },
+  "cry.303": {
+    "sounds": [
+      "hyperspace_wormholes:cries/303"
+    ]
+  },
+  "cry.304": {
+    "sounds": [
+      "hyperspace_wormholes:cries/304"
+    ]
+  },
+  "cry.305": {
+    "sounds": [
+      "hyperspace_wormholes:cries/305"
+    ]
+  },
+  "cry.306": {
+    "sounds": [
+      "hyperspace_wormholes:cries/306"
+    ]
+  },
+  "cry.307": {
+    "sounds": [
+      "hyperspace_wormholes:cries/307"
+    ]
+  },
+  "cry.308": {
+    "sounds": [
+      "hyperspace_wormholes:cries/308"
+    ]
+  },
+  "cry.309": {
+    "sounds": [
+      "hyperspace_wormholes:cries/309"
+    ]
+  },
+  "cry.310": {
+    "sounds": [
+      "hyperspace_wormholes:cries/310"
+    ]
+  },
+  "cry.311": {
+    "sounds": [
+      "hyperspace_wormholes:cries/311"
+    ]
+  },
+  "cry.312": {
+    "sounds": [
+      "hyperspace_wormholes:cries/312"
+    ]
+  },
+  "cry.313": {
+    "sounds": [
+      "hyperspace_wormholes:cries/313"
+    ]
+  },
+  "cry.314": {
+    "sounds": [
+      "hyperspace_wormholes:cries/314"
+    ]
+  },
+  "cry.315": {
+    "sounds": [
+      "hyperspace_wormholes:cries/315"
+    ]
+  },
+  "cry.316": {
+    "sounds": [
+      "hyperspace_wormholes:cries/316"
+    ]
+  },
+  "cry.317": {
+    "sounds": [
+      "hyperspace_wormholes:cries/317"
+    ]
+  },
+  "cry.318": {
+    "sounds": [
+      "hyperspace_wormholes:cries/318"
+    ]
+  },
+  "cry.319": {
+    "sounds": [
+      "hyperspace_wormholes:cries/319"
+    ]
+  },
+  "cry.320": {
+    "sounds": [
+      "hyperspace_wormholes:cries/320"
+    ]
+  },
+  "cry.321": {
+    "sounds": [
+      "hyperspace_wormholes:cries/321"
+    ]
+  },
+  "cry.322": {
+    "sounds": [
+      "hyperspace_wormholes:cries/322"
+    ]
+  },
+  "cry.323": {
+    "sounds": [
+      "hyperspace_wormholes:cries/323"
+    ]
+  },
+  "cry.324": {
+    "sounds": [
+      "hyperspace_wormholes:cries/324"
+    ]
+  },
+  "cry.325": {
+    "sounds": [
+      "hyperspace_wormholes:cries/325"
+    ]
+  },
+  "cry.326": {
+    "sounds": [
+      "hyperspace_wormholes:cries/326"
+    ]
+  },
+  "cry.327": {
+    "sounds": [
+      "hyperspace_wormholes:cries/327"
+    ]
+  },
+  "cry.328": {
+    "sounds": [
+      "hyperspace_wormholes:cries/328"
+    ]
+  },
+  "cry.329": {
+    "sounds": [
+      "hyperspace_wormholes:cries/329"
+    ]
+  },
+  "cry.330": {
+    "sounds": [
+      "hyperspace_wormholes:cries/330"
+    ]
+  },
+  "cry.331": {
+    "sounds": [
+      "hyperspace_wormholes:cries/331"
+    ]
+  },
+  "cry.332": {
+    "sounds": [
+      "hyperspace_wormholes:cries/332"
+    ]
+  },
+  "cry.333": {
+    "sounds": [
+      "hyperspace_wormholes:cries/333"
+    ]
+  },
+  "cry.334": {
+    "sounds": [
+      "hyperspace_wormholes:cries/334"
+    ]
+  },
+  "cry.335": {
+    "sounds": [
+      "hyperspace_wormholes:cries/335"
+    ]
+  },
+  "cry.336": {
+    "sounds": [
+      "hyperspace_wormholes:cries/336"
+    ]
+  },
+  "cry.337": {
+    "sounds": [
+      "hyperspace_wormholes:cries/337"
+    ]
+  },
+  "cry.338": {
+    "sounds": [
+      "hyperspace_wormholes:cries/338"
+    ]
+  },
+  "cry.339": {
+    "sounds": [
+      "hyperspace_wormholes:cries/339"
+    ]
+  },
+  "cry.340": {
+    "sounds": [
+      "hyperspace_wormholes:cries/340"
+    ]
+  },
+  "cry.341": {
+    "sounds": [
+      "hyperspace_wormholes:cries/341"
+    ]
+  },
+  "cry.342": {
+    "sounds": [
+      "hyperspace_wormholes:cries/342"
+    ]
+  },
+  "cry.343": {
+    "sounds": [
+      "hyperspace_wormholes:cries/343"
+    ]
+  },
+  "cry.344": {
+    "sounds": [
+      "hyperspace_wormholes:cries/344"
+    ]
+  },
+  "cry.345": {
+    "sounds": [
+      "hyperspace_wormholes:cries/345"
+    ]
+  },
+  "cry.346": {
+    "sounds": [
+      "hyperspace_wormholes:cries/346"
+    ]
+  },
+  "cry.347": {
+    "sounds": [
+      "hyperspace_wormholes:cries/347"
+    ]
+  },
+  "cry.348": {
+    "sounds": [
+      "hyperspace_wormholes:cries/348"
+    ]
+  },
+  "cry.349": {
+    "sounds": [
+      "hyperspace_wormholes:cries/349"
+    ]
+  },
+  "cry.350": {
+    "sounds": [
+      "hyperspace_wormholes:cries/350"
+    ]
+  },
+  "cry.351": {
+    "sounds": [
+      "hyperspace_wormholes:cries/351"
+    ]
+  },
+  "cry.352": {
+    "sounds": [
+      "hyperspace_wormholes:cries/352"
+    ]
+  },
+  "cry.353": {
+    "sounds": [
+      "hyperspace_wormholes:cries/353"
+    ]
+  },
+  "cry.354": {
+    "sounds": [
+      "hyperspace_wormholes:cries/354"
+    ]
+  },
+  "cry.355": {
+    "sounds": [
+      "hyperspace_wormholes:cries/355"
+    ]
+  },
+  "cry.356": {
+    "sounds": [
+      "hyperspace_wormholes:cries/356"
+    ]
+  },
+  "cry.357": {
+    "sounds": [
+      "hyperspace_wormholes:cries/357"
+    ]
+  },
+  "cry.358": {
+    "sounds": [
+      "hyperspace_wormholes:cries/358"
+    ]
+  },
+  "cry.359": {
+    "sounds": [
+      "hyperspace_wormholes:cries/359"
+    ]
+  },
+  "cry.360": {
+    "sounds": [
+      "hyperspace_wormholes:cries/360"
+    ]
+  },
+  "cry.361": {
+    "sounds": [
+      "hyperspace_wormholes:cries/361"
+    ]
+  },
+  "cry.362": {
+    "sounds": [
+      "hyperspace_wormholes:cries/362"
+    ]
+  },
+  "cry.363": {
+    "sounds": [
+      "hyperspace_wormholes:cries/363"
+    ]
+  },
+  "cry.364": {
+    "sounds": [
+      "hyperspace_wormholes:cries/364"
+    ]
+  },
+  "cry.365": {
+    "sounds": [
+      "hyperspace_wormholes:cries/365"
+    ]
+  },
+  "cry.366": {
+    "sounds": [
+      "hyperspace_wormholes:cries/366"
+    ]
+  },
+  "cry.367": {
+    "sounds": [
+      "hyperspace_wormholes:cries/367"
+    ]
+  },
+  "cry.368": {
+    "sounds": [
+      "hyperspace_wormholes:cries/368"
+    ]
+  },
+  "cry.369": {
+    "sounds": [
+      "hyperspace_wormholes:cries/369"
+    ]
+  },
+  "cry.370": {
+    "sounds": [
+      "hyperspace_wormholes:cries/370"
+    ]
+  },
+  "cry.371": {
+    "sounds": [
+      "hyperspace_wormholes:cries/371"
+    ]
+  },
+  "cry.372": {
+    "sounds": [
+      "hyperspace_wormholes:cries/372"
+    ]
+  },
+  "cry.373": {
+    "sounds": [
+      "hyperspace_wormholes:cries/373"
+    ]
+  },
+  "cry.374": {
+    "sounds": [
+      "hyperspace_wormholes:cries/374"
+    ]
+  },
+  "cry.375": {
+    "sounds": [
+      "hyperspace_wormholes:cries/375"
+    ]
+  },
+  "cry.376": {
+    "sounds": [
+      "hyperspace_wormholes:cries/376"
+    ]
+  },
+  "cry.377": {
+    "sounds": [
+      "hyperspace_wormholes:cries/377"
+    ]
+  },
+  "cry.378": {
+    "sounds": [
+      "hyperspace_wormholes:cries/378"
+    ]
+  },
+  "cry.379": {
+    "sounds": [
+      "hyperspace_wormholes:cries/379"
+    ]
+  },
+  "cry.380": {
+    "sounds": [
+      "hyperspace_wormholes:cries/380"
+    ]
+  },
+  "cry.381": {
+    "sounds": [
+      "hyperspace_wormholes:cries/381"
+    ]
+  },
+  "cry.382": {
+    "sounds": [
+      "hyperspace_wormholes:cries/382"
+    ]
+  },
+  "cry.383": {
+    "sounds": [
+      "hyperspace_wormholes:cries/383"
+    ]
+  },
+  "cry.384": {
+    "sounds": [
+      "hyperspace_wormholes:cries/384"
+    ]
+  },
+  "cry.385": {
+    "sounds": [
+      "hyperspace_wormholes:cries/385"
+    ]
+  },
+  "cry.386": {
+    "sounds": [
+      "hyperspace_wormholes:cries/386"
+    ]
+  },
+  "cry.387": {
+    "sounds": [
+      "hyperspace_wormholes:cries/387"
+    ]
+  },
+  "cry.388": {
+    "sounds": [
+      "hyperspace_wormholes:cries/388"
+    ]
+  },
+  "cry.389": {
+    "sounds": [
+      "hyperspace_wormholes:cries/389"
+    ]
+  },
+  "cry.390": {
+    "sounds": [
+      "hyperspace_wormholes:cries/390"
+    ]
+  },
+  "cry.391": {
+    "sounds": [
+      "hyperspace_wormholes:cries/391"
+    ]
+  },
+  "cry.392": {
+    "sounds": [
+      "hyperspace_wormholes:cries/392"
+    ]
+  },
+  "cry.393": {
+    "sounds": [
+      "hyperspace_wormholes:cries/393"
+    ]
+  },
+  "cry.394": {
+    "sounds": [
+      "hyperspace_wormholes:cries/394"
+    ]
+  },
+  "cry.395": {
+    "sounds": [
+      "hyperspace_wormholes:cries/395"
+    ]
+  },
+  "cry.396": {
+    "sounds": [
+      "hyperspace_wormholes:cries/396"
+    ]
+  },
+  "cry.397": {
+    "sounds": [
+      "hyperspace_wormholes:cries/397"
+    ]
+  },
+  "cry.398": {
+    "sounds": [
+      "hyperspace_wormholes:cries/398"
+    ]
+  },
+  "cry.399": {
+    "sounds": [
+      "hyperspace_wormholes:cries/399"
+    ]
+  },
+  "cry.400": {
+    "sounds": [
+      "hyperspace_wormholes:cries/400"
+    ]
+  },
+  "cry.401": {
+    "sounds": [
+      "hyperspace_wormholes:cries/401"
+    ]
+  },
+  "cry.402": {
+    "sounds": [
+      "hyperspace_wormholes:cries/402"
+    ]
+  },
+  "cry.403": {
+    "sounds": [
+      "hyperspace_wormholes:cries/403"
+    ]
+  },
+  "cry.404": {
+    "sounds": [
+      "hyperspace_wormholes:cries/404"
+    ]
+  },
+  "cry.405": {
+    "sounds": [
+      "hyperspace_wormholes:cries/405"
+    ]
+  },
+  "cry.406": {
+    "sounds": [
+      "hyperspace_wormholes:cries/406"
+    ]
+  },
+  "cry.407": {
+    "sounds": [
+      "hyperspace_wormholes:cries/407"
+    ]
+  },
+  "cry.408": {
+    "sounds": [
+      "hyperspace_wormholes:cries/408"
+    ]
+  },
+  "cry.409": {
+    "sounds": [
+      "hyperspace_wormholes:cries/409"
+    ]
+  },
+  "cry.410": {
+    "sounds": [
+      "hyperspace_wormholes:cries/410"
+    ]
+  },
+  "cry.411": {
+    "sounds": [
+      "hyperspace_wormholes:cries/411"
+    ]
+  },
+  "cry.412": {
+    "sounds": [
+      "hyperspace_wormholes:cries/412"
+    ]
+  },
+  "cry.413": {
+    "sounds": [
+      "hyperspace_wormholes:cries/413"
+    ]
+  },
+  "cry.414": {
+    "sounds": [
+      "hyperspace_wormholes:cries/414"
+    ]
+  },
+  "cry.415": {
+    "sounds": [
+      "hyperspace_wormholes:cries/415"
+    ]
+  },
+  "cry.416": {
+    "sounds": [
+      "hyperspace_wormholes:cries/416"
+    ]
+  },
+  "cry.417": {
+    "sounds": [
+      "hyperspace_wormholes:cries/417"
+    ]
+  },
+  "cry.418": {
+    "sounds": [
+      "hyperspace_wormholes:cries/418"
+    ]
+  },
+  "cry.419": {
+    "sounds": [
+      "hyperspace_wormholes:cries/419"
+    ]
+  },
+  "cry.420": {
+    "sounds": [
+      "hyperspace_wormholes:cries/420"
+    ]
+  },
+  "cry.421": {
+    "sounds": [
+      "hyperspace_wormholes:cries/421"
+    ]
+  },
+  "cry.422": {
+    "sounds": [
+      "hyperspace_wormholes:cries/422"
+    ]
+  },
+  "cry.423": {
+    "sounds": [
+      "hyperspace_wormholes:cries/423"
+    ]
+  },
+  "cry.424": {
+    "sounds": [
+      "hyperspace_wormholes:cries/424"
+    ]
+  },
+  "cry.425": {
+    "sounds": [
+      "hyperspace_wormholes:cries/425"
+    ]
+  },
+  "cry.426": {
+    "sounds": [
+      "hyperspace_wormholes:cries/426"
+    ]
+  },
+  "cry.427": {
+    "sounds": [
+      "hyperspace_wormholes:cries/427"
+    ]
+  },
+  "cry.428": {
+    "sounds": [
+      "hyperspace_wormholes:cries/428"
+    ]
+  },
+  "cry.429": {
+    "sounds": [
+      "hyperspace_wormholes:cries/429"
+    ]
+  },
+  "cry.430": {
+    "sounds": [
+      "hyperspace_wormholes:cries/430"
+    ]
+  },
+  "cry.431": {
+    "sounds": [
+      "hyperspace_wormholes:cries/431"
+    ]
+  },
+  "cry.432": {
+    "sounds": [
+      "hyperspace_wormholes:cries/432"
+    ]
+  },
+  "cry.433": {
+    "sounds": [
+      "hyperspace_wormholes:cries/433"
+    ]
+  },
+  "cry.434": {
+    "sounds": [
+      "hyperspace_wormholes:cries/434"
+    ]
+  },
+  "cry.435": {
+    "sounds": [
+      "hyperspace_wormholes:cries/435"
+    ]
+  },
+  "cry.436": {
+    "sounds": [
+      "hyperspace_wormholes:cries/436"
+    ]
+  },
+  "cry.437": {
+    "sounds": [
+      "hyperspace_wormholes:cries/437"
+    ]
+  },
+  "cry.438": {
+    "sounds": [
+      "hyperspace_wormholes:cries/438"
+    ]
+  },
+  "cry.439": {
+    "sounds": [
+      "hyperspace_wormholes:cries/439"
+    ]
+  },
+  "cry.440": {
+    "sounds": [
+      "hyperspace_wormholes:cries/440"
+    ]
+  },
+  "cry.441": {
+    "sounds": [
+      "hyperspace_wormholes:cries/441"
+    ]
+  },
+  "cry.442": {
+    "sounds": [
+      "hyperspace_wormholes:cries/442"
+    ]
+  },
+  "cry.443": {
+    "sounds": [
+      "hyperspace_wormholes:cries/443"
+    ]
+  },
+  "cry.444": {
+    "sounds": [
+      "hyperspace_wormholes:cries/444"
+    ]
+  },
+  "cry.445": {
+    "sounds": [
+      "hyperspace_wormholes:cries/445"
+    ]
+  },
+  "cry.446": {
+    "sounds": [
+      "hyperspace_wormholes:cries/446"
+    ]
+  },
+  "cry.447": {
+    "sounds": [
+      "hyperspace_wormholes:cries/447"
+    ]
+  },
+  "cry.448": {
+    "sounds": [
+      "hyperspace_wormholes:cries/448"
+    ]
+  },
+  "cry.449": {
+    "sounds": [
+      "hyperspace_wormholes:cries/449"
+    ]
+  },
+  "cry.450": {
+    "sounds": [
+      "hyperspace_wormholes:cries/450"
+    ]
+  },
+  "cry.451": {
+    "sounds": [
+      "hyperspace_wormholes:cries/451"
+    ]
+  },
+  "cry.452": {
+    "sounds": [
+      "hyperspace_wormholes:cries/452"
+    ]
+  },
+  "cry.453": {
+    "sounds": [
+      "hyperspace_wormholes:cries/453"
+    ]
+  },
+  "cry.454": {
+    "sounds": [
+      "hyperspace_wormholes:cries/454"
+    ]
+  },
+  "cry.455": {
+    "sounds": [
+      "hyperspace_wormholes:cries/455"
+    ]
+  },
+  "cry.456": {
+    "sounds": [
+      "hyperspace_wormholes:cries/456"
+    ]
+  },
+  "cry.457": {
+    "sounds": [
+      "hyperspace_wormholes:cries/457"
+    ]
+  },
+  "cry.458": {
+    "sounds": [
+      "hyperspace_wormholes:cries/458"
+    ]
+  },
+  "cry.459": {
+    "sounds": [
+      "hyperspace_wormholes:cries/459"
+    ]
+  },
+  "cry.460": {
+    "sounds": [
+      "hyperspace_wormholes:cries/460"
+    ]
+  },
+  "cry.461": {
+    "sounds": [
+      "hyperspace_wormholes:cries/461"
+    ]
+  },
+  "cry.462": {
+    "sounds": [
+      "hyperspace_wormholes:cries/462"
+    ]
+  },
+  "cry.463": {
+    "sounds": [
+      "hyperspace_wormholes:cries/463"
+    ]
+  },
+  "cry.464": {
+    "sounds": [
+      "hyperspace_wormholes:cries/464"
+    ]
+  },
+  "cry.465": {
+    "sounds": [
+      "hyperspace_wormholes:cries/465"
+    ]
+  },
+  "cry.466": {
+    "sounds": [
+      "hyperspace_wormholes:cries/466"
+    ]
+  },
+  "cry.467": {
+    "sounds": [
+      "hyperspace_wormholes:cries/467"
+    ]
+  },
+  "cry.468": {
+    "sounds": [
+      "hyperspace_wormholes:cries/468"
+    ]
+  },
+  "cry.469": {
+    "sounds": [
+      "hyperspace_wormholes:cries/469"
+    ]
+  },
+  "cry.470": {
+    "sounds": [
+      "hyperspace_wormholes:cries/470"
+    ]
+  },
+  "cry.471": {
+    "sounds": [
+      "hyperspace_wormholes:cries/471"
+    ]
+  },
+  "cry.472": {
+    "sounds": [
+      "hyperspace_wormholes:cries/472"
+    ]
+  },
+  "cry.473": {
+    "sounds": [
+      "hyperspace_wormholes:cries/473"
+    ]
+  },
+  "cry.474": {
+    "sounds": [
+      "hyperspace_wormholes:cries/474"
+    ]
+  },
+  "cry.475": {
+    "sounds": [
+      "hyperspace_wormholes:cries/475"
+    ]
+  },
+  "cry.476": {
+    "sounds": [
+      "hyperspace_wormholes:cries/476"
+    ]
+  },
+  "cry.477": {
+    "sounds": [
+      "hyperspace_wormholes:cries/477"
+    ]
+  },
+  "cry.478": {
+    "sounds": [
+      "hyperspace_wormholes:cries/478"
+    ]
+  },
+  "cry.479": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479"
+    ]
+  },
+  "cry.480": {
+    "sounds": [
+      "hyperspace_wormholes:cries/480"
+    ]
+  },
+  "cry.481": {
+    "sounds": [
+      "hyperspace_wormholes:cries/481"
+    ]
+  },
+  "cry.482": {
+    "sounds": [
+      "hyperspace_wormholes:cries/482"
+    ]
+  },
+  "cry.483": {
+    "sounds": [
+      "hyperspace_wormholes:cries/483"
+    ]
+  },
+  "cry.484": {
+    "sounds": [
+      "hyperspace_wormholes:cries/484"
+    ]
+  },
+  "cry.485": {
+    "sounds": [
+      "hyperspace_wormholes:cries/485"
+    ]
+  },
+  "cry.486": {
+    "sounds": [
+      "hyperspace_wormholes:cries/486"
+    ]
+  },
+  "cry.487": {
+    "sounds": [
+      "hyperspace_wormholes:cries/487"
+    ]
+  },
+  "cry.488": {
+    "sounds": [
+      "hyperspace_wormholes:cries/488"
+    ]
+  },
+  "cry.489": {
+    "sounds": [
+      "hyperspace_wormholes:cries/489"
+    ]
+  },
+  "cry.490": {
+    "sounds": [
+      "hyperspace_wormholes:cries/490"
+    ]
+  },
+  "cry.491": {
+    "sounds": [
+      "hyperspace_wormholes:cries/491"
+    ]
+  },
+  "cry.492": {
+    "sounds": [
+      "hyperspace_wormholes:cries/492"
+    ]
+  },
+  "cry.493": {
+    "sounds": [
+      "hyperspace_wormholes:cries/493"
+    ]
+  },
+  "cry.494": {
+    "sounds": [
+      "hyperspace_wormholes:cries/494"
+    ]
+  },
+  "cry.495": {
+    "sounds": [
+      "hyperspace_wormholes:cries/495"
+    ]
+  },
+  "cry.496": {
+    "sounds": [
+      "hyperspace_wormholes:cries/496"
+    ]
+  },
+  "cry.497": {
+    "sounds": [
+      "hyperspace_wormholes:cries/497"
+    ]
+  },
+  "cry.498": {
+    "sounds": [
+      "hyperspace_wormholes:cries/498"
+    ]
+  },
+  "cry.499": {
+    "sounds": [
+      "hyperspace_wormholes:cries/499"
+    ]
+  },
+  "cry.500": {
+    "sounds": [
+      "hyperspace_wormholes:cries/500"
+    ]
+  },
+  "cry.501": {
+    "sounds": [
+      "hyperspace_wormholes:cries/501"
+    ]
+  },
+  "cry.502": {
+    "sounds": [
+      "hyperspace_wormholes:cries/502"
+    ]
+  },
+  "cry.503": {
+    "sounds": [
+      "hyperspace_wormholes:cries/503"
+    ]
+  },
+  "cry.504": {
+    "sounds": [
+      "hyperspace_wormholes:cries/504"
+    ]
+  },
+  "cry.505": {
+    "sounds": [
+      "hyperspace_wormholes:cries/505"
+    ]
+  },
+  "cry.506": {
+    "sounds": [
+      "hyperspace_wormholes:cries/506"
+    ]
+  },
+  "cry.507": {
+    "sounds": [
+      "hyperspace_wormholes:cries/507"
+    ]
+  },
+  "cry.508": {
+    "sounds": [
+      "hyperspace_wormholes:cries/508"
+    ]
+  },
+  "cry.509": {
+    "sounds": [
+      "hyperspace_wormholes:cries/509"
+    ]
+  },
+  "cry.510": {
+    "sounds": [
+      "hyperspace_wormholes:cries/510"
+    ]
+  },
+  "cry.511": {
+    "sounds": [
+      "hyperspace_wormholes:cries/511"
+    ]
+  },
+  "cry.512": {
+    "sounds": [
+      "hyperspace_wormholes:cries/512"
+    ]
+  },
+  "cry.513": {
+    "sounds": [
+      "hyperspace_wormholes:cries/513"
+    ]
+  },
+  "cry.514": {
+    "sounds": [
+      "hyperspace_wormholes:cries/514"
+    ]
+  },
+  "cry.515": {
+    "sounds": [
+      "hyperspace_wormholes:cries/515"
+    ]
+  },
+  "cry.516": {
+    "sounds": [
+      "hyperspace_wormholes:cries/516"
+    ]
+  },
+  "cry.517": {
+    "sounds": [
+      "hyperspace_wormholes:cries/517"
+    ]
+  },
+  "cry.518": {
+    "sounds": [
+      "hyperspace_wormholes:cries/518"
+    ]
+  },
+  "cry.519": {
+    "sounds": [
+      "hyperspace_wormholes:cries/519"
+    ]
+  },
+  "cry.520": {
+    "sounds": [
+      "hyperspace_wormholes:cries/520"
+    ]
+  },
+  "cry.521": {
+    "sounds": [
+      "hyperspace_wormholes:cries/521"
+    ]
+  },
+  "cry.522": {
+    "sounds": [
+      "hyperspace_wormholes:cries/522"
+    ]
+  },
+  "cry.523": {
+    "sounds": [
+      "hyperspace_wormholes:cries/523"
+    ]
+  },
+  "cry.524": {
+    "sounds": [
+      "hyperspace_wormholes:cries/524"
+    ]
+  },
+  "cry.525": {
+    "sounds": [
+      "hyperspace_wormholes:cries/525"
+    ]
+  },
+  "cry.526": {
+    "sounds": [
+      "hyperspace_wormholes:cries/526"
+    ]
+  },
+  "cry.527": {
+    "sounds": [
+      "hyperspace_wormholes:cries/527"
+    ]
+  },
+  "cry.528": {
+    "sounds": [
+      "hyperspace_wormholes:cries/528"
+    ]
+  },
+  "cry.529": {
+    "sounds": [
+      "hyperspace_wormholes:cries/529"
+    ]
+  },
+  "cry.530": {
+    "sounds": [
+      "hyperspace_wormholes:cries/530"
+    ]
+  },
+  "cry.531": {
+    "sounds": [
+      "hyperspace_wormholes:cries/531"
+    ]
+  },
+  "cry.532": {
+    "sounds": [
+      "hyperspace_wormholes:cries/532"
+    ]
+  },
+  "cry.533": {
+    "sounds": [
+      "hyperspace_wormholes:cries/533"
+    ]
+  },
+  "cry.534": {
+    "sounds": [
+      "hyperspace_wormholes:cries/534"
+    ]
+  },
+  "cry.535": {
+    "sounds": [
+      "hyperspace_wormholes:cries/535"
+    ]
+  },
+  "cry.536": {
+    "sounds": [
+      "hyperspace_wormholes:cries/536"
+    ]
+  },
+  "cry.537": {
+    "sounds": [
+      "hyperspace_wormholes:cries/537"
+    ]
+  },
+  "cry.538": {
+    "sounds": [
+      "hyperspace_wormholes:cries/538"
+    ]
+  },
+  "cry.539": {
+    "sounds": [
+      "hyperspace_wormholes:cries/539"
+    ]
+  },
+  "cry.540": {
+    "sounds": [
+      "hyperspace_wormholes:cries/540"
+    ]
+  },
+  "cry.541": {
+    "sounds": [
+      "hyperspace_wormholes:cries/541"
+    ]
+  },
+  "cry.542": {
+    "sounds": [
+      "hyperspace_wormholes:cries/542"
+    ]
+  },
+  "cry.543": {
+    "sounds": [
+      "hyperspace_wormholes:cries/543"
+    ]
+  },
+  "cry.544": {
+    "sounds": [
+      "hyperspace_wormholes:cries/544"
+    ]
+  },
+  "cry.545": {
+    "sounds": [
+      "hyperspace_wormholes:cries/545"
+    ]
+  },
+  "cry.546": {
+    "sounds": [
+      "hyperspace_wormholes:cries/546"
+    ]
+  },
+  "cry.547": {
+    "sounds": [
+      "hyperspace_wormholes:cries/547"
+    ]
+  },
+  "cry.548": {
+    "sounds": [
+      "hyperspace_wormholes:cries/548"
+    ]
+  },
+  "cry.549": {
+    "sounds": [
+      "hyperspace_wormholes:cries/549"
+    ]
+  },
+  "cry.550": {
+    "sounds": [
+      "hyperspace_wormholes:cries/550"
+    ]
+  },
+  "cry.551": {
+    "sounds": [
+      "hyperspace_wormholes:cries/551"
+    ]
+  },
+  "cry.552": {
+    "sounds": [
+      "hyperspace_wormholes:cries/552"
+    ]
+  },
+  "cry.553": {
+    "sounds": [
+      "hyperspace_wormholes:cries/553"
+    ]
+  },
+  "cry.554": {
+    "sounds": [
+      "hyperspace_wormholes:cries/554"
+    ]
+  },
+  "cry.555": {
+    "sounds": [
+      "hyperspace_wormholes:cries/555"
+    ]
+  },
+  "cry.556": {
+    "sounds": [
+      "hyperspace_wormholes:cries/556"
+    ]
+  },
+  "cry.557": {
+    "sounds": [
+      "hyperspace_wormholes:cries/557"
+    ]
+  },
+  "cry.558": {
+    "sounds": [
+      "hyperspace_wormholes:cries/558"
+    ]
+  },
+  "cry.559": {
+    "sounds": [
+      "hyperspace_wormholes:cries/559"
+    ]
+  },
+  "cry.560": {
+    "sounds": [
+      "hyperspace_wormholes:cries/560"
+    ]
+  },
+  "cry.561": {
+    "sounds": [
+      "hyperspace_wormholes:cries/561"
+    ]
+  },
+  "cry.562": {
+    "sounds": [
+      "hyperspace_wormholes:cries/562"
+    ]
+  },
+  "cry.563": {
+    "sounds": [
+      "hyperspace_wormholes:cries/563"
+    ]
+  },
+  "cry.564": {
+    "sounds": [
+      "hyperspace_wormholes:cries/564"
+    ]
+  },
+  "cry.565": {
+    "sounds": [
+      "hyperspace_wormholes:cries/565"
+    ]
+  },
+  "cry.566": {
+    "sounds": [
+      "hyperspace_wormholes:cries/566"
+    ]
+  },
+  "cry.567": {
+    "sounds": [
+      "hyperspace_wormholes:cries/567"
+    ]
+  },
+  "cry.568": {
+    "sounds": [
+      "hyperspace_wormholes:cries/568"
+    ]
+  },
+  "cry.569": {
+    "sounds": [
+      "hyperspace_wormholes:cries/569"
+    ]
+  },
+  "cry.570": {
+    "sounds": [
+      "hyperspace_wormholes:cries/570"
+    ]
+  },
+  "cry.571": {
+    "sounds": [
+      "hyperspace_wormholes:cries/571"
+    ]
+  },
+  "cry.572": {
+    "sounds": [
+      "hyperspace_wormholes:cries/572"
+    ]
+  },
+  "cry.573": {
+    "sounds": [
+      "hyperspace_wormholes:cries/573"
+    ]
+  },
+  "cry.574": {
+    "sounds": [
+      "hyperspace_wormholes:cries/574"
+    ]
+  },
+  "cry.575": {
+    "sounds": [
+      "hyperspace_wormholes:cries/575"
+    ]
+  },
+  "cry.576": {
+    "sounds": [
+      "hyperspace_wormholes:cries/576"
+    ]
+  },
+  "cry.577": {
+    "sounds": [
+      "hyperspace_wormholes:cries/577"
+    ]
+  },
+  "cry.578": {
+    "sounds": [
+      "hyperspace_wormholes:cries/578"
+    ]
+  },
+  "cry.579": {
+    "sounds": [
+      "hyperspace_wormholes:cries/579"
+    ]
+  },
+  "cry.580": {
+    "sounds": [
+      "hyperspace_wormholes:cries/580"
+    ]
+  },
+  "cry.581": {
+    "sounds": [
+      "hyperspace_wormholes:cries/581"
+    ]
+  },
+  "cry.582": {
+    "sounds": [
+      "hyperspace_wormholes:cries/582"
+    ]
+  },
+  "cry.583": {
+    "sounds": [
+      "hyperspace_wormholes:cries/583"
+    ]
+  },
+  "cry.584": {
+    "sounds": [
+      "hyperspace_wormholes:cries/584"
+    ]
+  },
+  "cry.585": {
+    "sounds": [
+      "hyperspace_wormholes:cries/585"
+    ]
+  },
+  "cry.586": {
+    "sounds": [
+      "hyperspace_wormholes:cries/586"
+    ]
+  },
+  "cry.587": {
+    "sounds": [
+      "hyperspace_wormholes:cries/587"
+    ]
+  },
+  "cry.588": {
+    "sounds": [
+      "hyperspace_wormholes:cries/588"
+    ]
+  },
+  "cry.589": {
+    "sounds": [
+      "hyperspace_wormholes:cries/589"
+    ]
+  },
+  "cry.590": {
+    "sounds": [
+      "hyperspace_wormholes:cries/590"
+    ]
+  },
+  "cry.591": {
+    "sounds": [
+      "hyperspace_wormholes:cries/591"
+    ]
+  },
+  "cry.592": {
+    "sounds": [
+      "hyperspace_wormholes:cries/592"
+    ]
+  },
+  "cry.593": {
+    "sounds": [
+      "hyperspace_wormholes:cries/593"
+    ]
+  },
+  "cry.594": {
+    "sounds": [
+      "hyperspace_wormholes:cries/594"
+    ]
+  },
+  "cry.595": {
+    "sounds": [
+      "hyperspace_wormholes:cries/595"
+    ]
+  },
+  "cry.596": {
+    "sounds": [
+      "hyperspace_wormholes:cries/596"
+    ]
+  },
+  "cry.597": {
+    "sounds": [
+      "hyperspace_wormholes:cries/597"
+    ]
+  },
+  "cry.598": {
+    "sounds": [
+      "hyperspace_wormholes:cries/598"
+    ]
+  },
+  "cry.599": {
+    "sounds": [
+      "hyperspace_wormholes:cries/599"
+    ]
+  },
+  "cry.600": {
+    "sounds": [
+      "hyperspace_wormholes:cries/600"
+    ]
+  },
+  "cry.601": {
+    "sounds": [
+      "hyperspace_wormholes:cries/601"
+    ]
+  },
+  "cry.602": {
+    "sounds": [
+      "hyperspace_wormholes:cries/602"
+    ]
+  },
+  "cry.603": {
+    "sounds": [
+      "hyperspace_wormholes:cries/603"
+    ]
+  },
+  "cry.604": {
+    "sounds": [
+      "hyperspace_wormholes:cries/604"
+    ]
+  },
+  "cry.605": {
+    "sounds": [
+      "hyperspace_wormholes:cries/605"
+    ]
+  },
+  "cry.606": {
+    "sounds": [
+      "hyperspace_wormholes:cries/606"
+    ]
+  },
+  "cry.607": {
+    "sounds": [
+      "hyperspace_wormholes:cries/607"
+    ]
+  },
+  "cry.608": {
+    "sounds": [
+      "hyperspace_wormholes:cries/608"
+    ]
+  },
+  "cry.609": {
+    "sounds": [
+      "hyperspace_wormholes:cries/609"
+    ]
+  },
+  "cry.610": {
+    "sounds": [
+      "hyperspace_wormholes:cries/610"
+    ]
+  },
+  "cry.611": {
+    "sounds": [
+      "hyperspace_wormholes:cries/611"
+    ]
+  },
+  "cry.612": {
+    "sounds": [
+      "hyperspace_wormholes:cries/612"
+    ]
+  },
+  "cry.613": {
+    "sounds": [
+      "hyperspace_wormholes:cries/613"
+    ]
+  },
+  "cry.614": {
+    "sounds": [
+      "hyperspace_wormholes:cries/614"
+    ]
+  },
+  "cry.615": {
+    "sounds": [
+      "hyperspace_wormholes:cries/615"
+    ]
+  },
+  "cry.616": {
+    "sounds": [
+      "hyperspace_wormholes:cries/616"
+    ]
+  },
+  "cry.617": {
+    "sounds": [
+      "hyperspace_wormholes:cries/617"
+    ]
+  },
+  "cry.618": {
+    "sounds": [
+      "hyperspace_wormholes:cries/618"
+    ]
+  },
+  "cry.619": {
+    "sounds": [
+      "hyperspace_wormholes:cries/619"
+    ]
+  },
+  "cry.620": {
+    "sounds": [
+      "hyperspace_wormholes:cries/620"
+    ]
+  },
+  "cry.621": {
+    "sounds": [
+      "hyperspace_wormholes:cries/621"
+    ]
+  },
+  "cry.622": {
+    "sounds": [
+      "hyperspace_wormholes:cries/622"
+    ]
+  },
+  "cry.623": {
+    "sounds": [
+      "hyperspace_wormholes:cries/623"
+    ]
+  },
+  "cry.624": {
+    "sounds": [
+      "hyperspace_wormholes:cries/624"
+    ]
+  },
+  "cry.625": {
+    "sounds": [
+      "hyperspace_wormholes:cries/625"
+    ]
+  },
+  "cry.626": {
+    "sounds": [
+      "hyperspace_wormholes:cries/626"
+    ]
+  },
+  "cry.627": {
+    "sounds": [
+      "hyperspace_wormholes:cries/627"
+    ]
+  },
+  "cry.628": {
+    "sounds": [
+      "hyperspace_wormholes:cries/628"
+    ]
+  },
+  "cry.629": {
+    "sounds": [
+      "hyperspace_wormholes:cries/629"
+    ]
+  },
+  "cry.630": {
+    "sounds": [
+      "hyperspace_wormholes:cries/630"
+    ]
+  },
+  "cry.631": {
+    "sounds": [
+      "hyperspace_wormholes:cries/631"
+    ]
+  },
+  "cry.632": {
+    "sounds": [
+      "hyperspace_wormholes:cries/632"
+    ]
+  },
+  "cry.633": {
+    "sounds": [
+      "hyperspace_wormholes:cries/633"
+    ]
+  },
+  "cry.634": {
+    "sounds": [
+      "hyperspace_wormholes:cries/634"
+    ]
+  },
+  "cry.635": {
+    "sounds": [
+      "hyperspace_wormholes:cries/635"
+    ]
+  },
+  "cry.636": {
+    "sounds": [
+      "hyperspace_wormholes:cries/636"
+    ]
+  },
+  "cry.637": {
+    "sounds": [
+      "hyperspace_wormholes:cries/637"
+    ]
+  },
+  "cry.638": {
+    "sounds": [
+      "hyperspace_wormholes:cries/638"
+    ]
+  },
+  "cry.639": {
+    "sounds": [
+      "hyperspace_wormholes:cries/639"
+    ]
+  },
+  "cry.640": {
+    "sounds": [
+      "hyperspace_wormholes:cries/640"
+    ]
+  },
+  "cry.641": {
+    "sounds": [
+      "hyperspace_wormholes:cries/641"
+    ]
+  },
+  "cry.642": {
+    "sounds": [
+      "hyperspace_wormholes:cries/642"
+    ]
+  },
+  "cry.643": {
+    "sounds": [
+      "hyperspace_wormholes:cries/643"
+    ]
+  },
+  "cry.644": {
+    "sounds": [
+      "hyperspace_wormholes:cries/644"
+    ]
+  },
+  "cry.645": {
+    "sounds": [
+      "hyperspace_wormholes:cries/645"
+    ]
+  },
+  "cry.646": {
+    "sounds": [
+      "hyperspace_wormholes:cries/646"
+    ]
+  },
+  "cry.647": {
+    "sounds": [
+      "hyperspace_wormholes:cries/647"
+    ]
+  },
+  "cry.648": {
+    "sounds": [
+      "hyperspace_wormholes:cries/648"
+    ]
+  },
+  "cry.649": {
+    "sounds": [
+      "hyperspace_wormholes:cries/649"
+    ]
+  },
+  "cry.650": {
+    "sounds": [
+      "hyperspace_wormholes:cries/650"
+    ]
+  },
+  "cry.651": {
+    "sounds": [
+      "hyperspace_wormholes:cries/651"
+    ]
+  },
+  "cry.652": {
+    "sounds": [
+      "hyperspace_wormholes:cries/652"
+    ]
+  },
+  "cry.653": {
+    "sounds": [
+      "hyperspace_wormholes:cries/653"
+    ]
+  },
+  "cry.654": {
+    "sounds": [
+      "hyperspace_wormholes:cries/654"
+    ]
+  },
+  "cry.655": {
+    "sounds": [
+      "hyperspace_wormholes:cries/655"
+    ]
+  },
+  "cry.656": {
+    "sounds": [
+      "hyperspace_wormholes:cries/656"
+    ]
+  },
+  "cry.657": {
+    "sounds": [
+      "hyperspace_wormholes:cries/657"
+    ]
+  },
+  "cry.658": {
+    "sounds": [
+      "hyperspace_wormholes:cries/658"
+    ]
+  },
+  "cry.659": {
+    "sounds": [
+      "hyperspace_wormholes:cries/659"
+    ]
+  },
+  "cry.660": {
+    "sounds": [
+      "hyperspace_wormholes:cries/660"
+    ]
+  },
+  "cry.661": {
+    "sounds": [
+      "hyperspace_wormholes:cries/661"
+    ]
+  },
+  "cry.662": {
+    "sounds": [
+      "hyperspace_wormholes:cries/662"
+    ]
+  },
+  "cry.663": {
+    "sounds": [
+      "hyperspace_wormholes:cries/663"
+    ]
+  },
+  "cry.664": {
+    "sounds": [
+      "hyperspace_wormholes:cries/664"
+    ]
+  },
+  "cry.665": {
+    "sounds": [
+      "hyperspace_wormholes:cries/665"
+    ]
+  },
+  "cry.666": {
+    "sounds": [
+      "hyperspace_wormholes:cries/666"
+    ]
+  },
+  "cry.667": {
+    "sounds": [
+      "hyperspace_wormholes:cries/667"
+    ]
+  },
+  "cry.668": {
+    "sounds": [
+      "hyperspace_wormholes:cries/668"
+    ]
+  },
+  "cry.669": {
+    "sounds": [
+      "hyperspace_wormholes:cries/669"
+    ]
+  },
+  "cry.670": {
+    "sounds": [
+      "hyperspace_wormholes:cries/670"
+    ]
+  },
+  "cry.671": {
+    "sounds": [
+      "hyperspace_wormholes:cries/671"
+    ]
+  },
+  "cry.672": {
+    "sounds": [
+      "hyperspace_wormholes:cries/672"
+    ]
+  },
+  "cry.673": {
+    "sounds": [
+      "hyperspace_wormholes:cries/673"
+    ]
+  },
+  "cry.674": {
+    "sounds": [
+      "hyperspace_wormholes:cries/674"
+    ]
+  },
+  "cry.675": {
+    "sounds": [
+      "hyperspace_wormholes:cries/675"
+    ]
+  },
+  "cry.676": {
+    "sounds": [
+      "hyperspace_wormholes:cries/676"
+    ]
+  },
+  "cry.677": {
+    "sounds": [
+      "hyperspace_wormholes:cries/677"
+    ]
+  },
+  "cry.678": {
+    "sounds": [
+      "hyperspace_wormholes:cries/678"
+    ]
+  },
+  "cry.679": {
+    "sounds": [
+      "hyperspace_wormholes:cries/679"
+    ]
+  },
+  "cry.680": {
+    "sounds": [
+      "hyperspace_wormholes:cries/680"
+    ]
+  },
+  "cry.681": {
+    "sounds": [
+      "hyperspace_wormholes:cries/681"
+    ]
+  },
+  "cry.682": {
+    "sounds": [
+      "hyperspace_wormholes:cries/682"
+    ]
+  },
+  "cry.683": {
+    "sounds": [
+      "hyperspace_wormholes:cries/683"
+    ]
+  },
+  "cry.684": {
+    "sounds": [
+      "hyperspace_wormholes:cries/684"
+    ]
+  },
+  "cry.685": {
+    "sounds": [
+      "hyperspace_wormholes:cries/685"
+    ]
+  },
+  "cry.686": {
+    "sounds": [
+      "hyperspace_wormholes:cries/686"
+    ]
+  },
+  "cry.687": {
+    "sounds": [
+      "hyperspace_wormholes:cries/687"
+    ]
+  },
+  "cry.688": {
+    "sounds": [
+      "hyperspace_wormholes:cries/688"
+    ]
+  },
+  "cry.689": {
+    "sounds": [
+      "hyperspace_wormholes:cries/689"
+    ]
+  },
+  "cry.690": {
+    "sounds": [
+      "hyperspace_wormholes:cries/690"
+    ]
+  },
+  "cry.691": {
+    "sounds": [
+      "hyperspace_wormholes:cries/691"
+    ]
+  },
+  "cry.692": {
+    "sounds": [
+      "hyperspace_wormholes:cries/692"
+    ]
+  },
+  "cry.693": {
+    "sounds": [
+      "hyperspace_wormholes:cries/693"
+    ]
+  },
+  "cry.694": {
+    "sounds": [
+      "hyperspace_wormholes:cries/694"
+    ]
+  },
+  "cry.695": {
+    "sounds": [
+      "hyperspace_wormholes:cries/695"
+    ]
+  },
+  "cry.696": {
+    "sounds": [
+      "hyperspace_wormholes:cries/696"
+    ]
+  },
+  "cry.697": {
+    "sounds": [
+      "hyperspace_wormholes:cries/697"
+    ]
+  },
+  "cry.698": {
+    "sounds": [
+      "hyperspace_wormholes:cries/698"
+    ]
+  },
+  "cry.699": {
+    "sounds": [
+      "hyperspace_wormholes:cries/699"
+    ]
+  },
+  "cry.700": {
+    "sounds": [
+      "hyperspace_wormholes:cries/700"
+    ]
+  },
+  "cry.701": {
+    "sounds": [
+      "hyperspace_wormholes:cries/701"
+    ]
+  },
+  "cry.702": {
+    "sounds": [
+      "hyperspace_wormholes:cries/702"
+    ]
+  },
+  "cry.703": {
+    "sounds": [
+      "hyperspace_wormholes:cries/703"
+    ]
+  },
+  "cry.704": {
+    "sounds": [
+      "hyperspace_wormholes:cries/704"
+    ]
+  },
+  "cry.705": {
+    "sounds": [
+      "hyperspace_wormholes:cries/705"
+    ]
+  },
+  "cry.706": {
+    "sounds": [
+      "hyperspace_wormholes:cries/706"
+    ]
+  },
+  "cry.707": {
+    "sounds": [
+      "hyperspace_wormholes:cries/707"
+    ]
+  },
+  "cry.708": {
+    "sounds": [
+      "hyperspace_wormholes:cries/708"
+    ]
+  },
+  "cry.709": {
+    "sounds": [
+      "hyperspace_wormholes:cries/709"
+    ]
+  },
+  "cry.710": {
+    "sounds": [
+      "hyperspace_wormholes:cries/710"
+    ]
+  },
+  "cry.711": {
+    "sounds": [
+      "hyperspace_wormholes:cries/711"
+    ]
+  },
+  "cry.712": {
+    "sounds": [
+      "hyperspace_wormholes:cries/712"
+    ]
+  },
+  "cry.713": {
+    "sounds": [
+      "hyperspace_wormholes:cries/713"
+    ]
+  },
+  "cry.714": {
+    "sounds": [
+      "hyperspace_wormholes:cries/714"
+    ]
+  },
+  "cry.715": {
+    "sounds": [
+      "hyperspace_wormholes:cries/715"
+    ]
+  },
+  "cry.716": {
+    "sounds": [
+      "hyperspace_wormholes:cries/716"
+    ]
+  },
+  "cry.717": {
+    "sounds": [
+      "hyperspace_wormholes:cries/717"
+    ]
+  },
+  "cry.718": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718"
+    ]
+  },
+  "cry.719": {
+    "sounds": [
+      "hyperspace_wormholes:cries/719"
+    ]
+  },
+  "cry.720": {
+    "sounds": [
+      "hyperspace_wormholes:cries/720"
+    ]
+  },
+  "cry.721": {
+    "sounds": [
+      "hyperspace_wormholes:cries/721"
+    ]
+  },
+  "cry.722": {
+    "sounds": [
+      "hyperspace_wormholes:cries/722"
+    ]
+  },
+  "cry.723": {
+    "sounds": [
+      "hyperspace_wormholes:cries/723"
+    ]
+  },
+  "cry.724": {
+    "sounds": [
+      "hyperspace_wormholes:cries/724"
+    ]
+  },
+  "cry.725": {
+    "sounds": [
+      "hyperspace_wormholes:cries/725"
+    ]
+  },
+  "cry.726": {
+    "sounds": [
+      "hyperspace_wormholes:cries/726"
+    ]
+  },
+  "cry.727": {
+    "sounds": [
+      "hyperspace_wormholes:cries/727"
+    ]
+  },
+  "cry.728": {
+    "sounds": [
+      "hyperspace_wormholes:cries/728"
+    ]
+  },
+  "cry.729": {
+    "sounds": [
+      "hyperspace_wormholes:cries/729"
+    ]
+  },
+  "cry.730": {
+    "sounds": [
+      "hyperspace_wormholes:cries/730"
+    ]
+  },
+  "cry.731": {
+    "sounds": [
+      "hyperspace_wormholes:cries/731"
+    ]
+  },
+  "cry.732": {
+    "sounds": [
+      "hyperspace_wormholes:cries/732"
+    ]
+  },
+  "cry.733": {
+    "sounds": [
+      "hyperspace_wormholes:cries/733"
+    ]
+  },
+  "cry.734": {
+    "sounds": [
+      "hyperspace_wormholes:cries/734"
+    ]
+  },
+  "cry.735": {
+    "sounds": [
+      "hyperspace_wormholes:cries/735"
+    ]
+  },
+  "cry.736": {
+    "sounds": [
+      "hyperspace_wormholes:cries/736"
+    ]
+  },
+  "cry.737": {
+    "sounds": [
+      "hyperspace_wormholes:cries/737"
+    ]
+  },
+  "cry.738": {
+    "sounds": [
+      "hyperspace_wormholes:cries/738"
+    ]
+  },
+  "cry.739": {
+    "sounds": [
+      "hyperspace_wormholes:cries/739"
+    ]
+  },
+  "cry.740": {
+    "sounds": [
+      "hyperspace_wormholes:cries/740"
+    ]
+  },
+  "cry.741": {
+    "sounds": [
+      "hyperspace_wormholes:cries/741"
+    ]
+  },
+  "cry.742": {
+    "sounds": [
+      "hyperspace_wormholes:cries/742"
+    ]
+  },
+  "cry.743": {
+    "sounds": [
+      "hyperspace_wormholes:cries/743"
+    ]
+  },
+  "cry.744": {
+    "sounds": [
+      "hyperspace_wormholes:cries/744"
+    ]
+  },
+  "cry.745": {
+    "sounds": [
+      "hyperspace_wormholes:cries/745"
+    ]
+  },
+  "cry.746": {
+    "sounds": [
+      "hyperspace_wormholes:cries/746"
+    ]
+  },
+  "cry.747": {
+    "sounds": [
+      "hyperspace_wormholes:cries/747"
+    ]
+  },
+  "cry.748": {
+    "sounds": [
+      "hyperspace_wormholes:cries/748"
+    ]
+  },
+  "cry.749": {
+    "sounds": [
+      "hyperspace_wormholes:cries/749"
+    ]
+  },
+  "cry.750": {
+    "sounds": [
+      "hyperspace_wormholes:cries/750"
+    ]
+  },
+  "cry.751": {
+    "sounds": [
+      "hyperspace_wormholes:cries/751"
+    ]
+  },
+  "cry.752": {
+    "sounds": [
+      "hyperspace_wormholes:cries/752"
+    ]
+  },
+  "cry.753": {
+    "sounds": [
+      "hyperspace_wormholes:cries/753"
+    ]
+  },
+  "cry.754": {
+    "sounds": [
+      "hyperspace_wormholes:cries/754"
+    ]
+  },
+  "cry.755": {
+    "sounds": [
+      "hyperspace_wormholes:cries/755"
+    ]
+  },
+  "cry.756": {
+    "sounds": [
+      "hyperspace_wormholes:cries/756"
+    ]
+  },
+  "cry.757": {
+    "sounds": [
+      "hyperspace_wormholes:cries/757"
+    ]
+  },
+  "cry.758": {
+    "sounds": [
+      "hyperspace_wormholes:cries/758"
+    ]
+  },
+  "cry.759": {
+    "sounds": [
+      "hyperspace_wormholes:cries/759"
+    ]
+  },
+  "cry.760": {
+    "sounds": [
+      "hyperspace_wormholes:cries/760"
+    ]
+  },
+  "cry.761": {
+    "sounds": [
+      "hyperspace_wormholes:cries/761"
+    ]
+  },
+  "cry.762": {
+    "sounds": [
+      "hyperspace_wormholes:cries/762"
+    ]
+  },
+  "cry.763": {
+    "sounds": [
+      "hyperspace_wormholes:cries/763"
+    ]
+  },
+  "cry.764": {
+    "sounds": [
+      "hyperspace_wormholes:cries/764"
+    ]
+  },
+  "cry.765": {
+    "sounds": [
+      "hyperspace_wormholes:cries/765"
+    ]
+  },
+  "cry.766": {
+    "sounds": [
+      "hyperspace_wormholes:cries/766"
+    ]
+  },
+  "cry.767": {
+    "sounds": [
+      "hyperspace_wormholes:cries/767"
+    ]
+  },
+  "cry.768": {
+    "sounds": [
+      "hyperspace_wormholes:cries/768"
+    ]
+  },
+  "cry.769": {
+    "sounds": [
+      "hyperspace_wormholes:cries/769"
+    ]
+  },
+  "cry.770": {
+    "sounds": [
+      "hyperspace_wormholes:cries/770"
+    ]
+  },
+  "cry.771": {
+    "sounds": [
+      "hyperspace_wormholes:cries/771"
+    ]
+  },
+  "cry.772": {
+    "sounds": [
+      "hyperspace_wormholes:cries/772"
+    ]
+  },
+  "cry.773": {
+    "sounds": [
+      "hyperspace_wormholes:cries/773"
+    ]
+  },
+  "cry.774": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774"
+    ]
+  },
+  "cry.775": {
+    "sounds": [
+      "hyperspace_wormholes:cries/775"
+    ]
+  },
+  "cry.776": {
+    "sounds": [
+      "hyperspace_wormholes:cries/776"
+    ]
+  },
+  "cry.777": {
+    "sounds": [
+      "hyperspace_wormholes:cries/777"
+    ]
+  },
+  "cry.778": {
+    "sounds": [
+      "hyperspace_wormholes:cries/778"
+    ]
+  },
+  "cry.779": {
+    "sounds": [
+      "hyperspace_wormholes:cries/779"
+    ]
+  },
+  "cry.780": {
+    "sounds": [
+      "hyperspace_wormholes:cries/780"
+    ]
+  },
+  "cry.781": {
+    "sounds": [
+      "hyperspace_wormholes:cries/781"
+    ]
+  },
+  "cry.782": {
+    "sounds": [
+      "hyperspace_wormholes:cries/782"
+    ]
+  },
+  "cry.783": {
+    "sounds": [
+      "hyperspace_wormholes:cries/783"
+    ]
+  },
+  "cry.784": {
+    "sounds": [
+      "hyperspace_wormholes:cries/784"
+    ]
+  },
+  "cry.785": {
+    "sounds": [
+      "hyperspace_wormholes:cries/785"
+    ]
+  },
+  "cry.786": {
+    "sounds": [
+      "hyperspace_wormholes:cries/786"
+    ]
+  },
+  "cry.787": {
+    "sounds": [
+      "hyperspace_wormholes:cries/787"
+    ]
+  },
+  "cry.788": {
+    "sounds": [
+      "hyperspace_wormholes:cries/788"
+    ]
+  },
+  "cry.789": {
+    "sounds": [
+      "hyperspace_wormholes:cries/789"
+    ]
+  },
+  "cry.790": {
+    "sounds": [
+      "hyperspace_wormholes:cries/790"
+    ]
+  },
+  "cry.791": {
+    "sounds": [
+      "hyperspace_wormholes:cries/791"
+    ]
+  },
+  "cry.792": {
+    "sounds": [
+      "hyperspace_wormholes:cries/792"
+    ]
+  },
+  "cry.793": {
+    "sounds": [
+      "hyperspace_wormholes:cries/793"
+    ]
+  },
+  "cry.794": {
+    "sounds": [
+      "hyperspace_wormholes:cries/794"
+    ]
+  },
+  "cry.795": {
+    "sounds": [
+      "hyperspace_wormholes:cries/795"
+    ]
+  },
+  "cry.796": {
+    "sounds": [
+      "hyperspace_wormholes:cries/796"
+    ]
+  },
+  "cry.797": {
+    "sounds": [
+      "hyperspace_wormholes:cries/797"
+    ]
+  },
+  "cry.798": {
+    "sounds": [
+      "hyperspace_wormholes:cries/798"
+    ]
+  },
+  "cry.799": {
+    "sounds": [
+      "hyperspace_wormholes:cries/799"
+    ]
+  },
+  "cry.800": {
+    "sounds": [
+      "hyperspace_wormholes:cries/800"
+    ]
+  },
+  "cry.801": {
+    "sounds": [
+      "hyperspace_wormholes:cries/801"
+    ]
+  },
+  "cry.802": {
+    "sounds": [
+      "hyperspace_wormholes:cries/802"
+    ]
+  },
+  "cry.803": {
+    "sounds": [
+      "hyperspace_wormholes:cries/803"
+    ]
+  },
+  "cry.804": {
+    "sounds": [
+      "hyperspace_wormholes:cries/804"
+    ]
+  },
+  "cry.805": {
+    "sounds": [
+      "hyperspace_wormholes:cries/805"
+    ]
+  },
+  "cry.806": {
+    "sounds": [
+      "hyperspace_wormholes:cries/806"
+    ]
+  },
+  "cry.807": {
+    "sounds": [
+      "hyperspace_wormholes:cries/807"
+    ]
+  },
+  "cry.808": {
+    "sounds": [
+      "hyperspace_wormholes:cries/808"
+    ]
+  },
+  "cry.809": {
+    "sounds": [
+      "hyperspace_wormholes:cries/809"
+    ]
+  },
+  "cry.810": {
+    "sounds": [
+      "hyperspace_wormholes:cries/810"
+    ]
+  },
+  "cry.811": {
+    "sounds": [
+      "hyperspace_wormholes:cries/811"
+    ]
+  },
+  "cry.812": {
+    "sounds": [
+      "hyperspace_wormholes:cries/812"
+    ]
+  },
+  "cry.813": {
+    "sounds": [
+      "hyperspace_wormholes:cries/813"
+    ]
+  },
+  "cry.814": {
+    "sounds": [
+      "hyperspace_wormholes:cries/814"
+    ]
+  },
+  "cry.815": {
+    "sounds": [
+      "hyperspace_wormholes:cries/815"
+    ]
+  },
+  "cry.816": {
+    "sounds": [
+      "hyperspace_wormholes:cries/816"
+    ]
+  },
+  "cry.817": {
+    "sounds": [
+      "hyperspace_wormholes:cries/817"
+    ]
+  },
+  "cry.818": {
+    "sounds": [
+      "hyperspace_wormholes:cries/818"
+    ]
+  },
+  "cry.819": {
+    "sounds": [
+      "hyperspace_wormholes:cries/819"
+    ]
+  },
+  "cry.820": {
+    "sounds": [
+      "hyperspace_wormholes:cries/820"
+    ]
+  },
+  "cry.821": {
+    "sounds": [
+      "hyperspace_wormholes:cries/821"
+    ]
+  },
+  "cry.822": {
+    "sounds": [
+      "hyperspace_wormholes:cries/822"
+    ]
+  },
+  "cry.823": {
+    "sounds": [
+      "hyperspace_wormholes:cries/823"
+    ]
+  },
+  "cry.824": {
+    "sounds": [
+      "hyperspace_wormholes:cries/824"
+    ]
+  },
+  "cry.825": {
+    "sounds": [
+      "hyperspace_wormholes:cries/825"
+    ]
+  },
+  "cry.826": {
+    "sounds": [
+      "hyperspace_wormholes:cries/826"
+    ]
+  },
+  "cry.827": {
+    "sounds": [
+      "hyperspace_wormholes:cries/827"
+    ]
+  },
+  "cry.828": {
+    "sounds": [
+      "hyperspace_wormholes:cries/828"
+    ]
+  },
+  "cry.829": {
+    "sounds": [
+      "hyperspace_wormholes:cries/829"
+    ]
+  },
+  "cry.830": {
+    "sounds": [
+      "hyperspace_wormholes:cries/830"
+    ]
+  },
+  "cry.831": {
+    "sounds": [
+      "hyperspace_wormholes:cries/831"
+    ]
+  },
+  "cry.832": {
+    "sounds": [
+      "hyperspace_wormholes:cries/832"
+    ]
+  },
+  "cry.833": {
+    "sounds": [
+      "hyperspace_wormholes:cries/833"
+    ]
+  },
+  "cry.834": {
+    "sounds": [
+      "hyperspace_wormholes:cries/834"
+    ]
+  },
+  "cry.835": {
+    "sounds": [
+      "hyperspace_wormholes:cries/835"
+    ]
+  },
+  "cry.836": {
+    "sounds": [
+      "hyperspace_wormholes:cries/836"
+    ]
+  },
+  "cry.837": {
+    "sounds": [
+      "hyperspace_wormholes:cries/837"
+    ]
+  },
+  "cry.838": {
+    "sounds": [
+      "hyperspace_wormholes:cries/838"
+    ]
+  },
+  "cry.839": {
+    "sounds": [
+      "hyperspace_wormholes:cries/839"
+    ]
+  },
+  "cry.840": {
+    "sounds": [
+      "hyperspace_wormholes:cries/840"
+    ]
+  },
+  "cry.841": {
+    "sounds": [
+      "hyperspace_wormholes:cries/841"
+    ]
+  },
+  "cry.842": {
+    "sounds": [
+      "hyperspace_wormholes:cries/842"
+    ]
+  },
+  "cry.843": {
+    "sounds": [
+      "hyperspace_wormholes:cries/843"
+    ]
+  },
+  "cry.844": {
+    "sounds": [
+      "hyperspace_wormholes:cries/844"
+    ]
+  },
+  "cry.845": {
+    "sounds": [
+      "hyperspace_wormholes:cries/845"
+    ]
+  },
+  "cry.846": {
+    "sounds": [
+      "hyperspace_wormholes:cries/846"
+    ]
+  },
+  "cry.847": {
+    "sounds": [
+      "hyperspace_wormholes:cries/847"
+    ]
+  },
+  "cry.848": {
+    "sounds": [
+      "hyperspace_wormholes:cries/848"
+    ]
+  },
+  "cry.849": {
+    "sounds": [
+      "hyperspace_wormholes:cries/849"
+    ]
+  },
+  "cry.850": {
+    "sounds": [
+      "hyperspace_wormholes:cries/850"
+    ]
+  },
+  "cry.851": {
+    "sounds": [
+      "hyperspace_wormholes:cries/851"
+    ]
+  },
+  "cry.852": {
+    "sounds": [
+      "hyperspace_wormholes:cries/852"
+    ]
+  },
+  "cry.853": {
+    "sounds": [
+      "hyperspace_wormholes:cries/853"
+    ]
+  },
+  "cry.854": {
+    "sounds": [
+      "hyperspace_wormholes:cries/854"
+    ]
+  },
+  "cry.855": {
+    "sounds": [
+      "hyperspace_wormholes:cries/855"
+    ]
+  },
+  "cry.856": {
+    "sounds": [
+      "hyperspace_wormholes:cries/856"
+    ]
+  },
+  "cry.857": {
+    "sounds": [
+      "hyperspace_wormholes:cries/857"
+    ]
+  },
+  "cry.858": {
+    "sounds": [
+      "hyperspace_wormholes:cries/858"
+    ]
+  },
+  "cry.859": {
+    "sounds": [
+      "hyperspace_wormholes:cries/859"
+    ]
+  },
+  "cry.860": {
+    "sounds": [
+      "hyperspace_wormholes:cries/860"
+    ]
+  },
+  "cry.861": {
+    "sounds": [
+      "hyperspace_wormholes:cries/861"
+    ]
+  },
+  "cry.862": {
+    "sounds": [
+      "hyperspace_wormholes:cries/862"
+    ]
+  },
+  "cry.863": {
+    "sounds": [
+      "hyperspace_wormholes:cries/863"
+    ]
+  },
+  "cry.864": {
+    "sounds": [
+      "hyperspace_wormholes:cries/864"
+    ]
+  },
+  "cry.865": {
+    "sounds": [
+      "hyperspace_wormholes:cries/865"
+    ]
+  },
+  "cry.866": {
+    "sounds": [
+      "hyperspace_wormholes:cries/866"
+    ]
+  },
+  "cry.867": {
+    "sounds": [
+      "hyperspace_wormholes:cries/867"
+    ]
+  },
+  "cry.868": {
+    "sounds": [
+      "hyperspace_wormholes:cries/868"
+    ]
+  },
+  "cry.869": {
+    "sounds": [
+      "hyperspace_wormholes:cries/869"
+    ]
+  },
+  "cry.870": {
+    "sounds": [
+      "hyperspace_wormholes:cries/870"
+    ]
+  },
+  "cry.871": {
+    "sounds": [
+      "hyperspace_wormholes:cries/871"
+    ]
+  },
+  "cry.872": {
+    "sounds": [
+      "hyperspace_wormholes:cries/872"
+    ]
+  },
+  "cry.873": {
+    "sounds": [
+      "hyperspace_wormholes:cries/873"
+    ]
+  },
+  "cry.874": {
+    "sounds": [
+      "hyperspace_wormholes:cries/874"
+    ]
+  },
+  "cry.875": {
+    "sounds": [
+      "hyperspace_wormholes:cries/875"
+    ]
+  },
+  "cry.876": {
+    "sounds": [
+      "hyperspace_wormholes:cries/876"
+    ]
+  },
+  "cry.877": {
+    "sounds": [
+      "hyperspace_wormholes:cries/877"
+    ]
+  },
+  "cry.878": {
+    "sounds": [
+      "hyperspace_wormholes:cries/878"
+    ]
+  },
+  "cry.879": {
+    "sounds": [
+      "hyperspace_wormholes:cries/879"
+    ]
+  },
+  "cry.880": {
+    "sounds": [
+      "hyperspace_wormholes:cries/880"
+    ]
+  },
+  "cry.881": {
+    "sounds": [
+      "hyperspace_wormholes:cries/881"
+    ]
+  },
+  "cry.882": {
+    "sounds": [
+      "hyperspace_wormholes:cries/882"
+    ]
+  },
+  "cry.883": {
+    "sounds": [
+      "hyperspace_wormholes:cries/883"
+    ]
+  },
+  "cry.884": {
+    "sounds": [
+      "hyperspace_wormholes:cries/884"
+    ]
+  },
+  "cry.885": {
+    "sounds": [
+      "hyperspace_wormholes:cries/885"
+    ]
+  },
+  "cry.886": {
+    "sounds": [
+      "hyperspace_wormholes:cries/886"
+    ]
+  },
+  "cry.887": {
+    "sounds": [
+      "hyperspace_wormholes:cries/887"
+    ]
+  },
+  "cry.888": {
+    "sounds": [
+      "hyperspace_wormholes:cries/888"
+    ]
+  },
+  "cry.889": {
+    "sounds": [
+      "hyperspace_wormholes:cries/889"
+    ]
+  },
+  "cry.890": {
+    "sounds": [
+      "hyperspace_wormholes:cries/890"
+    ]
+  },
+  "cry.891": {
+    "sounds": [
+      "hyperspace_wormholes:cries/891"
+    ]
+  },
+  "cry.892": {
+    "sounds": [
+      "hyperspace_wormholes:cries/892"
+    ]
+  },
+  "cry.893": {
+    "sounds": [
+      "hyperspace_wormholes:cries/893"
+    ]
+  },
+  "cry.894": {
+    "sounds": [
+      "hyperspace_wormholes:cries/894"
+    ]
+  },
+  "cry.895": {
+    "sounds": [
+      "hyperspace_wormholes:cries/895"
+    ]
+  },
+  "cry.896": {
+    "sounds": [
+      "hyperspace_wormholes:cries/896"
+    ]
+  },
+  "cry.897": {
+    "sounds": [
+      "hyperspace_wormholes:cries/897"
+    ]
+  },
+  "cry.898": {
+    "sounds": [
+      "hyperspace_wormholes:cries/898"
+    ]
+  },
+  "cry.899": {
+    "sounds": [
+      "hyperspace_wormholes:cries/899"
+    ]
+  },
+  "cry.900": {
+    "sounds": [
+      "hyperspace_wormholes:cries/900"
+    ]
+  },
+  "cry.901": {
+    "sounds": [
+      "hyperspace_wormholes:cries/901"
+    ]
+  },
+  "cry.902": {
+    "sounds": [
+      "hyperspace_wormholes:cries/902"
+    ]
+  },
+  "cry.903": {
+    "sounds": [
+      "hyperspace_wormholes:cries/903"
+    ]
+  },
+  "cry.904": {
+    "sounds": [
+      "hyperspace_wormholes:cries/904"
+    ]
+  },
+  "cry.905": {
+    "sounds": [
+      "hyperspace_wormholes:cries/905"
+    ]
+  },
+  "cry.906": {
+    "sounds": [
+      "hyperspace_wormholes:cries/906"
+    ]
+  },
+  "cry.907": {
+    "sounds": [
+      "hyperspace_wormholes:cries/907"
+    ]
+  },
+  "cry.908": {
+    "sounds": [
+      "hyperspace_wormholes:cries/908"
+    ]
+  },
+  "cry.909": {
+    "sounds": [
+      "hyperspace_wormholes:cries/909"
+    ]
+  },
+  "cry.910": {
+    "sounds": [
+      "hyperspace_wormholes:cries/910"
+    ]
+  },
+  "cry.911": {
+    "sounds": [
+      "hyperspace_wormholes:cries/911"
+    ]
+  },
+  "cry.912": {
+    "sounds": [
+      "hyperspace_wormholes:cries/912"
+    ]
+  },
+  "cry.913": {
+    "sounds": [
+      "hyperspace_wormholes:cries/913"
+    ]
+  },
+  "cry.914": {
+    "sounds": [
+      "hyperspace_wormholes:cries/914"
+    ]
+  },
+  "cry.915": {
+    "sounds": [
+      "hyperspace_wormholes:cries/915"
+    ]
+  },
+  "cry.916": {
+    "sounds": [
+      "hyperspace_wormholes:cries/916"
+    ]
+  },
+  "cry.917": {
+    "sounds": [
+      "hyperspace_wormholes:cries/917"
+    ]
+  },
+  "cry.918": {
+    "sounds": [
+      "hyperspace_wormholes:cries/918"
+    ]
+  },
+  "cry.919": {
+    "sounds": [
+      "hyperspace_wormholes:cries/919"
+    ]
+  },
+  "cry.920": {
+    "sounds": [
+      "hyperspace_wormholes:cries/920"
+    ]
+  },
+  "cry.921": {
+    "sounds": [
+      "hyperspace_wormholes:cries/921"
+    ]
+  },
+  "cry.922": {
+    "sounds": [
+      "hyperspace_wormholes:cries/922"
+    ]
+  },
+  "cry.923": {
+    "sounds": [
+      "hyperspace_wormholes:cries/923"
+    ]
+  },
+  "cry.924": {
+    "sounds": [
+      "hyperspace_wormholes:cries/924"
+    ]
+  },
+  "cry.925": {
+    "sounds": [
+      "hyperspace_wormholes:cries/925"
+    ]
+  },
+  "cry.926": {
+    "sounds": [
+      "hyperspace_wormholes:cries/926"
+    ]
+  },
+  "cry.927": {
+    "sounds": [
+      "hyperspace_wormholes:cries/927"
+    ]
+  },
+  "cry.928": {
+    "sounds": [
+      "hyperspace_wormholes:cries/928"
+    ]
+  },
+  "cry.929": {
+    "sounds": [
+      "hyperspace_wormholes:cries/929"
+    ]
+  },
+  "cry.930": {
+    "sounds": [
+      "hyperspace_wormholes:cries/930"
+    ]
+  },
+  "cry.931": {
+    "sounds": [
+      "hyperspace_wormholes:cries/931"
+    ]
+  },
+  "cry.932": {
+    "sounds": [
+      "hyperspace_wormholes:cries/932"
+    ]
+  },
+  "cry.933": {
+    "sounds": [
+      "hyperspace_wormholes:cries/933"
+    ]
+  },
+  "cry.934": {
+    "sounds": [
+      "hyperspace_wormholes:cries/934"
+    ]
+  },
+  "cry.935": {
+    "sounds": [
+      "hyperspace_wormholes:cries/935"
+    ]
+  },
+  "cry.936": {
+    "sounds": [
+      "hyperspace_wormholes:cries/936"
+    ]
+  },
+  "cry.937": {
+    "sounds": [
+      "hyperspace_wormholes:cries/937"
+    ]
+  },
+  "cry.938": {
+    "sounds": [
+      "hyperspace_wormholes:cries/938"
+    ]
+  },
+  "cry.939": {
+    "sounds": [
+      "hyperspace_wormholes:cries/939"
+    ]
+  },
+  "cry.940": {
+    "sounds": [
+      "hyperspace_wormholes:cries/940"
+    ]
+  },
+  "cry.941": {
+    "sounds": [
+      "hyperspace_wormholes:cries/941"
+    ]
+  },
+  "cry.942": {
+    "sounds": [
+      "hyperspace_wormholes:cries/942"
+    ]
+  },
+  "cry.943": {
+    "sounds": [
+      "hyperspace_wormholes:cries/943"
+    ]
+  },
+  "cry.944": {
+    "sounds": [
+      "hyperspace_wormholes:cries/944"
+    ]
+  },
+  "cry.945": {
+    "sounds": [
+      "hyperspace_wormholes:cries/945"
+    ]
+  },
+  "cry.946": {
+    "sounds": [
+      "hyperspace_wormholes:cries/946"
+    ]
+  },
+  "cry.947": {
+    "sounds": [
+      "hyperspace_wormholes:cries/947"
+    ]
+  },
+  "cry.948": {
+    "sounds": [
+      "hyperspace_wormholes:cries/948"
+    ]
+  },
+  "cry.949": {
+    "sounds": [
+      "hyperspace_wormholes:cries/949"
+    ]
+  },
+  "cry.950": {
+    "sounds": [
+      "hyperspace_wormholes:cries/950"
+    ]
+  },
+  "cry.951": {
+    "sounds": [
+      "hyperspace_wormholes:cries/951"
+    ]
+  },
+  "cry.952": {
+    "sounds": [
+      "hyperspace_wormholes:cries/952"
+    ]
+  },
+  "cry.953": {
+    "sounds": [
+      "hyperspace_wormholes:cries/953"
+    ]
+  },
+  "cry.954": {
+    "sounds": [
+      "hyperspace_wormholes:cries/954"
+    ]
+  },
+  "cry.955": {
+    "sounds": [
+      "hyperspace_wormholes:cries/955"
+    ]
+  },
+  "cry.956": {
+    "sounds": [
+      "hyperspace_wormholes:cries/956"
+    ]
+  },
+  "cry.957": {
+    "sounds": [
+      "hyperspace_wormholes:cries/957"
+    ]
+  },
+  "cry.958": {
+    "sounds": [
+      "hyperspace_wormholes:cries/958"
+    ]
+  },
+  "cry.959": {
+    "sounds": [
+      "hyperspace_wormholes:cries/959"
+    ]
+  },
+  "cry.960": {
+    "sounds": [
+      "hyperspace_wormholes:cries/960"
+    ]
+  },
+  "cry.961": {
+    "sounds": [
+      "hyperspace_wormholes:cries/961"
+    ]
+  },
+  "cry.962": {
+    "sounds": [
+      "hyperspace_wormholes:cries/962"
+    ]
+  },
+  "cry.963": {
+    "sounds": [
+      "hyperspace_wormholes:cries/963"
+    ]
+  },
+  "cry.964": {
+    "sounds": [
+      "hyperspace_wormholes:cries/964"
+    ]
+  },
+  "cry.965": {
+    "sounds": [
+      "hyperspace_wormholes:cries/965"
+    ]
+  },
+  "cry.966": {
+    "sounds": [
+      "hyperspace_wormholes:cries/966"
+    ]
+  },
+  "cry.967": {
+    "sounds": [
+      "hyperspace_wormholes:cries/967"
+    ]
+  },
+  "cry.968": {
+    "sounds": [
+      "hyperspace_wormholes:cries/968"
+    ]
+  },
+  "cry.969": {
+    "sounds": [
+      "hyperspace_wormholes:cries/969"
+    ]
+  },
+  "cry.970": {
+    "sounds": [
+      "hyperspace_wormholes:cries/970"
+    ]
+  },
+  "cry.971": {
+    "sounds": [
+      "hyperspace_wormholes:cries/971"
+    ]
+  },
+  "cry.972": {
+    "sounds": [
+      "hyperspace_wormholes:cries/972"
+    ]
+  },
+  "cry.973": {
+    "sounds": [
+      "hyperspace_wormholes:cries/973"
+    ]
+  },
+  "cry.974": {
+    "sounds": [
+      "hyperspace_wormholes:cries/974"
+    ]
+  },
+  "cry.975": {
+    "sounds": [
+      "hyperspace_wormholes:cries/975"
+    ]
+  },
+  "cry.976": {
+    "sounds": [
+      "hyperspace_wormholes:cries/976"
+    ]
+  },
+  "cry.977": {
+    "sounds": [
+      "hyperspace_wormholes:cries/977"
+    ]
+  },
+  "cry.978": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978"
+    ]
+  },
+  "cry.979": {
+    "sounds": [
+      "hyperspace_wormholes:cries/979"
+    ]
+  },
+  "cry.980": {
+    "sounds": [
+      "hyperspace_wormholes:cries/980"
+    ]
+  },
+  "cry.981": {
+    "sounds": [
+      "hyperspace_wormholes:cries/981"
+    ]
+  },
+  "cry.982": {
+    "sounds": [
+      "hyperspace_wormholes:cries/982"
+    ]
+  },
+  "cry.983": {
+    "sounds": [
+      "hyperspace_wormholes:cries/983"
+    ]
+  },
+  "cry.984": {
+    "sounds": [
+      "hyperspace_wormholes:cries/984"
+    ]
+  },
+  "cry.985": {
+    "sounds": [
+      "hyperspace_wormholes:cries/985"
+    ]
+  },
+  "cry.986": {
+    "sounds": [
+      "hyperspace_wormholes:cries/986"
+    ]
+  },
+  "cry.987": {
+    "sounds": [
+      "hyperspace_wormholes:cries/987"
+    ]
+  },
+  "cry.988": {
+    "sounds": [
+      "hyperspace_wormholes:cries/988"
+    ]
+  },
+  "cry.989": {
+    "sounds": [
+      "hyperspace_wormholes:cries/989"
+    ]
+  },
+  "cry.990": {
+    "sounds": [
+      "hyperspace_wormholes:cries/990"
+    ]
+  },
+  "cry.991": {
+    "sounds": [
+      "hyperspace_wormholes:cries/991"
+    ]
+  },
+  "cry.992": {
+    "sounds": [
+      "hyperspace_wormholes:cries/992"
+    ]
+  },
+  "cry.993": {
+    "sounds": [
+      "hyperspace_wormholes:cries/993"
+    ]
+  },
+  "cry.994": {
+    "sounds": [
+      "hyperspace_wormholes:cries/994"
+    ]
+  },
+  "cry.995": {
+    "sounds": [
+      "hyperspace_wormholes:cries/995"
+    ]
+  },
+  "cry.996": {
+    "sounds": [
+      "hyperspace_wormholes:cries/996"
+    ]
+  },
+  "cry.997": {
+    "sounds": [
+      "hyperspace_wormholes:cries/997"
+    ]
+  },
+  "cry.998": {
+    "sounds": [
+      "hyperspace_wormholes:cries/998"
+    ]
+  },
+  "cry.999": {
+    "sounds": [
+      "hyperspace_wormholes:cries/999"
+    ]
+  },
+  "cry.1000": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1000"
+    ]
+  },
+  "cry.1001": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1001"
+    ]
+  },
+  "cry.1002": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1002"
+    ]
+  },
+  "cry.1003": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1003"
+    ]
+  },
+  "cry.1004": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1004"
+    ]
+  },
+  "cry.1005": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1005"
+    ]
+  },
+  "cry.1006": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1006"
+    ]
+  },
+  "cry.1007": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1007"
+    ]
+  },
+  "cry.1008": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1008"
+    ]
+  },
+  "cry.1009": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1009"
+    ]
+  },
+  "cry.1010": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1010"
+    ]
+  },
+  "cry.1011": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1011"
+    ]
+  },
+  "cry.1012": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1012"
+    ]
+  },
+  "cry.1013": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1013"
+    ]
+  },
+  "cry.1014": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1014"
+    ]
+  },
+  "cry.1015": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1015"
+    ]
+  },
+  "cry.1016": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1016"
+    ]
+  },
+  "cry.1017": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1017"
+    ]
+  },
+  "cry.1018": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1018"
+    ]
+  },
+  "cry.1019": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1019"
+    ]
+  },
+  "cry.1020": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1020"
+    ]
+  },
+  "cry.1021": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1021"
+    ]
+  },
+  "cry.1022": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1022"
+    ]
+  },
+  "cry.1023": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1023"
+    ]
+  },
+  "cry.1024": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1024"
+    ]
+  },
+  "cry.1025": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1025"
+    ]
+  },
+  "cry.386.attack": {
+    "sounds": [
+      "hyperspace_wormholes:cries/386-attack"
+    ]
+  },
+  "cry.386.defense": {
+    "sounds": [
+      "hyperspace_wormholes:cries/386-defense"
+    ]
+  },
+  "cry.386.speed": {
+    "sounds": [
+      "hyperspace_wormholes:cries/386-speed"
+    ]
+  },
+  "cry.413.sandy": {
+    "sounds": [
+      "hyperspace_wormholes:cries/413-sandy"
+    ]
+  },
+  "cry.413.trash": {
+    "sounds": [
+      "hyperspace_wormholes:cries/413-trash"
+    ]
+  },
+  "cry.492.sky": {
+    "sounds": [
+      "hyperspace_wormholes:cries/492-sky"
+    ]
+  },
+  "cry.487.origin": {
+    "sounds": [
+      "hyperspace_wormholes:cries/487-origin"
+    ]
+  },
+  "cry.479.heat": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479-heat"
+    ]
+  },
+  "cry.479.wash": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479-wash"
+    ]
+  },
+  "cry.479.frost": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479-frost"
+    ]
+  },
+  "cry.479.fan": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479-fan"
+    ]
+  },
+  "cry.479.mow": {
+    "sounds": [
+      "hyperspace_wormholes:cries/479-mow"
+    ]
+  },
+  "cry.351.sunny": {
+    "sounds": [
+      "hyperspace_wormholes:cries/351-sunny"
+    ]
+  },
+  "cry.351.rainy": {
+    "sounds": [
+      "hyperspace_wormholes:cries/351-rainy"
+    ]
+  },
+  "cry.351.snowy": {
+    "sounds": [
+      "hyperspace_wormholes:cries/351-snowy"
+    ]
+  },
+  "cry.550.blue-striped": {
+    "sounds": [
+      "hyperspace_wormholes:cries/550-blue-striped"
+    ]
+  },
+  "cry.555.zen": {
+    "sounds": [
+      "hyperspace_wormholes:cries/555-zen"
+    ]
+  },
+  "cry.648.pirouette": {
+    "sounds": [
+      "hyperspace_wormholes:cries/648-pirouette"
+    ]
+  },
+  "cry.641.therian": {
+    "sounds": [
+      "hyperspace_wormholes:cries/641-therian"
+    ]
+  },
+  "cry.642.therian": {
+    "sounds": [
+      "hyperspace_wormholes:cries/642-therian"
+    ]
+  },
+  "cry.645.therian": {
+    "sounds": [
+      "hyperspace_wormholes:cries/645-therian"
+    ]
+  },
+  "cry.646.black": {
+    "sounds": [
+      "hyperspace_wormholes:cries/646-black"
+    ]
+  },
+  "cry.646.white": {
+    "sounds": [
+      "hyperspace_wormholes:cries/646-white"
+    ]
+  },
+  "cry.647.resolute": {
+    "sounds": [
+      "hyperspace_wormholes:cries/647-resolute"
+    ]
+  },
+  "cry.678.female": {
+    "sounds": [
+      "hyperspace_wormholes:cries/678-female"
+    ]
+  },
+  "cry.681.blade": {
+    "sounds": [
+      "hyperspace_wormholes:cries/681-blade"
+    ]
+  },
+  "cry.710.small": {
+    "sounds": [
+      "hyperspace_wormholes:cries/710-small"
+    ]
+  },
+  "cry.710.large": {
+    "sounds": [
+      "hyperspace_wormholes:cries/710-large"
+    ]
+  },
+  "cry.710.super": {
+    "sounds": [
+      "hyperspace_wormholes:cries/710-super"
+    ]
+  },
+  "cry.711.small": {
+    "sounds": [
+      "hyperspace_wormholes:cries/711-small"
+    ]
+  },
+  "cry.711.large": {
+    "sounds": [
+      "hyperspace_wormholes:cries/711-large"
+    ]
+  },
+  "cry.711.super": {
+    "sounds": [
+      "hyperspace_wormholes:cries/711-super"
+    ]
+  },
+  "cry.3.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/3-mega"
+    ]
+  },
+  "cry.6.mega-x": {
+    "sounds": [
+      "hyperspace_wormholes:cries/6-mega-x"
+    ]
+  },
+  "cry.6.mega-y": {
+    "sounds": [
+      "hyperspace_wormholes:cries/6-mega-y"
+    ]
+  },
+  "cry.9.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/9-mega"
+    ]
+  },
+  "cry.65.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/65-mega"
+    ]
+  },
+  "cry.94.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/94-mega"
+    ]
+  },
+  "cry.115.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/115-mega"
+    ]
+  },
+  "cry.127.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/127-mega"
+    ]
+  },
+  "cry.130.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/130-mega"
+    ]
+  },
+  "cry.142.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/142-mega"
+    ]
+  },
+  "cry.150.mega-x": {
+    "sounds": [
+      "hyperspace_wormholes:cries/150-mega-x"
+    ]
+  },
+  "cry.150.mega-y": {
+    "sounds": [
+      "hyperspace_wormholes:cries/150-mega-y"
+    ]
+  },
+  "cry.181.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/181-mega"
+    ]
+  },
+  "cry.212.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/212-mega"
+    ]
+  },
+  "cry.214.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/214-mega"
+    ]
+  },
+  "cry.229.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/229-mega"
+    ]
+  },
+  "cry.248.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/248-mega"
+    ]
+  },
+  "cry.257.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/257-mega"
+    ]
+  },
+  "cry.282.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/282-mega"
+    ]
+  },
+  "cry.303.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/303-mega"
+    ]
+  },
+  "cry.306.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/306-mega"
+    ]
+  },
+  "cry.308.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/308-mega"
+    ]
+  },
+  "cry.310.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/310-mega"
+    ]
+  },
+  "cry.354.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/354-mega"
+    ]
+  },
+  "cry.359.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/359-mega"
+    ]
+  },
+  "cry.445.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/445-mega"
+    ]
+  },
+  "cry.448.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/448-mega"
+    ]
+  },
+  "cry.460.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/460-mega"
+    ]
+  },
+  "cry.670.eternal": {
+    "sounds": [
+      "hyperspace_wormholes:cries/670-eternal"
+    ]
+  },
+  "cry.380.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/380-mega"
+    ]
+  },
+  "cry.381.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/381-mega"
+    ]
+  },
+  "cry.260.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/260-mega"
+    ]
+  },
+  "cry.254.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/254-mega"
+    ]
+  },
+  "cry.302.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/302-mega"
+    ]
+  },
+  "cry.334.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/334-mega"
+    ]
+  },
+  "cry.475.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/475-mega"
+    ]
+  },
+  "cry.531.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/531-mega"
+    ]
+  },
+  "cry.319.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/319-mega"
+    ]
+  },
+  "cry.80.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/80-mega"
+    ]
+  },
+  "cry.208.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/208-mega"
+    ]
+  },
+  "cry.18.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/18-mega"
+    ]
+  },
+  "cry.362.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/362-mega"
+    ]
+  },
+  "cry.719.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/719-mega"
+    ]
+  },
+  "cry.376.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/376-mega"
+    ]
+  },
+  "cry.382.primal": {
+    "sounds": [
+      "hyperspace_wormholes:cries/382-primal"
+    ]
+  },
+  "cry.383.primal": {
+    "sounds": [
+      "hyperspace_wormholes:cries/383-primal"
+    ]
+  },
+  "cry.384.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/384-mega"
+    ]
+  },
+  "cry.25.rock-star": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-rock-star"
+    ]
+  },
+  "cry.25.belle": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-belle"
+    ]
+  },
+  "cry.25.pop-star": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-pop-star"
+    ]
+  },
+  "cry.25.phd": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-phd"
+    ]
+  },
+  "cry.25.libre": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-libre"
+    ]
+  },
+  "cry.25.cosplay": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-cosplay"
+    ]
+  },
+  "cry.720.unbound": {
+    "sounds": [
+      "hyperspace_wormholes:cries/720-unbound"
+    ]
+  },
+  "cry.323.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/323-mega"
+    ]
+  },
+  "cry.428.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/428-mega"
+    ]
+  },
+  "cry.373.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/373-mega"
+    ]
+  },
+  "cry.15.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/15-mega"
+    ]
+  },
+  "cry.19.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/19-alola"
+    ]
+  },
+  "cry.20.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/20-alola"
+    ]
+  },
+  "cry.20.totem-alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/20-totem-alola"
+    ]
+  },
+  "cry.25.original-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-original-cap"
+    ]
+  },
+  "cry.25.hoenn-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-hoenn-cap"
+    ]
+  },
+  "cry.25.sinnoh-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-sinnoh-cap"
+    ]
+  },
+  "cry.25.unova-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-unova-cap"
+    ]
+  },
+  "cry.25.kalos-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-kalos-cap"
+    ]
+  },
+  "cry.25.alola-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-alola-cap"
+    ]
+  },
+  "cry.26.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/26-alola"
+    ]
+  },
+  "cry.27.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/27-alola"
+    ]
+  },
+  "cry.28.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/28-alola"
+    ]
+  },
+  "cry.37.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/37-alola"
+    ]
+  },
+  "cry.38.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/38-alola"
+    ]
+  },
+  "cry.50.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/50-alola"
+    ]
+  },
+  "cry.51.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/51-alola"
+    ]
+  },
+  "cry.52.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/52-alola"
+    ]
+  },
+  "cry.53.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/53-alola"
+    ]
+  },
+  "cry.74.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/74-alola"
+    ]
+  },
+  "cry.75.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/75-alola"
+    ]
+  },
+  "cry.76.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/76-alola"
+    ]
+  },
+  "cry.88.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/88-alola"
+    ]
+  },
+  "cry.89.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/89-alola"
+    ]
+  },
+  "cry.103.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/103-alola"
+    ]
+  },
+  "cry.105.alola": {
+    "sounds": [
+      "hyperspace_wormholes:cries/105-alola"
+    ]
+  },
+  "cry.658.battle-bond": {
+    "sounds": [
+      "hyperspace_wormholes:cries/658-battle-bond"
+    ]
+  },
+  "cry.658.ash": {
+    "sounds": [
+      "hyperspace_wormholes:cries/658-ash"
+    ]
+  },
+  "cry.718.10-power-construct": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718-10-power-construct"
+    ]
+  },
+  "cry.718.power-construct": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718-power-construct"
+    ]
+  },
+  "cry.718.complete": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718-complete"
+    ]
+  },
+  "cry.735.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/735-totem"
+    ]
+  },
+  "cry.738.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/738-totem"
+    ]
+  },
+  "cry.741.pom-pom": {
+    "sounds": [
+      "hyperspace_wormholes:cries/741-pom-pom"
+    ]
+  },
+  "cry.741.pau": {
+    "sounds": [
+      "hyperspace_wormholes:cries/741-pau"
+    ]
+  },
+  "cry.741.sensu": {
+    "sounds": [
+      "hyperspace_wormholes:cries/741-sensu"
+    ]
+  },
+  "cry.745.midnight": {
+    "sounds": [
+      "hyperspace_wormholes:cries/745-midnight"
+    ]
+  },
+  "cry.746.school": {
+    "sounds": [
+      "hyperspace_wormholes:cries/746-school"
+    ]
+  },
+  "cry.754.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/754-totem"
+    ]
+  },
+  "cry.758.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/758-totem"
+    ]
+  },
+  "cry.774.orange-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-orange-meteor"
+    ]
+  },
+  "cry.774.yellow-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-yellow-meteor"
+    ]
+  },
+  "cry.774.green-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-green-meteor"
+    ]
+  },
+  "cry.774.blue-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-blue-meteor"
+    ]
+  },
+  "cry.774.indigo-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-indigo-meteor"
+    ]
+  },
+  "cry.774.violet-meteor": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-violet-meteor"
+    ]
+  },
+  "cry.774.red": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-red"
+    ]
+  },
+  "cry.774.orange": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-orange"
+    ]
+  },
+  "cry.774.yellow": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-yellow"
+    ]
+  },
+  "cry.774.green": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-green"
+    ]
+  },
+  "cry.774.blue": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-blue"
+    ]
+  },
+  "cry.774.indigo": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-indigo"
+    ]
+  },
+  "cry.774.violet": {
+    "sounds": [
+      "hyperspace_wormholes:cries/774-violet"
+    ]
+  },
+  "cry.778.busted": {
+    "sounds": [
+      "hyperspace_wormholes:cries/778-busted"
+    ]
+  },
+  "cry.778.totem-disguised": {
+    "sounds": [
+      "hyperspace_wormholes:cries/778-totem-disguised"
+    ]
+  },
+  "cry.778.totem-busted": {
+    "sounds": [
+      "hyperspace_wormholes:cries/778-totem-busted"
+    ]
+  },
+  "cry.784.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/784-totem"
+    ]
+  },
+  "cry.801.original": {
+    "sounds": [
+      "hyperspace_wormholes:cries/801-original"
+    ]
+  },
+  "cry.25.partner-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-partner-cap"
+    ]
+  },
+  "cry.105.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/105-totem"
+    ]
+  },
+  "cry.743.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/743-totem"
+    ]
+  },
+  "cry.744.own-tempo": {
+    "sounds": [
+      "hyperspace_wormholes:cries/744-own-tempo"
+    ]
+  },
+  "cry.745.dusk": {
+    "sounds": [
+      "hyperspace_wormholes:cries/745-dusk"
+    ]
+  },
+  "cry.752.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/752-totem"
+    ]
+  },
+  "cry.777.totem": {
+    "sounds": [
+      "hyperspace_wormholes:cries/777-totem"
+    ]
+  },
+  "cry.800.dusk": {
+    "sounds": [
+      "hyperspace_wormholes:cries/800-dusk"
+    ]
+  },
+  "cry.800.dawn": {
+    "sounds": [
+      "hyperspace_wormholes:cries/800-dawn"
+    ]
+  },
+  "cry.800.ultra": {
+    "sounds": [
+      "hyperspace_wormholes:cries/800-ultra"
+    ]
+  },
+  "cry.25.starter": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-starter"
+    ]
+  },
+  "cry.133.starter": {
+    "sounds": [
+      "hyperspace_wormholes:cries/133-starter"
+    ]
+  },
+  "cry.25.world-cap": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-world-cap"
+    ]
+  },
+  "cry.52.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/52-galar"
+    ]
+  },
+  "cry.77.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/77-galar"
+    ]
+  },
+  "cry.78.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/78-galar"
+    ]
+  },
+  "cry.79.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/79-galar"
+    ]
+  },
+  "cry.80.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/80-galar"
+    ]
+  },
+  "cry.83.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/83-galar"
+    ]
+  },
+  "cry.110.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/110-galar"
+    ]
+  },
+  "cry.122.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/122-galar"
+    ]
+  },
+  "cry.144.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/144-galar"
+    ]
+  },
+  "cry.145.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/145-galar"
+    ]
+  },
+  "cry.146.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/146-galar"
+    ]
+  },
+  "cry.199.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/199-galar"
+    ]
+  },
+  "cry.222.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/222-galar"
+    ]
+  },
+  "cry.263.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/263-galar"
+    ]
+  },
+  "cry.264.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/264-galar"
+    ]
+  },
+  "cry.554.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/554-galar"
+    ]
+  },
+  "cry.555.galar-standard": {
+    "sounds": [
+      "hyperspace_wormholes:cries/555-galar-standard"
+    ]
+  },
+  "cry.555.galar-zen": {
+    "sounds": [
+      "hyperspace_wormholes:cries/555-galar-zen"
+    ]
+  },
+  "cry.562.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/562-galar"
+    ]
+  },
+  "cry.618.galar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/618-galar"
+    ]
+  },
+  "cry.718.10": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718-10"
+    ]
+  },
+  "cry.845.gulping": {
+    "sounds": [
+      "hyperspace_wormholes:cries/845-gulping"
+    ]
+  },
+  "cry.845.gorging": {
+    "sounds": [
+      "hyperspace_wormholes:cries/845-gorging"
+    ]
+  },
+  "cry.849.low-key": {
+    "sounds": [
+      "hyperspace_wormholes:cries/849-low-key"
+    ]
+  },
+  "cry.875.noice": {
+    "sounds": [
+      "hyperspace_wormholes:cries/875-noice"
+    ]
+  },
+  "cry.876.female": {
+    "sounds": [
+      "hyperspace_wormholes:cries/876-female"
+    ]
+  },
+  "cry.877.hangry": {
+    "sounds": [
+      "hyperspace_wormholes:cries/877-hangry"
+    ]
+  },
+  "cry.888.crowned": {
+    "sounds": [
+      "hyperspace_wormholes:cries/888-crowned"
+    ]
+  },
+  "cry.889.crowned": {
+    "sounds": [
+      "hyperspace_wormholes:cries/889-crowned"
+    ]
+  },
+  "cry.890.eternamax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/890-eternamax"
+    ]
+  },
+  "cry.892.rapid-strike": {
+    "sounds": [
+      "hyperspace_wormholes:cries/892-rapid-strike"
+    ]
+  },
+  "cry.893.dada": {
+    "sounds": [
+      "hyperspace_wormholes:cries/893-dada"
+    ]
+  },
+  "cry.898.ice": {
+    "sounds": [
+      "hyperspace_wormholes:cries/898-ice"
+    ]
+  },
+  "cry.898.shadow": {
+    "sounds": [
+      "hyperspace_wormholes:cries/898-shadow"
+    ]
+  },
+  "cry.3.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/3-gmax"
+    ]
+  },
+  "cry.6.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/6-gmax"
+    ]
+  },
+  "cry.9.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/9-gmax"
+    ]
+  },
+  "cry.12.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/12-gmax"
+    ]
+  },
+  "cry.25.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/25-gmax"
+    ]
+  },
+  "cry.52.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/52-gmax"
+    ]
+  },
+  "cry.68.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/68-gmax"
+    ]
+  },
+  "cry.94.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/94-gmax"
+    ]
+  },
+  "cry.99.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/99-gmax"
+    ]
+  },
+  "cry.131.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/131-gmax"
+    ]
+  },
+  "cry.133.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/133-gmax"
+    ]
+  },
+  "cry.143.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/143-gmax"
+    ]
+  },
+  "cry.569.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/569-gmax"
+    ]
+  },
+  "cry.809.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/809-gmax"
+    ]
+  },
+  "cry.812.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/812-gmax"
+    ]
+  },
+  "cry.815.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/815-gmax"
+    ]
+  },
+  "cry.818.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/818-gmax"
+    ]
+  },
+  "cry.823.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/823-gmax"
+    ]
+  },
+  "cry.826.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/826-gmax"
+    ]
+  },
+  "cry.834.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/834-gmax"
+    ]
+  },
+  "cry.839.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/839-gmax"
+    ]
+  },
+  "cry.841.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/841-gmax"
+    ]
+  },
+  "cry.842.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/842-gmax"
+    ]
+  },
+  "cry.844.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/844-gmax"
+    ]
+  },
+  "cry.849.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/849-gmax"
+    ]
+  },
+  "cry.851.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/851-gmax"
+    ]
+  },
+  "cry.858.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/858-gmax"
+    ]
+  },
+  "cry.861.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/861-gmax"
+    ]
+  },
+  "cry.869.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/869-gmax"
+    ]
+  },
+  "cry.879.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/879-gmax"
+    ]
+  },
+  "cry.884.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/884-gmax"
+    ]
+  },
+  "cry.892.gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/892-gmax"
+    ]
+  },
+  "cry.892.rapid-strike-gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/892-rapid-strike-gmax"
+    ]
+  },
+  "cry.849.low-key-gmax": {
+    "sounds": [
+      "hyperspace_wormholes:cries/849-low-key-gmax"
+    ]
+  },
+  "cry.58.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/58-hisui"
+    ]
+  },
+  "cry.59.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/59-hisui"
+    ]
+  },
+  "cry.100.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/100-hisui"
+    ]
+  },
+  "cry.101.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/101-hisui"
+    ]
+  },
+  "cry.157.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/157-hisui"
+    ]
+  },
+  "cry.211.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/211-hisui"
+    ]
+  },
+  "cry.215.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/215-hisui"
+    ]
+  },
+  "cry.503.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/503-hisui"
+    ]
+  },
+  "cry.549.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/549-hisui"
+    ]
+  },
+  "cry.570.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/570-hisui"
+    ]
+  },
+  "cry.571.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/571-hisui"
+    ]
+  },
+  "cry.628.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/628-hisui"
+    ]
+  },
+  "cry.705.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/705-hisui"
+    ]
+  },
+  "cry.706.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/706-hisui"
+    ]
+  },
+  "cry.713.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/713-hisui"
+    ]
+  },
+  "cry.724.hisui": {
+    "sounds": [
+      "hyperspace_wormholes:cries/724-hisui"
+    ]
+  },
+  "cry.483.origin": {
+    "sounds": [
+      "hyperspace_wormholes:cries/483-origin"
+    ]
+  },
+  "cry.484.origin": {
+    "sounds": [
+      "hyperspace_wormholes:cries/484-origin"
+    ]
+  },
+  "cry.550.white-striped": {
+    "sounds": [
+      "hyperspace_wormholes:cries/550-white-striped"
+    ]
+  },
+  "cry.902.female": {
+    "sounds": [
+      "hyperspace_wormholes:cries/902-female"
+    ]
+  },
+  "cry.905.therian": {
+    "sounds": [
+      "hyperspace_wormholes:cries/905-therian"
+    ]
+  },
+  "cry.128.paldea-combat-breed": {
+    "sounds": [
+      "hyperspace_wormholes:cries/128-paldea-combat-breed"
+    ]
+  },
+  "cry.128.paldea-blaze-breed": {
+    "sounds": [
+      "hyperspace_wormholes:cries/128-paldea-blaze-breed"
+    ]
+  },
+  "cry.128.paldea-aqua-breed": {
+    "sounds": [
+      "hyperspace_wormholes:cries/128-paldea-aqua-breed"
+    ]
+  },
+  "cry.194.paldea": {
+    "sounds": [
+      "hyperspace_wormholes:cries/194-paldea"
+    ]
+  },
+  "cry.916.female": {
+    "sounds": [
+      "hyperspace_wormholes:cries/916-female"
+    ]
+  },
+  "cry.982.three-segment": {
+    "sounds": [
+      "hyperspace_wormholes:cries/982-three-segment"
+    ]
+  },
+  "cry.964.hero": {
+    "sounds": [
+      "hyperspace_wormholes:cries/964-hero"
+    ]
+  },
+  "cry.925.three": {
+    "sounds": [
+      "hyperspace_wormholes:cries/925-three"
+    ]
+  },
+  "cry.978.droopy": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978-droopy"
+    ]
+  },
+  "cry.978.stretchy": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978-stretchy"
+    ]
+  },
+  "cry.931.blue-plumage": {
+    "sounds": [
+      "hyperspace_wormholes:cries/931-blue-plumage"
+    ]
+  },
+  "cry.931.yellow-plumage": {
+    "sounds": [
+      "hyperspace_wormholes:cries/931-yellow-plumage"
+    ]
+  },
+  "cry.931.white-plumage": {
+    "sounds": [
+      "hyperspace_wormholes:cries/931-white-plumage"
+    ]
+  },
+  "cry.999.roaming": {
+    "sounds": [
+      "hyperspace_wormholes:cries/999-roaming"
+    ]
+  },
+  "cry.1007.limited-build": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1007-limited-build"
+    ]
+  },
+  "cry.1007.sprinting-build": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1007-sprinting-build"
+    ]
+  },
+  "cry.1007.swimming-build": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1007-swimming-build"
+    ]
+  },
+  "cry.1007.gliding-build": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1007-gliding-build"
+    ]
+  },
+  "cry.1008.low-power-mode": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1008-low-power-mode"
+    ]
+  },
+  "cry.1008.drive-mode": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1008-drive-mode"
+    ]
+  },
+  "cry.1008.aquatic-mode": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1008-aquatic-mode"
+    ]
+  },
+  "cry.1008.glide-mode": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1008-glide-mode"
+    ]
+  },
+  "cry.901.bloodmoon": {
+    "sounds": [
+      "hyperspace_wormholes:cries/901-bloodmoon"
+    ]
+  },
+  "cry.1017.wellspring-mask": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1017-wellspring-mask"
+    ]
+  },
+  "cry.1017.hearthflame-mask": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1017-hearthflame-mask"
+    ]
+  },
+  "cry.1017.cornerstone-mask": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1017-cornerstone-mask"
+    ]
+  },
+  "cry.1024.terastal": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1024-terastal"
+    ]
+  },
+  "cry.1024.stellar": {
+    "sounds": [
+      "hyperspace_wormholes:cries/1024-stellar"
+    ]
+  },
+  "cry.36.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/36-mega"
+    ]
+  },
+  "cry.71.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/71-mega"
+    ]
+  },
+  "cry.121.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/121-mega"
+    ]
+  },
+  "cry.149.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/149-mega"
+    ]
+  },
+  "cry.154.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/154-mega"
+    ]
+  },
+  "cry.160.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/160-mega"
+    ]
+  },
+  "cry.227.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/227-mega"
+    ]
+  },
+  "cry.478.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/478-mega"
+    ]
+  },
+  "cry.500.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/500-mega"
+    ]
+  },
+  "cry.530.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/530-mega"
+    ]
+  },
+  "cry.545.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/545-mega"
+    ]
+  },
+  "cry.560.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/560-mega"
+    ]
+  },
+  "cry.604.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/604-mega"
+    ]
+  },
+  "cry.609.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/609-mega"
+    ]
+  },
+  "cry.652.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/652-mega"
+    ]
+  },
+  "cry.655.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/655-mega"
+    ]
+  },
+  "cry.658.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/658-mega"
+    ]
+  },
+  "cry.668.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/668-mega"
+    ]
+  },
+  "cry.670.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/670-mega"
+    ]
+  },
+  "cry.687.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/687-mega"
+    ]
+  },
+  "cry.689.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/689-mega"
+    ]
+  },
+  "cry.691.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/691-mega"
+    ]
+  },
+  "cry.701.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/701-mega"
+    ]
+  },
+  "cry.718.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/718-mega"
+    ]
+  },
+  "cry.780.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/780-mega"
+    ]
+  },
+  "cry.870.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/870-mega"
+    ]
+  },
+  "cry.26.mega-x": {
+    "sounds": [
+      "hyperspace_wormholes:cries/26-mega-x"
+    ]
+  },
+  "cry.26.mega-y": {
+    "sounds": [
+      "hyperspace_wormholes:cries/26-mega-y"
+    ]
+  },
+  "cry.358.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/358-mega"
+    ]
+  },
+  "cry.359.mega-z": {
+    "sounds": [
+      "hyperspace_wormholes:cries/359-mega-z"
+    ]
+  },
+  "cry.398.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/398-mega"
+    ]
+  },
+  "cry.445.mega-z": {
+    "sounds": [
+      "hyperspace_wormholes:cries/445-mega-z"
+    ]
+  },
+  "cry.448.mega-z": {
+    "sounds": [
+      "hyperspace_wormholes:cries/448-mega-z"
+    ]
+  },
+  "cry.485.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/485-mega"
+    ]
+  },
+  "cry.491.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/491-mega"
+    ]
+  },
+  "cry.623.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/623-mega"
+    ]
+  },
+  "cry.678.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/678-mega"
+    ]
+  },
+  "cry.740.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/740-mega"
+    ]
+  },
+  "cry.768.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/768-mega"
+    ]
+  },
+  "cry.801.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/801-mega"
+    ]
+  },
+  "cry.801.original-mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/801-original-mega"
+    ]
+  },
+  "cry.807.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/807-mega"
+    ]
+  },
+  "cry.952.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/952-mega"
+    ]
+  },
+  "cry.970.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/970-mega"
+    ]
+  },
+  "cry.978.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978-mega"
+    ]
+  },
+  "cry.978.droopy-mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978-droopy-mega"
+    ]
+  },
+  "cry.978.stretchy-mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/978-stretchy-mega"
+    ]
+  },
+  "cry.998.mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/998-mega"
+    ]
+  },
+  "cry.678.female-mega": {
+    "sounds": [
+      "hyperspace_wormholes:cries/678-female-mega"
+    ]
+  },
+  "music_disc.ultra_wormhole": {
+    "sounds": [
+      {
+        "name": "hyperspace_wormholes:music/ultra_wormhole",
+        "stream": true
+      }
+    ]
+  }
+}

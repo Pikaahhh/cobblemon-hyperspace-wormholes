@@ -1,0 +1,9 @@
+# Built or downloaded by Gradle
+build/
+.gradle/
+run/
+out/
+bin/
+# Editor and the old, never-used repository
+.vscode/
+.git-disabled/

@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:chest",
+  "functions": [{ "function": "hyperspace_wormholes:hoopa_stars_count" }],
+  "pools": [
+    {
+      "rolls": { "type": "minecraft:uniform", "min": 1, "max": 2 },
+      "entries": [
+        {
+          "type": "minecraft:item", "name": "minecraft:cake", "weight": 3,
+          "conditions": [{ "condition": "hyperspace_wormholes:hoopa_stars", "min": 1, "max": 2 }]
+        },
+        {
+          "type": "minecraft:item", "name": "minecraft:golden_carrot", "weight": 3,
+          "conditions": [{ "condition": "hyperspace_wormholes:hoopa_stars", "min": 3, "max": 4 }],
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 4, "max": 8 } }]
+        },
+        {
+          "type": "minecraft:item", "name": "minecraft:diamond", "weight": 3,
+          "conditions": [{ "condition": "hyperspace_wormholes:hoopa_stars", "min": 5 }],
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 5, "max": 10 } }]
+        },
+        {
+          "type": "minecraft:item", "name": "cobblemon:rare_candy", "weight": 1,
+          "functions": [{ "function": "minecraft:set_count", "count": 5 }]
+        }
+      ]
+    }
+  ]
+}

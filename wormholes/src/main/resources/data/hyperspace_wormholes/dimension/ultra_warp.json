@@ -1,0 +1,13 @@
+{
+  "type": "hyperspace_wormholes:ultra_warp",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:ultra_warp",
+      "layers": [],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

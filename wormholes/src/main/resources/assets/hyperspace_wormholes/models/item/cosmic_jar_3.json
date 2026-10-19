@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "hyperspace_wormholes:item/cosmic_jar_3" }
+}

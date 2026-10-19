@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hyperspace_wormholes:item/legendary_essence"
+  }
+}

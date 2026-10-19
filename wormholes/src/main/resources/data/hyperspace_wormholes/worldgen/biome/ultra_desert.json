@@ -1,0 +1,29 @@
+{
+  "has_precipitation": false,
+  "temperature": 2.0,
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 14545654,
+    "sky_color": 8835056,
+    "water_color": 4445920,
+    "water_fog_color": 2797504,
+    "grass_color": 12436608,
+    "foliage_color": 12436608,
+    "music": {
+      "max_delay": 24000,
+      "min_delay": 12000,
+      "replace_current_music": false,
+      "sound": "minecraft:music.overworld.desert"
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [], [],
+    ["hyperspace_wormholes:ultra_desert_sands"],
+    [], [], [], [], [], [],
+    ["hyperspace_wormholes:ultra_desert_formations", "hyperspace_wormholes:ultra_desert_extras"],
+    []
+  ]
+}

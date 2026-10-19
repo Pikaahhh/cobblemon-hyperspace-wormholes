@@ -1,0 +1,13 @@
+{
+  "textures": {
+    "screen": "hyperspace_wormholes:block/monitor_error_screen",
+    "particle": "hyperspace_wormholes:block/monitor_error_screen"
+  },
+  "elements": [
+    {
+      "from": [3, 6, 1.8],
+      "to": [13, 14, 1.8],
+      "faces": {"north": {"texture": "#screen", "uv": [3, 4, 13, 12]}}
+    }
+  ]
+}

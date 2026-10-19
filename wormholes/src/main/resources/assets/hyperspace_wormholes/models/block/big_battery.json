@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "hyperspace_wormholes:block/big_battery_top",
+    "side": "hyperspace_wormholes:block/big_battery_side",
+    "bottom": "hyperspace_wormholes:block/big_battery_bottom"
+  }
+}

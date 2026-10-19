@@ -1,0 +1,30 @@
+{
+  "species": "cobblemon:necrozma",
+  "order": 9,
+  "variations": [
+    {
+      "aspects": ["ultra-fusion"],
+      "texture": "cobblemon:textures/pokemon/blank.png",
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra.png",
+          "translucent": false
+        }
+      ]
+    },
+    {
+      "aspects": ["shiny", "ultra-fusion"],
+      "texture": "cobblemon:textures/pokemon/blank.png",
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_shiny.png",
+          "translucent": false
+        }
+      ]
+    }
+  ]
+}

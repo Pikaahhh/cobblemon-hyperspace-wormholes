@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "hyperspace_wormholes",
+  "version": "${version}",
+  "name": "Cobblemon: Hyperspace & Wormholes",
+  "description": "Hyperspace: the Mega Dimension from Pokemon Legends: ZA, with donut making, hyperspace based on your world and a new way to obtain legendary Pokemon. Wormholes: the Ultra Warp Ride from Pokemon Ultra Sun & Ultra Moon; open a wormhole, fly into it on Solgaleo, Lunala or Necrozma, and race through Ultra Space past wormholes of varying rarity.",
+  "authors": ["Pikaahhh"],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/hyperspace_wormholes/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.hyperspacewormholes.hyperspace.Hyperspace", "dev.hyperspacewormholes.wormholes.Wormholes"],
+    "client": ["dev.hyperspacewormholes.hyperspace.HyperspaceClient", "dev.hyperspacewormholes.wormholes.client.WormholesClient"]
+  },
+  "mixins": ["hyperspace_wormholes.hyperspace.mixins.json", "hyperspace_wormholes.cobblenav.mixins.json", "hyperspace_wormholes.rbrctai.mixins.json",
+    "hyperspace_wormholes.rctmod.mixins.json", "hyperspace_wormholes.rustlingspots.mixins.json", "hyperspace_wormholes.wormholes.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "cobblemon": ">=1.8.0",
+    "mega_showdown": "*"
+  },
+  "recommends": {
+    "cobblenav": "*",
+    "cobbledollars": "*",
+    "legendarymonuments": "*",
+    "reactivemusic": "*"
+  }
+}

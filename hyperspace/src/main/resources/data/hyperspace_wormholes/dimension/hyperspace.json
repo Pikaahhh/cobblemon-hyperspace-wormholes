@@ -1,0 +1,13 @@
+{
+  "type": "hyperspace_wormholes:hyperspace",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:hyperspace",
+      "lakes": false,
+      "features": false,
+      "layers": [ { "block": "minecraft:air", "height": 1 } ],
+      "structure_overrides": []
+    }
+  }
+}
