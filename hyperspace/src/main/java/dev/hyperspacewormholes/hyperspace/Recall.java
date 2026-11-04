@@ -7,8 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Puts away your sent-out Pokemon (not the one you're riding) before Hyperspace teleports you to another dimension. If
- * Cobblemon removes them mid-teleport it can crash the server (happened with the Hoopa portal in 0.11.4), so we just
- * recall them first.
+ * Cobblemon removes them mid-teleport it can crash the server (seen with the Hoopa portal), so they are recalled first.
  */
 final class Recall {
     static void sentOut(ServerPlayer player) {

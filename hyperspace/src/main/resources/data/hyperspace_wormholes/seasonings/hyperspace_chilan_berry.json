@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_chilan_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_chilan_berry",
+  "flavours": {
+    "DRY": 100,
+    "SWEET": 40
+  }
+}

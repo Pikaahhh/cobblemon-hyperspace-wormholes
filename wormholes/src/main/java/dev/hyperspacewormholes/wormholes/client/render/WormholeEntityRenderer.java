@@ -6,7 +6,6 @@ import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -20,8 +19,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Draws wormholes in the world: the funnel opening and closing, and a beacon beam over the way home. Drawn after water
- * and clouds where it needs to be so they don't wash over it.
+ * Draws wormholes in the world: the funnel opening and closing. By water (or seen from under water) it is drawn with the
+ * entities, so a water surface in front of it tints it, except when the camera and the whole wormhole are under water (the
+ * Ultra Deep Sea), where the translucent blocks behind it (the Luminescent Ice) would otherwise paint over its glow. Never
+ * culled, so Entity Culling can't drop a way home whose box is mostly in rock.
  */
 public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
     private static final List<Consumer<MultiBufferSource>> AFTER_WATER = new ArrayList<>();
@@ -49,17 +50,16 @@ public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
         Quaternionf facing = new Quaternionf().rotationTo(0, 0, 1,
                 -Mth.sin(yawRad) * flat, -Mth.sin(pitch), Mth.cos(yawRad) * flat);
 
-        if (entity.isBeacon()) renderBeam(entity, partialTick, poseStack, buffers);
-
         Matrix4f pose = new Matrix4f(poseStack.last().pose()).translate(0, WormholeEntity.SIZE / 2, 0);
         Quaternionf camera = new Quaternionf(entityRenderDispatcher.cameraOrientation());
-        float radius = 2.6f * entity.getScale() * open, alpha = open;
+        float radius = WormholeEntity.RADIUS * entity.getScale() * open, alpha = open;
         int rings = entity.getRings();
         var type = entity.getWormholeType();
         boolean rainbow = entity.isRainbow();
         Consumer<MultiBufferSource> draw = target -> WormholeVisual.draw(target, pose, facing, camera, time, radius, rings,
                 type, rainbow, alpha);
-        if (entity.isNearWater() || Minecraft.getInstance().gameRenderer.getMainCamera().getFluidInCamera() == FogType.WATER) {
+        boolean cameraInWater = Minecraft.getInstance().gameRenderer.getMainCamera().getFluidInCamera() == FogType.WATER;
+        if ((entity.isNearWater() || cameraInWater) && !(cameraInWater && entity.isSubmerged())) {
             draw.accept(buffers);
         } else {
             AFTER_WATER.add(draw);
@@ -84,17 +84,6 @@ public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
         AFTER_WATER.forEach(draw -> draw.accept(buffers));
         AFTER_WATER.clear();
         buffers.endBatch();
-    }
-
-    private static void renderBeam(WormholeEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource buffers) {
-        int bottom = (int) Math.ceil(WormholeEntity.SIZE);
-        int height = entity.level().getMaxBuildHeight() - Mth.floor(entity.getY()) - bottom;
-        if (height <= 0) return;
-        poseStack.pushPose();
-        poseStack.translate(-0.5, 0, -0.5);
-        BeaconRenderer.renderBeaconBeam(poseStack, buffers, BeaconRenderer.BEAM_LOCATION, partialTick, 1f,
-                entity.level().getGameTime(), bottom, height, 0xFFD9C8FF, 0.25f, 0.3f);
-        poseStack.popPose();
     }
 
     @Override

@@ -32,8 +32,7 @@ import org.joml.Matrix4fStack;
  * should keep its colour gets drawn back over it in colour.
  */
 public class HyperspaceGrey {
-    private static final ResourceLocation CHAIN =
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "shaders/post/greyscale.json");
+    private static final ResourceLocation CHAIN = Hyperspace.id("shaders/post/greyscale.json");
 
     private static PostChain chain;
     private static boolean drawing;
@@ -46,7 +45,7 @@ public class HyperspaceGrey {
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public ResourceLocation getFabricId() {
-                return ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "greyscale");
+                return Hyperspace.id("greyscale");
             }
 
             @Override
@@ -111,7 +110,9 @@ public class HyperspaceGrey {
         if (entity == camera.getEntity() && !camera.isDetached()) return false;
         if (!(entity instanceof Display.ItemDisplay display)) return true;
         Display.ItemDisplay.ItemRenderState state = display.itemRenderState();
-        return state != null && (state.itemStack().is(ModItems.HOOPA_PORTAL) || state.itemStack().is(ModItems.HOOPA_PORTAL_CLOSED));
+        if (state == null) return false;
+        // the thrown ring is its own item, and stays gold like the portal it becomes
+        return state.itemStack().is(ModItems.HOOPA_PORTAL) || state.itemStack().is(ModItems.HOOPA_PORTAL_CLOSED) || state.itemStack().is(ModItems.HOOPA_THROWN_RING);
     }
 
     private static void recolour(WorldRenderContext context, Minecraft client, ClientLevel level, float partial) {

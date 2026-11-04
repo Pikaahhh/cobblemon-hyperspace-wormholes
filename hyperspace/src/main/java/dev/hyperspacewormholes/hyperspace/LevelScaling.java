@@ -31,9 +31,7 @@ public class LevelScaling {
 
     public static void register() {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            if (Cobblemon.INSTANCE.getConfig().getMaxPokemonLevel() < maxLevel) {
-                Cobblemon.INSTANCE.getConfig().setMaxPokemonLevel(maxLevel);
-            }
+            if (Cobblemon.INSTANCE.getConfig().getMaxPokemonLevel() < maxLevel) Cobblemon.INSTANCE.getConfig().setMaxPokemonLevel(maxLevel);
         });
 
         CobblemonEvents.EXPERIENCE_GAINED_EVENT_PRE.subscribe(Priority.LOWEST, event -> {
@@ -43,11 +41,8 @@ public class LevelScaling {
                 return Unit.INSTANCE;
             }
             int maxXp = mon.getExperienceGroup().getExperience(normalCap);
-            if (mon.getLevel() >= normalCap || mon.getExperience() >= maxXp) {
-                event.cancel();
-            } else {
-                event.setExperience(Math.min(event.getExperience(), maxXp - mon.getExperience()));
-            }
+            if (mon.getLevel() >= normalCap || mon.getExperience() >= maxXp) event.cancel();
+            else event.setExperience(Math.min(event.getExperience(), maxXp - mon.getExperience()));
             return Unit.INSTANCE;
         });
 
@@ -57,11 +52,8 @@ public class LevelScaling {
         });
 
         CobblemonEvents.LEVEL_UP_EVENT.subscribe(Priority.LOWEST, event -> {
-            if (ownerInHyperspace(event.getPokemon())) {
-                event.setNewLevel(event.getOldLevel());
-            } else if (event.getNewLevel() > normalCap) {
-                event.setNewLevel(Math.max(event.getOldLevel(), normalCap));
-            }
+            if (ownerInHyperspace(event.getPokemon())) event.setNewLevel(event.getOldLevel());
+            else if (event.getNewLevel() > normalCap) event.setNewLevel(Math.max(event.getOldLevel(), normalCap));
             return Unit.INSTANCE;
         });
 
@@ -69,6 +61,7 @@ public class LevelScaling {
             ServerPlayer player = event.getPlayer();
             Pokemon pokemon = event.getPokemon();
             if (Hyperspace.inHyperspace(player)) caughtInHyperspace(player, pokemon);
+            if (Hyperspace.inHyperspace(player) && pokemon.getShiny()) HyperspaceAdvancements.shiny(player);
             HyperspaceLegendaries.captured(player, pokemon);
             if (pokemon.getAbility().getName().equals(Spawns.GUARD)) pokemon.updateAbility(pokemon.rollAbility());
             return Unit.INSTANCE;
@@ -94,6 +87,8 @@ public class LevelScaling {
     }
 
     private static void caughtInHyperspace(ServerPlayer player, Pokemon mon) {
+        // the Hoopa event's Hoopa keeps its level 70
+        if (HoopaEvent.on(player)) return;
         int stars = Spawns.stars(WorldData.get(player.server).trips.get(player.getUUID()));
         int min = DonutBoosts.minCaughtLevel(stars);
         int level = min + random.nextInt(DonutBoosts.maxCaughtLevel(stars) - min + 1);
@@ -102,8 +97,8 @@ public class LevelScaling {
     }
 
     public static void boost(ServerPlayer player, int stars) {
-        int min = DonutBoosts.minLevel(Math.max(1, stars));
-        int max = DonutBoosts.maxLevel(Math.max(1, stars));
+        stars = Math.max(1, stars);
+        int min = DonutBoosts.minLevel(stars), max = DonutBoosts.maxLevel(stars);
         for (Pokemon mon : Cobblemon.INSTANCE.getStorage().getParty(player)) {
             if (mon.getPersistentData().contains(BOOST)) continue;
             int level = min + random.nextInt(max - min + 1);

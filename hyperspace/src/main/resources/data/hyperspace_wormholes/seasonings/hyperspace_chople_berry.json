@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_chople_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_chople_berry",
+  "flavours": {
+    "SPICY": 60,
+    "BITTER": 40
+  }
+}

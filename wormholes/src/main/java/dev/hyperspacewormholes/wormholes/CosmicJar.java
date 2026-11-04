@@ -18,8 +18,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /**
- * The Cosmic Jar. Fills up with cosmic energy from wormhole trips and the Item Analyser, and once it's full you put it
- * in the Analyser with a golden apple to call a Cosmog.
+ * Fills with cosmic energy from wormhole trips and the Item Analyser; once full, it calls a Cosmog with a golden apple.
  */
 public final class CosmicJar extends Item {
     public static final int CAPACITY = 4;
@@ -56,6 +55,7 @@ public final class CosmicJar extends Item {
             if (!stack.is(ITEM) || isFull(stack)) continue;
             int energy = energy(stack) + 1;
             stack.set(ENERGY, energy);
+            WormholesAdvancements.jarCharged(player);
             player.displayClientMessage(Component.translatable(energy >= CAPACITY
                     ? "hyperspace_wormholes.jar.full" : "hyperspace_wormholes.jar.charged", energy, CAPACITY)
                     .withStyle(ChatFormatting.LIGHT_PURPLE), true);

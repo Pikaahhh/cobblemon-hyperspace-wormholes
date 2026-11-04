@@ -7,10 +7,7 @@ import net.minecraft.client.Minecraft;
 
 import java.lang.reflect.Method;
 
-/**
- * Turns Iris shaders off while you're in Hyperspace (shaderpacks and the grey look don't mix) and back on when you
- * leave or disconnect.
- */
+/** Turns Iris shaders off while you're in Hyperspace (shaderpacks and the grey look don't mix). */
 public class IrisOff {
     private static Object config;
     private static Method enabled;

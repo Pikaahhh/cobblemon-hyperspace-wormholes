@@ -4,6 +4,8 @@ import dev.hyperspacewormholes.wormholes.ride.HomePoint;
 import dev.hyperspacewormholes.wormholes.ride.WaysHome;
 import dev.hyperspacewormholes.wormholes.ride.UltraDimensions;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRide;
+import dev.hyperspacewormholes.wormholes.ride.WormholeDestinations;
+import dev.hyperspacewormholes.wormholes.ride.WormholeOrder;
 import dev.hyperspacewormholes.wormholes.ride.WormholeType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -32,13 +34,15 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The wormhole itself. Opened by a command, a legend's roar or a flute. Fly into one on a legend to start an Ultra
- * Warp Ride, or walk into a way home to go back to where your ride started. Handles its colour, rings, size, how long
- * it lasts and sinking away.
+ * The wormhole itself, opened by a command or a legend's roar. Fly into one on a legend to start an Ultra Warp Ride, or
+ * walk into a way home to go back to where your ride started. One from /wormhole create (setCommanded) lets anyone in
+ * and takes them straight to its destination (WormholeDestinations.visit), or with ride=true starts a ride whose
+ * wormholes all lead there. It's never culled (noCulling), since Entity Culling hides ways home set into rock.
  */
 public class WormholeEntity extends Entity {
     public static final float SIZE = 7f;
-    public static final double SINK_SPEED = 0.2;
+    public static final float RADIUS = 2.6f;
+    public static final float RIM = RADIUS * 1.7f;
     public static final int CLOSE_TICKS = 20;
     private static final EntityDataAccessor<Integer> RINGS =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
@@ -46,17 +50,13 @@ public class WormholeEntity extends Entity {
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LIFETIME =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Boolean> BEACON =
-            SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Float> SINK_TO =
-            SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> RAINBOW =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> SCALE =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.FLOAT);
     private static final int WATER_REACH = 5;
-    private static final double MOUTH_RADIUS = 2.6 * 1.7 * 0.8;
-    private static final double WELL_DEPTH = 2.6 * 1.8 * 0.6;
+    private static final double MOUTH_RADIUS = RIM * 0.8;
+    private static final double WELL_DEPTH = RADIUS * 1.8 * 0.6;
     private static final double MOUTH_REACH = 0.8;
 
     private @Nullable HomePoint returnTo;
@@ -64,11 +64,14 @@ public class WormholeEntity extends Entity {
     private boolean singleUse;
     private boolean decorative;
     private boolean nearWater;
-    private @Nullable String override;
+    private boolean submerged;
+    private boolean commanded;
+    private @Nullable WormholeOrder order;
 
     public WormholeEntity(EntityType<? extends WormholeEntity> type, Level level) {
         super(type, level);
         this.noPhysics = true;
+        this.noCulling = true;
     }
 
     @Override
@@ -76,8 +79,6 @@ public class WormholeEntity extends Entity {
         builder.define(RINGS, 0);
         builder.define(TYPE, 0);
         builder.define(LIFETIME, 0);
-        builder.define(BEACON, false);
-        builder.define(SINK_TO, Float.NaN);
         builder.define(RAINBOW, false);
         builder.define(SCALE, 1f);
     }
@@ -96,15 +97,6 @@ public class WormholeEntity extends Entity {
 
     public void setRainbow(boolean rainbow) {
         entityData.set(RAINBOW, rainbow);
-    }
-
-    public void sinkTo(double y) {
-        entityData.set(SINK_TO, (float) y);
-    }
-
-    public boolean isSinking() {
-        float to = entityData.get(SINK_TO);
-        return !Float.isNaN(to) && getY() > to + 1e-3;
     }
 
     public int getLifetime() {
@@ -131,20 +123,13 @@ public class WormholeEntity extends Entity {
         entityData.set(TYPE, type.ordinal());
     }
 
-    public boolean isBeacon() {
-        return entityData.get(BEACON);
-    }
-
-    public void setBeacon(boolean beacon) {
-        entityData.set(BEACON, beacon);
-    }
-
     public void setSingleUse(boolean singleUse) {
         this.singleUse = singleUse;
     }
 
-    public void setOverride(@Nullable String override) {
-        this.override = override;
+    public void setCommanded(@Nullable WormholeOrder order) {
+        this.commanded = true;
+        this.order = order;
     }
 
     public void setDecorative(boolean decorative) {
@@ -173,6 +158,16 @@ public class WormholeEntity extends Entity {
         return false;
     }
 
+    public boolean isSubmerged() {
+        return submerged;
+    }
+
+    private boolean findSubmerged() {
+        Vec3 middle = center();
+        return level().getFluidState(BlockPos.containing(middle)).is(FluidTags.WATER)
+                && level().getFluidState(BlockPos.containing(middle.add(0, RIM * getScale() + 1, 0))).is(FluidTags.WATER);
+    }
+
     public Vec3 center() {
         return position().add(0, SIZE / 2, 0);
     }
@@ -180,10 +175,12 @@ public class WormholeEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (isSinking()) setPos(getX(), Math.max(entityData.get(SINK_TO), getY() - SINK_SPEED), getZ());
         if (level().isClientSide) {
             spawnSwirlParticles();
-            if (tickCount % 10 == 1) nearWater = findWater();
+            if (tickCount % 10 == 1) {
+                nearWater = findWater();
+                submerged = nearWater && findSubmerged();
+            }
             return;
         }
         int lifetime = getLifetime();
@@ -201,9 +198,9 @@ public class WormholeEntity extends Entity {
         double along = offset.dot(facing);
         Double before = lastAlong.put(entity.getUUID(), along);
         if (before == null || before < 0) return false;
-        if (along > MOUTH_REACH || along < -WELL_DEPTH) return false;
+        if (along > MOUTH_REACH || along < -WELL_DEPTH * getScale()) return false;
         double across = offset.subtract(facing.scale(along)).length();
-        return across <= MOUTH_RADIUS + entity.getBbWidth() / 2;
+        return across <= MOUTH_RADIUS * getScale() + entity.getBbWidth() / 2;
     }
 
     private void pullInRiders() {
@@ -223,7 +220,7 @@ public class WormholeEntity extends Entity {
             }
             boolean touching = player.getBoundingBox().intersects(box)
                     || (vehicle != null && vehicle.getBoundingBox().intersects(box));
-            if (!touching || !UltraWarpRide.canEnter(player)) continue;
+            if (!touching || !UltraWarpRide.canEnter(player, commanded)) continue;
             Vec3 from = (vehicle != null ? vehicle : player).position();
             Vec3 away = new Vec3(from.x - getX(), 0, from.z - getZ());
             away = away.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : away.normalize();
@@ -233,7 +230,12 @@ public class WormholeEntity extends Entity {
             Vec3 c = center();
             level().playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 2f, 1.6f);
             level().playSound(null, c.x, c.y, c.z, SoundEvents.PORTAL_TRAVEL, SoundSource.NEUTRAL, 0.35f, 1.8f);
-            UltraWarpRide.start(player, returnPos, yaw, override);
+            UltraWarpRide.entering(player);
+            if (order != null && !order.ride()) {
+                WormholeDestinations.visit(player, order, new HomePoint(level().dimension(), returnPos, yaw));
+            } else {
+                UltraWarpRide.start(player, returnPos, yaw, order);
+            }
             if (singleUse || closesOnUse()) {
                 closeAfterUse();
                 return;
@@ -261,32 +263,33 @@ public class WormholeEntity extends Entity {
             colour.set((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f);
         }
         DustParticleOptions dust = new DustParticleOptions(colour, 1.2f);
-        float reach = 4.6f + getRings() * 0.6f;
+        float scale = getScale();
+        float reach = (4.6f + getRings() * 0.6f) * scale;
         for (int i = 0; i < 3; i++) {
+            if (random.nextFloat() > scale * scale) continue;
             double theta = random.nextDouble() * Math.PI * 2;
             double phi = Math.acos(random.nextDouble() * 2 - 1);
-            double r = reach + random.nextDouble() * 1.5;
+            double r = reach + random.nextDouble() * 1.5 * scale;
             double x = Math.sin(phi) * Math.cos(theta) * r;
             double y = Math.cos(phi) * r;
             double z = Math.sin(phi) * Math.sin(theta) * r;
             level().addParticle(i == 0 ? ParticleTypes.END_ROD : dust,
                     c.x + x, c.y + y, c.z + z, x * -0.07 - z * 0.06, y * -0.07, z * -0.07 + x * 0.06);
         }
-        if (random.nextInt(6) == 0) {
-            level().addParticle(ParticleTypes.ELECTRIC_SPARK,
-                    c.x + random.triangle(0, 2), c.y + random.triangle(0, 2), c.z + random.triangle(0, 2), 0, 0, 0);
+        if (random.nextInt(6) == 0 && random.nextFloat() <= scale) {
+            level().addParticle(ParticleTypes.ELECTRIC_SPARK, c.x + random.triangle(0, 2 * scale),
+                    c.y + random.triangle(0, 2 * scale), c.z + random.triangle(0, 2 * scale), 0, 0, 0);
         }
     }
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        AABB box = getBoundingBox().inflate(3);
-        return isBeacon() ? box.expandTowards(0, level().getMaxBuildHeight() - getY(), 0) : box;
+        return getBoundingBox().inflate(3);
     }
 
     @Override
     public boolean shouldRenderAtSqrDistance(double distance) {
-        return isBeacon() || distance < 192 * 192;
+        return distance < 192 * 192;
     }
 
     @Override

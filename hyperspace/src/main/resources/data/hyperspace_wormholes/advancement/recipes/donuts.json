@@ -1,0 +1,54 @@
+{
+  "criteria": {
+    "has_wheat": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:wheat"
+          }
+        ]
+      }
+    },
+    "has_donut": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "hyperspace_wormholes:donut"
+          }
+        ]
+      }
+    },
+    "has_berry": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#hyperspace_wormholes:donut_berries"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_wheat",
+      "has_donut",
+      "has_berry"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "hyperspace_wormholes:donut",
+      "hyperspace_wormholes:donut_1_berries",
+      "hyperspace_wormholes:donut_2_berries",
+      "hyperspace_wormholes:donut_3_berries",
+      "hyperspace_wormholes:donut_4_berries",
+      "hyperspace_wormholes:donut_5_berries",
+      "hyperspace_wormholes:donut_6_berries",
+      "hyperspace_wormholes:donut_7_berries",
+      "hyperspace_wormholes:donut_8_berries"
+    ]
+  }
+}

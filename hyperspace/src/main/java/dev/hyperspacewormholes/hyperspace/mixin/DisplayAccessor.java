@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 /**
- * Access to display entities' billboard, transform, brightness and interpolation setters, for the portal and ring
- * displays.
+ * Access to display entities' billboard, transform, brightness, view range and interpolation setters, for the portal
+ * and ring displays and the spatial distortions' light column and label.
  */
 @Mixin(Display.class)
 public interface DisplayAccessor {
@@ -26,4 +26,7 @@ public interface DisplayAccessor {
 
     @Invoker("setTransformationInterpolationDelay")
     void hyperspace_wormholes$setDelay(int ticks);
+
+    @Invoker("setViewRange")
+    void hyperspace_wormholes$setViewRange(float range);
 }

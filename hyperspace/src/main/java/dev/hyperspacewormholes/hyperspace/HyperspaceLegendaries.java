@@ -7,7 +7,6 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon;
 import com.cobblemon.mod.common.pokemon.Pokemon;
-import com.cobblemon.mod.common.pokemon.Species;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -37,11 +36,10 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 /**
- * Rules for Hyperspace bosses (legendaries and Megas). Only the person who summoned one can fight it, beating or
- * catching it gives Legendary Essence or a Mega Stone, and if you catch it, it goes back to its normal form.
+ * Rules for Hyperspace bosses (legendaries and Megas). Only the person who summoned one can fight it or throw balls at
+ * it, beating a Mega gives its Mega Stone, and if you catch it, it goes back to its normal form.
  */
 public class HyperspaceLegendaries {
-    private static final Set<String> PARADOX_ESSENCE = Set.of("koraidon", "miraidon");
     private static final String STONES = "mega_showdown/mega";
     private static final String MEGA_REVERT = "mega_evolution=none";
     private static final int[] REVERT_AGAIN = {20, 100};
@@ -62,7 +60,7 @@ public class HyperspaceLegendaries {
                     for (ServerPlayer player : event.getBattle().getPlayers()) {
                         if (player.getUUID().equals(owner)) continue;
                         event.cancel();
-                        player.sendSystemMessage(Component.literal("That Pokemon belongs to someone else's hyperspace!").withStyle(ChatFormatting.RED));
+                        player.sendSystemMessage(Component.literal("That Pokemon belongs to someone else!").withStyle(ChatFormatting.RED));
                         return Unit.INSTANCE;
                     }
                 }
@@ -84,9 +82,8 @@ public class HyperspaceLegendaries {
             Pokemon pokemon = killed.getEffectedPokemon();
             fainted.add(pokemon);
             Item stone = megaStone(event.getBattle().getPlayers(), pokemon);
-            for (ServerPlayer player : event.getBattle().getPlayers()) {
-                if (givesEssence(pokemon.getSpecies())) give(player, new ItemStack(ModItems.LEGENDARY_ESSENCE));
-                if (stone != null) give(player, new ItemStack(stone));
+            if (stone != null) {
+                for (ServerPlayer player : event.getBattle().getPlayers()) Tasks.give(player, new ItemStack(stone));
             }
             return Unit.INSTANCE;
         });
@@ -121,14 +118,11 @@ public class HyperspaceLegendaries {
         return null;
     }
 
-    private static void give(ServerPlayer player, ItemStack stack) {
-        if (!player.getInventory().add(stack)) player.drop(stack, false);
-    }
-
     public static void captured(ServerPlayer player, Pokemon pokemon) {
         CompoundTag data = pokemon.getPersistentData();
         List<String> reverts = new ArrayList<>();
-        if (data != null && !data.getString(Spawns.REVERT).isEmpty()) reverts.add(data.getString(Spawns.REVERT));
+        String strongest = data == null ? "" : data.getString(Spawns.REVERT);
+        if (!strongest.isEmpty()) reverts.add(strongest);
         if (!reverts.contains(MEGA_REVERT) && pokemon.getAspects().stream().anyMatch(aspect -> aspect.startsWith("mega"))) {
             reverts.add(MEGA_REVERT);
         }
@@ -144,7 +138,6 @@ public class HyperspaceLegendaries {
             pokemon.setScaleModifier(1f);
             pokemon.setCurrentHealth(Math.min(pokemon.getCurrentHealth(), pokemon.getMaxHealth()));
         }
-        if (givesEssence(pokemon.getSpecies())) give(player, new ItemStack(ModItems.LEGENDARY_ESSENCE));
     }
 
     private static void revert(Pokemon pokemon, List<String> reverts) {
@@ -157,10 +150,5 @@ public class HyperspaceLegendaries {
             revert(revert.pokemon(), revert.properties());
             return true;
         });
-    }
-
-    private static boolean givesEssence(Species species) {
-        Set<String> labels = species.getLabels();
-        return labels.contains("legendary") && (!labels.contains("paradox") || PARADOX_ESSENCE.contains(species.getResourceIdentifier().getPath()));
     }
 }

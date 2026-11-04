@@ -5,6 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -14,13 +15,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-/**
- * Registers the floating ball entities and scatters them around an island when a trip starts, spread out and on open
- * ground. Also places and clears the golden ball.
- */
+/** Registers the floating ball entities and scatters them around an island when a trip starts, spread out and on open ground. Also places and clears the golden ball, and counts who pops what for the popping advancements: QuickBattles passes the popper through Tasks just before the ball pops, and once every ball scattered on an island is popped, whoever popped them, everyone on that island gets Professional Popper (islands are wiped on restart, so the counts only live in memory). */
 public class FloatingBalls {
     public static final EntityType<FloatingBall> TYPE = Registry.register(BuiltInRegistries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "floating_poke_ball"),
@@ -40,18 +40,54 @@ public class FloatingBalls {
     private static final double APART = 6;
     private static final double CLEAR_REACH = 150;
 
+    private static final Map<Integer, Integer> SCATTERED = new HashMap<>();
+    private static final Map<Integer, Integer> POPS = new HashMap<>();
+    private static ServerPlayer popper;
+
     public static void register() {
     }
 
     public static void scatter(ServerLevel level, BlockPos centre, int slot, Zones.Zone zone) {
         List<Vec3> placed = new ArrayList<>();
+        int spawned = 0;
         for (boolean strict : new boolean[]{true, false}) {
             for (int i = 0; i < TRIES && placed.size() < PER_ZONE; i++) {
                 Vec3 pos = spot(level, centre, slot, zone, strict);
                 if (pos == null || placed.stream().anyMatch(p -> p.distanceToSqr(pos) < APART * APART)) continue;
-                spawn(level, TYPE.create(level), pos);
+                if (spawn(level, TYPE.create(level), pos)) spawned++;
                 placed.add(pos);
             }
+        }
+        SCATTERED.put(Zones.BASE + slot, spawned);
+        POPS.remove(Zones.BASE + slot);
+    }
+
+    public static void popping(ServerPlayer player) {
+        popper = player;
+    }
+
+    public static DonutPowers powers(ServerLevel level, ServerPlayer owner) {
+        ServerPlayer player = popper != null ? popper : owner;
+        WorldData.Trip trip = player == null ? null : WorldData.get(level.getServer()).trips.get(player.getUUID());
+        return trip == null ? DonutPowers.NONE : trip.powers;
+    }
+
+    public static void popped(FloatingBall ball, ServerPlayer owner) {
+        ServerPlayer player = popper != null ? popper : owner;
+        popper = null;
+        if (player == null) return;
+        HyperspaceAdvancements.popped(player);
+        if (ball.golden()) {
+            HyperspaceAdvancements.golden(player);
+            return;
+        }
+        int island = Zones.islandAt(ball.blockPosition());
+        int count = POPS.merge(island, 1, Integer::sum);
+        if (count < SCATTERED.getOrDefault(island, Integer.MAX_VALUE)) return;
+        Map<UUID, WorldData.Trip> trips = WorldData.get(player.server).trips;
+        for (ServerPlayer here : player.serverLevel().players()) {
+            WorldData.Trip trip = trips.get(here.getUUID());
+            if (trip != null && trip.island == island) HyperspaceAdvancements.allPopped(here);
         }
     }
 

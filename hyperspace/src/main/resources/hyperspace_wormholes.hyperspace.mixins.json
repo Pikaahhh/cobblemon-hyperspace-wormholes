@@ -3,12 +3,13 @@
   "package": "dev.hyperspacewormholes.hyperspace.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AdvancementLayoutMixin",
     "BlockItemMixin",
     "BucketItemMixin",
     "DisplayAccessor",
     "TextDisplayAccessor",
+    "BlockDisplayAccessor",
     "ItemDisplayAccessor",
-    "SeasoningSlotMixin",
     "PlayerMixin",
     "PokemonMixin",
     "EntityMixin",
@@ -18,15 +19,13 @@
     "ErraticMixin",
     "GroundedPokemonMixin",
     "FitPathMixin",
-    "StructureBlockSizeMixin",
-    "StructureBlockPacketMixin"
+    "PlayerAdvancementsMixin"
   ],
   "client": [
     "PostChainAccessor",
     "EntityRenderDispatcherMixin",
     "PosableStateMixin",
     "LivingEntityMixin",
-    "MountedCameraMixin",
     "SoundManagerAccessor",
     "SoundEngineAccessor",
     "BattleMusicControllerMixin",
@@ -34,9 +33,11 @@
     "ParticleEngineMixin",
     "FogRendererMixin",
     "MinecraftAccessor",
-    "MoveTileMixin"
+    "MoveTileMixin",
+    "PokemonRendererClipMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
 }

@@ -1,0 +1,610 @@
+{
+  "timeline": [
+    {
+      "type": "add_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "photongeyser",
+        "special"
+      ]
+    },
+    {
+      "type": "horizons_movefx:model_motion",
+      "who": "target",
+      "delay": 2.9,
+      "keys": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.067,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0058
+        ],
+        [
+          0.167,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0055
+        ],
+        [
+          0.233,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0071
+        ],
+        [
+          0.333,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0075
+        ],
+        [
+          0.433,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0078
+        ],
+        [
+          0.533,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0081
+        ],
+        [
+          0.633,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0082
+        ],
+        [
+          0.733,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0082
+        ],
+        [
+          0.833,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0082
+        ],
+        [
+          0.933,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.008
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0081
+        ],
+        [
+          1.1,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0087
+        ],
+        [
+          1.2,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0093
+        ],
+        [
+          1.3,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0097
+        ],
+        [
+          1.4,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0101
+        ],
+        [
+          1.5,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0103
+        ],
+        [
+          1.6,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0104
+        ],
+        [
+          1.7,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0104
+        ],
+        [
+          1.8,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0103
+        ],
+        [
+          1.867,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.0093
+        ],
+        [
+          1.9,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          -0.01
+        ],
+        [
+          2.2,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 0.0,
+      "duration": 2.333,
+      "from": 3,
+      "to": 3,
+      "rate": 20
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 2.333,
+      "duration": 0.2,
+      "from": 12,
+      "to": 12,
+      "rate": 5
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 2.833,
+      "duration": 1.933,
+      "from": 12,
+      "to": 6,
+      "rate": 15
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_aura",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_halo",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_core",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_pour",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_rays",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_swell",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.activate",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c033c",
+      "delay": 0.033,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 1.4
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_orb",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.amethyst_block.chime",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.033
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_flares",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c033d",
+      "delay": 0.0,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c033e",
+      "delay": 0.9,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 1.067
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_up",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.firework_rocket.launch",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.4
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_down",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_molang",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false",
+          "expressions": [
+            "q.sound('move.psychic.target');"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "recoil"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.hurt(q.entity.uuid) == true && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.167
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_pillar",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_burst",
+      "locators": [
+        "middle",
+        "target"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_motes",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_ring",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.generic.explode",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c033f",
+      "delay": 0.066,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0396",
+      "delay": 0.466,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c039c",
+      "delay": 1.1,
+      "volume": 1.0,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 2.1
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:photongeyser_bloom",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.power_select",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+        }
+      ]
+    },
+    {
+      "type": "remove_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.6
+    }
+  ]
+}

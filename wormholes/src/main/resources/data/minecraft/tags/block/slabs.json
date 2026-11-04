@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "hyperspace_wormholes:coarse_dirt_slab",
+    "hyperspace_wormholes:dripstone_block_slab",
+    "hyperspace_wormholes:orange_terracotta_slab",
+    "hyperspace_wormholes:yellow_terracotta_slab",
+    "hyperspace_wormholes:dark_oak_wood_slab",
+    "hyperspace_wormholes:jungle_wood_slab",
+    "hyperspace_wormholes:mangrove_wood_slab",
+    "hyperspace_wormholes:stripped_dark_oak_wood_slab",
+    "hyperspace_wormholes:stripped_spruce_wood_slab",
+    "hyperspace_wormholes:basalt_slab",
+    "hyperspace_wormholes:deepslate_slab",
+    "hyperspace_wormholes:smooth_basalt_slab",
+    "hyperspace_wormholes:luminescent_ice_slab",
+    "hyperspace_wormholes:calcite_slab",
+    "hyperspace_wormholes:megalo_light_slab",
+    "hyperspace_wormholes:megalo_tread_slab"
+  ]
+}

@@ -11,8 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,15 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Coming out of the wormhole at the end of a ride. Holds you on your landing spot while clients show you gliding out,
- * then you hop off as the legend goes back in its ball.
- */
+/** Coming out of the wormhole at the end of a ride: holds you on your landing spot while clients show you gliding out. */
 public final class RiderArrival {
     private static final int EMERGE_TICKS = 80;
     private static final int SETTLE_TICKS = 15;
     static final int TICKS = EMERGE_TICKS + SETTLE_TICKS;
-    private static final int SKY_SLOW_FALL_TICKS = 6 * 20;
     public static final float EXIT_PITCH = 8f;
     private static final int TIMEOUT_TICKS = TICKS + 20 * 20;
     private static final double VIEW_RANGE = 128;
@@ -124,27 +118,13 @@ public final class RiderArrival {
         }
     }
 
-    private static MobEffectInstance slowFalling() {
-        return new MobEffectInstance(MobEffects.SLOW_FALLING, SKY_SLOW_FALL_TICKS, 0, false, false);
-    }
-
     private static void release(Rider rider, boolean animate) {
         UltraWarpRules.release(rider.player);
         rider.passengers.forEach(UltraWarpRules::release);
         if (rider.mount != null) UltraWarpRules.release(rider.mount);
         if (rider.airborne) {
             if (rider.mount != null && !rider.mount.isRemoved() && rider.player.getVehicle() == rider.mount) remindSeated(rider);
-            rider.player.addEffect(slowFalling());
-            rider.player.fallDistance = 0;
-            for (ServerPlayer p : rider.passengers) {
-                p.addEffect(slowFalling());
-                p.fallDistance = 0;
-            }
-            if (rider.mount != null) {
-                rider.mount.addEffect(slowFalling());
-                rider.mount.fallDistance = 0;
-                if (!rider.mount.isRemoved()) GUARDS.add(new Guard(rider.player, rider.mount, ticks + GUARD_TICKS));
-            }
+            if (rider.mount != null && !rider.mount.isRemoved()) GUARDS.add(new Guard(rider.player, rider.mount, ticks + GUARD_TICKS));
             return;
         }
         if (rider.mount != null && rider.player.getVehicle() == rider.mount) Mounts.dismount(rider.player);

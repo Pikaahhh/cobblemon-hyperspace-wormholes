@@ -1,0 +1,308 @@
+{
+  "timeline": [
+    {
+      "type": "add_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "prismaticlaser",
+        "special"
+      ]
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 3.367,
+      "duration": 1.2,
+      "from": 15,
+      "to": 0,
+      "rate": 25
+    },
+    {
+      "type": "pause",
+      "pause": 0.333
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_gather",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_swell",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.activate",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02bd.436733f6",
+      "delay": 0.0,
+      "volume": 0.7559,
+      "pitch": 1.4331,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0223",
+      "delay": 0.0,
+      "volume": 0.2362,
+      "pitch": 1.1732,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0223.a446ae74",
+      "delay": 0.834,
+      "volume": 0.2362,
+      "pitch": 1.1732,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.933
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_halo",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.067
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_glints",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.167
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.amethyst_block.chime",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c00a3",
+      "delay": 0.0,
+      "volume": 0.7559,
+      "pitch": 1.3465,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.4
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_blast",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_rays",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.generic.explode",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0339.cc01610d",
+      "delay": 0.0,
+      "volume": 0.6299,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02c2",
+      "delay": 0.0,
+      "volume": 0.8661,
+      "pitch": 0.9134,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.067
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_flare",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 1.233
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_rain",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.power_select",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0339.27a445c0",
+      "delay": 0.0,
+      "volume": 0.7874,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0221",
+      "delay": 0.167,
+      "volume": 0.7874,
+      "pitch": 1.315,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.167
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_impact",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_spikes",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_spots",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_pool",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_molang",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false",
+          "expressions": [
+            "q.sound('move.psychic.target');"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.033
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "recoil"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.hurt(q.entity.uuid) == true && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0221",
+      "delay": 0.033,
+      "volume": 0.7874,
+      "pitch": 1.315,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.2
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:prismaticlaser_field",
+      "locators": [
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.233
+    },
+    {
+      "type": "remove_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 1.3
+    }
+  ]
+}

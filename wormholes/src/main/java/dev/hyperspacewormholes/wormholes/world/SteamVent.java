@@ -18,9 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * The Ultra Valley's steam vent block. Looks like coarse dirt and puffs out a tall column of smoke.
- */
+/** The Ultra Crater's steam vent block. Looks like coarse dirt and puffs out a tall column of smoke. */
 public class SteamVent extends BaseEntityBlock {
     private static final MapCodec<SteamVent> CODEC = simpleCodec(SteamVent::new);
     public static final SteamVent BLOCK = Registry.register(BuiltInRegistries.BLOCK, Wormholes.id("steam_vent"),

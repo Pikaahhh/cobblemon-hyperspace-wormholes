@@ -1,0 +1,626 @@
+{
+  "timeline": [
+    {
+      "type": "add_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_lunala', 'moongeistbeam', q.curve('one'))",
+        "moongeistbeam",
+        "special"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:lunala'"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_necrozma_dawnwings', 'moongeistbeam', q.curve('one'))",
+        "moongeistbeam",
+        "special"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dawn-fusion') && !q.entity.has_aspect('ultra-fusion')"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "moongeistbeam",
+        "special"
+      ],
+      "entityCondition": "q.entity.is_user == true && !(q.entity.species.identifier == 'cobblemon:lunala') && !(q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dawn-fusion') && !q.entity.has_aspect('ultra-fusion'))"
+    },
+    {
+      "type": "horizons_movefx:model_motion",
+      "who": "user",
+      "delay": 0.0,
+      "keys": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.533,
+          0.0,
+          0.3,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.667,
+          0.0,
+          -0.2,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.7,
+          0.0,
+          -0.2,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.867,
+          0.0,
+          3.5,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          1.5,
+          0.0,
+          3.5,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          1.867,
+          0.0,
+          3.5,
+          0.0,
+          -30.0,
+          0.0,
+          0.0
+        ],
+        [
+          30.0,
+          0.0,
+          3.5,
+          0.0,
+          -30.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.633
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_puff",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.067
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_flare",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_column",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_spikes",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_clouds",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_rocks",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_debris",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.phantom.flap",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c005b",
+      "delay": 0.0,
+      "volume": 0.9449,
+      "pitch": 0.9567,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c003f.3f092605",
+      "delay": 0.0,
+      "volume": 0.7559,
+      "pitch": 1.4331,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 1.2
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c01b3",
+      "delay": 0.0,
+      "volume": 1.0,
+      "pitch": 1.0787,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 1.067
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_sigil",
+      "locators": [
+        "movefx_head",
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c033a",
+      "delay": 0.067,
+      "volume": 0.7874,
+      "pitch": 0.8819,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.567
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_chest",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.ambient",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.6
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_sphere",
+      "locators": [
+        "movefx_centre",
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_rings",
+      "locators": [
+        "movefx_centre",
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_sparks",
+      "locators": [
+        "movefx_centre",
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0328",
+      "delay": 0.067,
+      "volume": 0.6299,
+      "pitch": 1.7874,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02d3.49b61b90",
+      "delay": 0.267,
+      "volume": 0.5512,
+      "pitch": 1.315,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.667
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_wings",
+      "locators": [
+        "movefx_rim",
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_tips",
+      "locators": [
+        "movefx_rim",
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.amethyst_block.resonate",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0228.c0b9c4f7",
+      "delay": 0.1,
+      "volume": 0.5512,
+      "pitch": 0.6457,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.533
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_stars",
+      "locators": [
+        "movefx_rim",
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_streaks",
+      "locators": [
+        "movefx_rim",
+        "middle"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.567
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_flash",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.2
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_beam",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ],
+      "targetLocators": [
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_halo",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ],
+      "targetLocators": [
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_muzzle",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_rays",
+      "locators": [
+        "movefx_chest",
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_molang",
+          "entityCondition": "q.entity.is_user == true",
+          "expressions": [
+            "q.sound('move.aurorabeam.actor_1');"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c024b.2a1d088b",
+      "delay": 0.0,
+      "volume": 1.0,
+      "pitch": 1.3465,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02d9.2a1d088b",
+      "delay": 0.0,
+      "volume": 1.0,
+      "pitch": 2.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:travel",
+      "speed": 12,
+      "min": 0.1,
+      "max": 2.5,
+      "add": 0.0
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_splash",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_molang",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false",
+          "expressions": [
+            "q.sound('move.dracometeor.target_1');"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c00c2.2188139c",
+      "delay": 0.0,
+      "volume": 1.4173,
+      "pitch": 1.4331,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 0.0,
+      "duration": 1.3,
+      "from": 10,
+      "to": 3,
+      "rate": 20
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "recoil"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.hurt(q.entity.uuid) == true && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.133
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_boom",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_burst",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_hitrings",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:moongeistbeam_hitsparks",
+      "locators": [
+        "middle",
+        "root"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "cobblemon:impact.ghost",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0093",
+      "delay": 0.0,
+      "volume": 0.9055,
+      "pitch": 1.2598,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c018e",
+      "delay": 0.0,
+      "volume": 0.9449,
+      "pitch": 0.9567,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "recoil"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.hurt(q.entity.uuid) == true && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 0.733
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_lunala', 'moongeistbeam_release', q.curve('one'))"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:lunala'"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_necrozma_dawnwings', 'moongeistbeam_release', q.curve('one'))"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dawn-fusion') && !q.entity.has_aspect('ultra-fusion')"
+    },
+    {
+      "type": "horizons_movefx:model_motion",
+      "who": "user",
+      "delay": 0.0,
+      "keys": [
+        [
+          0.0,
+          0.0,
+          3.5,
+          0.0,
+          -30.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.167,
+          0.0,
+          3.5,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.6,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.6
+    },
+    {
+      "type": "remove_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.3
+    }
+  ]
+}

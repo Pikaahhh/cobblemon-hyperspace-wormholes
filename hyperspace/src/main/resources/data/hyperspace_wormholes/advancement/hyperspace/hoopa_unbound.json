@@ -1,0 +1,35 @@
+{
+  "parent": "hyperspace_wormholes:hyperspace/legendary_encounter",
+  "display": {
+    "icon": {
+      "id": "mega_showdown:prison_bottle"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.hoopa_unbound.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.hoopa_unbound.description",
+      "color": "dark_purple",
+      "with": [
+        {
+          "text": "##",
+          "obfuscated": true
+        },
+        {
+          "text": "?",
+          "obfuscated": true
+        }
+      ]
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "criteria": {
+    "hoopa_unbound": {
+      "trigger": "hyperspace_wormholes:hyperspace",
+      "conditions": {
+        "event": "hoopa"
+      }
+    }
+  }
+}

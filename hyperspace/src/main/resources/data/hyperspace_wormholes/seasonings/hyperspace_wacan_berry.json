@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_wacan_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_wacan_berry",
+  "flavours": {
+    "SWEET": 60,
+    "SOUR": 40
+  }
+}

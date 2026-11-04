@@ -1,0 +1,8 @@
+{
+  "parent": "hyperspace_wormholes:block/tinted_slab_top",
+  "textures": {
+    "bottom": "hyperspace_wormholes:block/luminescent_ice",
+    "top": "hyperspace_wormholes:block/luminescent_ice",
+    "side": "hyperspace_wormholes:block/luminescent_ice"
+  }
+}

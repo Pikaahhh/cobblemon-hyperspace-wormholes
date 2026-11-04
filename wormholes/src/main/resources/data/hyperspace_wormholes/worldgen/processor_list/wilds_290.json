@@ -1,0 +1,17 @@
+{
+  "processors": [
+    {
+      "processor_type": "hyperspace_wormholes:zone_shading",
+      "floor": 59,
+      "top": 81
+    },
+    {
+      "processor_type": "hyperspace_wormholes:waterlog_in_water"
+    },
+    {
+      "processor_type": "hyperspace_wormholes:zone_carve",
+      "zone": "wilds_290",
+      "depth": 4
+    }
+  ]
+}

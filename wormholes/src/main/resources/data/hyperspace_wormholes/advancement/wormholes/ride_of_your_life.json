@@ -1,0 +1,27 @@
+{
+  "parent": "hyperspace_wormholes:wormholes/sun_and_moon",
+  "display": {
+    "icon": {
+      "id": "mega_showdown:n_solarizer"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.ride_of_your_life.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.ride_of_your_life.description",
+      "with": [
+        {
+          "keybind": "key.hyperspace_wormholes.roar"
+        }
+      ]
+    }
+  },
+  "criteria": {
+    "ride_of_your_life": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "ride"
+      }
+    }
+  }
+}

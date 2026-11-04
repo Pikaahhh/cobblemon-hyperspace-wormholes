@@ -9,19 +9,16 @@ import net.minecraft.world.item.Item;
 
 import java.util.List;
 
-/**
- * The Ultra Space creative tab with every wormholes item. Also loads those item classes so they actually get
- * registered.
- */
+/** The Ultra Space creative tab with every wormholes item; it also loads the item classes so they get registered. */
 public final class UltraSpaceTab {
     public static void register() {
-        List<Item> before = List.of(Flutes.POKE_FLUTE, Flutes.SUN_FLUTE, Flutes.MOON_FLUTE, CosmicJar.ITEM);
-        List<Item> after = List.of(UltraHide.ITEM, BigBattery.ITEM, ItemAnalyser.ERROR_SCREEN);
+        Item jar = CosmicJar.ITEM;
+        List<Item> after = List.of(BigBattery.ITEM, LuminescentIce.ITEM, ItemAnalyser.ERROR_SCREEN);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Wormholes.id("ultra_space"), FabricItemGroup.builder()
                 .title(Component.translatable("itemGroup.hyperspace_wormholes.ultra_space"))
                 .icon(CosmicJar::full)
                 .displayItems((params, output) -> {
-                    before.forEach(output::accept);
+                    output.accept(jar);
                     output.accept(CosmicJar.full());
                     after.forEach(output::accept);
                 })

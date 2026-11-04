@@ -13,10 +13,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
 
-/**
- * Shared rules about the Ultra Warp dimension and Hyperspace that both sides and the mixins use, like who's held in
- * place and where wormholes are allowed to open.
- */
+/** Rules about the Ultra Warp dimension and Hyperspace shared by both sides and the mixins. */
 public final class UltraWarpRules {
     private static final ResourceLocation HYPERSPACE = ResourceLocation.fromNamespaceAndPath("hyperspace_wormholes", "hyperspace");
     private static final Set<Entity> HELD = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));

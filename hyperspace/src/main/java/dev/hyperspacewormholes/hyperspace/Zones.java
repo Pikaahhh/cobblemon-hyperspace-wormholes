@@ -46,9 +46,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * Hyperspace islands, copied from your own world. Copies the terrain around you into one of Hyperspace's island slots
- * with a blobby edge, works out where you arrive and where the way back is, and wipes old islands when the server
- * starts.
+ * Hyperspace islands, copied from your own world. Copies the terrain around you into one of Hyperspace's island
+ * slots with a blobby edge, works out where you arrive and where the way back is, and wipes leftover islands when
+ * the server starts.
  */
 public class Zones {
     public static final int BASE = 1000;
@@ -253,7 +253,14 @@ public class Zones {
                 + 1.9 * Math.sin(5 * angle + slot * 2.3);
     }
 
-    public static int build(ServerPlayer player, ServerLevel hyperspace, ServerLevel from, Vec3 portalBase, Vec3 normal, Set<Integer> busy) {
+    /** The island's blocks swapped for the Hoopa arena where it stands, with the way home on it (/hyperspace arena). */
+    public static void arena(ServerLevel hyperspace, int island) {
+        BlockPos centre = centre(island - BASE);
+        clear(hyperspace, centre);
+        HoopaArena.build(hyperspace, centre, island - BASE, get(island));
+    }
+
+    public static int build(ServerPlayer player, ServerLevel hyperspace, ServerLevel from, Vec3 portalBase, Vec3 normal, Set<Integer> busy, boolean arena) {
         int slot = -1;
         for (int k = 1; k <= SLOTS; k++) {
             int candidate = (last + k) % SLOTS;
@@ -268,10 +275,17 @@ public class Zones {
         BlockPos origin = BlockPos.containing(portalBase);
         BlockPos centre = centre(slot);
         clear(hyperspace, centre);
-        tidy(hyperspace, copy(hyperspace, from, origin, centre, slot));
-
         Zone zone = new Zone();
         zone.made = hyperspace.getGameTime();
+        if (arena) {
+            HoopaArena.build(hyperspace, centre, slot, zone);
+            zone.types = types(from.getBiome(origin));
+            zones.put(slot, zone);
+            WorldData.get(player.server).setDirty();
+            return BASE + slot;
+        }
+        tidy(hyperspace, copy(hyperspace, from, origin, centre, slot));
+
         zone.ax = centre.getX() + (player.getX() - origin.getX());
         zone.ay = player.getY();
         zone.az = centre.getZ() + (player.getZ() - origin.getZ());
@@ -282,6 +296,7 @@ public class Zones {
         zone.nx = normal.x;
         zone.nz = normal.z;
         edgePortal(hyperspace, centre, slot, zone);
+        IslandWall.place(hyperspace, centre, slot, zone);
         FloatingBalls.scatter(hyperspace, centre, slot, zone);
         zone.types = types(from.getBiome(origin));
         zones.put(slot, zone);
@@ -475,13 +490,15 @@ public class Zones {
                 int bottom = inside[i][j] ? floor - 4 - (int) Math.round(DEEP * Math.sqrt(Math.max(0, 1 - (d / r) * (d / r)))) : ground + 1;
                 int tx = centre.getX() + dx, tz = centre.getZ() + dz;
                 bottoms.put(BlockPos.asLong(tx, 0, tz), bottom);
+                // a filled dip wears its own ground and snow, not plain grass
+                BlockState own = chunk.getBlockState(read.set(sx, ground, sz)), lying = chunk.getBlockState(read.set(sx, ground + 1, sz));
                 for (int y = Math.max(bottom, lowest); y <= Math.min(Math.max(tops[i][j], fill), highest); y++) {
                     BlockState state = chunk.getBlockState(read.set(sx, y, sz));
                     if (!inside[i][j] && !state.is(BlockTags.LEAVES)) continue;
                     if (y < ground) {
                         state = underground(state, palette[2]);
                     } else if (y > ground && y <= fill && (state.isAir() || !state.getFluidState().isEmpty() || state.getCollisionShape(chunk, read).isEmpty())) {
-                        state = y == fill ? palette[0] : y == fill - 1 ? palette[1] : palette[2];
+                        state = y == fill ? own : y == fill - 1 ? palette[1] : palette[2];
                     }
                     state = dry(state);
                     if (state.isAir() || skipped(state, from, read)) continue;
@@ -489,6 +506,11 @@ public class Zones {
                     hyperspace.setBlock(to, state, QUIET);
                     placed.add(to);
                     if (!state.getFluidState().isEmpty()) fluids.add(to);
+                }
+                BlockPos over = new BlockPos(tx, fill + 1, tz);
+                if (inside[i][j] && fill > ground && lying.is(Blocks.SNOW) && hyperspace.getBlockState(over).isAir()) {
+                    hyperspace.setBlock(over, lying, QUIET);
+                    placed.add(over);
                 }
             }
         }
@@ -553,7 +575,7 @@ public class Zones {
         }
     }
 
-    private static List<String> types(Holder<Biome> biome) {
+    static List<String> types(Holder<Biome> biome) {
         String path = biome.unwrapKey().map(k -> k.location().getPath()).orElse("");
         if (biome.is(BiomeTags.IS_NETHER)) return List.of("fire", "dark");
         if (biome.is(BiomeTags.IS_END)) return List.of("dragon", "psychic");

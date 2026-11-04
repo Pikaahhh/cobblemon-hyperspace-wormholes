@@ -9,10 +9,12 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import java.util.List;
 
 /**
- * Server to client: you're on an Ultra Warp Ride now. Carries the seed, mount, any waystone wormholes, the Ultra Beast
- * override and whether you're a passenger.
+ * Server to client: you're on an Ultra Warp Ride now. Carries the seed, mount, any waystone wormholes, whether you're a
+ * passenger, whether the tunnel's wormholes are in the game's colours and, on a ride to one destination, the one colour
+ * (WormholeType id, -1 for none) and rings every wormhole in the tunnel has.
  */
-public record RideStartPayload(long seed, int mount, List<WaystoneHole> waystones, String override, boolean passenger) implements CustomPacketPayload {
+public record RideStartPayload(long seed, int mount, List<WaystoneHole> waystones, boolean passenger,
+                               boolean gameColours, int only, int onlyRings) implements CustomPacketPayload {
     public static final Type<RideStartPayload> TYPE = new Type<>(Wormholes.id("ride_start"));
 
     public record WaystoneHole(double distance, float x, float y, int type, String name) {
@@ -25,13 +27,19 @@ public record RideStartPayload(long seed, int mount, List<WaystoneHole> waystone
                 WaystoneHole::new);
     }
 
-    public static final StreamCodec<ByteBuf, RideStartPayload> CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_LONG, RideStartPayload::seed,
-            ByteBufCodecs.VAR_INT, RideStartPayload::mount,
-            WaystoneHole.CODEC.apply(ByteBufCodecs.list()), RideStartPayload::waystones,
-            ByteBufCodecs.STRING_UTF8, RideStartPayload::override,
-            ByteBufCodecs.BOOL, RideStartPayload::passenger,
-            RideStartPayload::new);
+    private static final StreamCodec<ByteBuf, List<WaystoneHole>> HOLES = WaystoneHole.CODEC.apply(ByteBufCodecs.list());
+
+    public static final StreamCodec<ByteBuf, RideStartPayload> CODEC = StreamCodec.of((buf, p) -> {
+        ByteBufCodecs.VAR_LONG.encode(buf, p.seed());
+        ByteBufCodecs.VAR_INT.encode(buf, p.mount());
+        HOLES.encode(buf, p.waystones());
+        ByteBufCodecs.BOOL.encode(buf, p.passenger());
+        ByteBufCodecs.BOOL.encode(buf, p.gameColours());
+        ByteBufCodecs.VAR_INT.encode(buf, p.only());
+        ByteBufCodecs.VAR_INT.encode(buf, p.onlyRings());
+    }, buf -> new RideStartPayload(ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), HOLES.decode(buf),
+            ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
+            ByteBufCodecs.VAR_INT.decode(buf)));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

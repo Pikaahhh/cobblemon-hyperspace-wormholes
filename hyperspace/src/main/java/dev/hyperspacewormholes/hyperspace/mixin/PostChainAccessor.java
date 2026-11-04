@@ -7,9 +7,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
 
-/**
- * Access to a post chain's passes, for the greyscale effect.
- */
+/** Access to a post chain's passes, for the greyscale effect. */
 @Mixin(PostChain.class)
 public interface PostChainAccessor {
     @Accessor("passes")

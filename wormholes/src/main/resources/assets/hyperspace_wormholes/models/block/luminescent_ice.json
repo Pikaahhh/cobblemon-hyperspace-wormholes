@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "hyperspace_wormholes:block/luminescent_ice"
+  }
+}

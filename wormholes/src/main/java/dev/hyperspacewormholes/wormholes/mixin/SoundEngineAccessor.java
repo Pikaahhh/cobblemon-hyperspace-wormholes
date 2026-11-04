@@ -9,9 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Map;
 
-/**
- * Access to the sound engine's playing channels, listener and whether it's loaded.
- */
+/** Access to the sound engine's playing channels, listener and whether it's loaded. */
 @Mixin(SoundEngine.class)
 public interface SoundEngineAccessor {
     @Accessor("instanceToChannel")

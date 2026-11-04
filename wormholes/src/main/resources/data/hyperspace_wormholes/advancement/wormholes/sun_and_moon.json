@@ -1,0 +1,22 @@
+{
+  "parent": "hyperspace_wormholes:wormholes/cosmic_filling",
+  "display": {
+    "icon": {
+      "id": "cobblemon:moon_stone"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.sun_and_moon.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.sun_and_moon.description"
+    }
+  },
+  "criteria": {
+    "sun_and_moon": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "cosmog"
+      }
+    }
+  }
+}

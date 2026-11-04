@@ -6,9 +6,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-/**
- * Client to server, every tick: how far along the tunnel you are and where you've steered.
- */
+/** Client to server, every tick: how far along the tunnel you are and where you've steered. */
 public record RideStatePayload(double progress, float offX, float offY) implements CustomPacketPayload {
     public static final Type<RideStatePayload> TYPE = new Type<>(Wormholes.id("ride_state"));
     public static final StreamCodec<ByteBuf, RideStatePayload> CODEC = StreamCodec.composite(

@@ -1,0 +1,30 @@
+{
+  "species": "cobblemon:necrozma",
+  "order": 11,
+  "variations": [
+    {
+      "aspects": ["ultra-fusion", "ultra-dim-1"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_dim1.png", "translucent": false}]
+    },
+    {
+      "aspects": ["ultra-fusion", "ultra-dim-2"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_dim2.png", "translucent": false}]
+    },
+    {
+      "aspects": ["ultra-fusion", "ultra-dim-3"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_dim3.png", "translucent": false}]
+    },
+    {
+      "aspects": ["shiny", "ultra-fusion", "ultra-dim-1"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim1.png", "translucent": false}]
+    },
+    {
+      "aspects": ["shiny", "ultra-fusion", "ultra-dim-2"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim2.png", "translucent": false}]
+    },
+    {
+      "aspects": ["shiny", "ultra-fusion", "ultra-dim-3"],
+      "layers": [{"name": "glow", "emissive": true, "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim3.png", "translucent": false}]
+    }
+  ]
+}

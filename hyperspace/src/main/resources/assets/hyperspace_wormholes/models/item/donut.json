@@ -41,6 +41,18 @@
     {"predicate": {"hyperspace_wormholes:icing": 0.17}, "model": "hyperspace_wormholes:item/donut_inverted_aqua"},
     {"predicate": {"hyperspace_wormholes:icing": 0.17, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_inverted_aqua_sprinkles"},
     {"predicate": {"hyperspace_wormholes:icing": 0.18}, "model": "hyperspace_wormholes:item/donut_inverted_deep_blue"},
-    {"predicate": {"hyperspace_wormholes:icing": 0.18, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_inverted_deep_blue_sprinkles"}
+    {"predicate": {"hyperspace_wormholes:icing": 0.18, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_inverted_deep_blue_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.19}, "model": "hyperspace_wormholes:item/donut_meringue"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.19, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_meringue_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.20}, "model": "hyperspace_wormholes:item/donut_curry"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.20, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_curry_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.21}, "model": "hyperspace_wormholes:item/donut_jam"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.21, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_jam_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.22}, "model": "hyperspace_wormholes:item/donut_chocolate"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.22, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_chocolate_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.23}, "model": "hyperspace_wormholes:item/donut_cream"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.23, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_cream_sprinkles"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.24}, "model": "hyperspace_wormholes:item/donut_rainbow"},
+    {"predicate": {"hyperspace_wormholes:icing": 0.24, "hyperspace_wormholes:sprinkles": 1}, "model": "hyperspace_wormholes:item/donut_rainbow_sprinkles"}
   ]
 }

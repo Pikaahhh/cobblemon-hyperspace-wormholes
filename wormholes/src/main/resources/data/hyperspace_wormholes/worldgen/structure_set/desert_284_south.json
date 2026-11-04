@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "hyperspace_wormholes:desert_284_south",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "hyperspace_wormholes:zone_spot",
+    "salt": 569,
+    "chunk_x": 2,
+    "chunk_z": 10,
+    "repeat": 625
+  }
+}

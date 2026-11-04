@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_babiri_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_babiri_berry",
+  "flavours": {
+    "SPICY": 100,
+    "DRY": 40
+  }
+}

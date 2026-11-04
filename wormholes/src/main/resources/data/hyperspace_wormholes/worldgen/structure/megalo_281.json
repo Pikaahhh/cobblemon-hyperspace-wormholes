@@ -1,0 +1,9 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/megalo_281",
+  "step": "local_modifications",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "megalo_281",
+  "processors": "hyperspace_wormholes:megalo_281"
+}

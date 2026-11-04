@@ -1,12 +1,12 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import com.cobblemon.mod.common.Cobblemon;
-import com.cobblemon.mod.common.CobblemonEntities;
 import com.cobblemon.mod.common.api.riding.RidingStyle;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.WormholeConfig;
 import kotlin.Unit;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Cobblemon helpers for ride mounts: sending them out, putting them away and telling which one's which.
- */
+/** Cobblemon helpers for ride mounts: sending them out, putting them away and telling which one's which. */
 public final class Mounts {
     private static final double COPY_SEARCH_RADIUS = 128;
     static boolean allowDismount;
@@ -32,11 +30,10 @@ public final class Mounts {
     }
 
     public static boolean isAllowed(Pokemon pokemon) {
-        if (!WormholeConfig.get().allowedMounts.contains(pokemon.getSpecies().getResourceIdentifier().toString())) return false;
-        if (pokemon.getSpecies().getResourceIdentifier().getPath().equals("necrozma")) {
-            return pokemon.getAspects().contains("dusk-fusion") || pokemon.getAspects().contains("dawn-fusion");
-        }
-        return true;
+        ResourceLocation species = pokemon.getSpecies().getResourceIdentifier();
+        if (!WormholeConfig.get().allowedMounts.contains(species.toString())) return false;
+        return !species.getPath().equals("necrozma")
+                || pokemon.getAspects().contains("dusk-fusion") || pokemon.getAspects().contains("dawn-fusion");
     }
 
     public static @Nullable Pokemon findMount(ServerPlayer player) {
@@ -66,22 +63,12 @@ public final class Mounts {
 
     static @Nullable PokemonEntity mount(ServerPlayer player, Pokemon pokemon, ServerLevel level, Vec3 pos, float yaw) {
         removeCopies(level, pokemon, pos);
-        PokemonEntity entity;
-        if (pokemon.isPlayerOwned()) {
-            entity = pokemon.sendOut(level, pos, null, e -> {
-                e.setYRot(yaw);
-                e.setYHeadRot(yaw);
-                e.setYBodyRot(yaw);
-                return Unit.INSTANCE;
-            });
-        } else {
-            entity = new PokemonEntity(level, pokemon, CobblemonEntities.POKEMON);
-            entity.setOwnerUUID(player.getUUID());
-            entity.moveTo(pos.x, pos.y, pos.z, yaw, 0f);
-            entity.setYHeadRot(yaw);
-            entity.setYBodyRot(yaw);
-            if (!level.addFreshEntity(entity)) entity = null;
-        }
+        PokemonEntity entity = pokemon.sendOut(level, pos, null, e -> {
+            e.setYRot(yaw);
+            e.setYHeadRot(yaw);
+            e.setYBodyRot(yaw);
+            return Unit.INSTANCE;
+        });
         if (entity != null) seat(player, entity);
         return entity;
     }
@@ -116,9 +103,7 @@ public final class Mounts {
 
     static void putAway(Pokemon pokemon, ServerPlayer near) {
         PokemonEntity entity = pokemon.getEntity();
-        if (entity != null && !pokemon.isPlayerOwned()) {
-            entity.discard();
-        } else if (entity != null) {
+        if (entity != null) {
             pokemon.recall();
             if (!entity.isRemoved()) entity.discard();
         }

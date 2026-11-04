@@ -1,0 +1,10 @@
+{
+  "species": "cobblemon:hoopa",
+  "order": 2,
+  "variations": [
+    {
+      "aspects": ["unbound"],
+      "model": "cobblemon:hoopa_unbound_split.geo"
+    }
+  ]
+}

@@ -19,7 +19,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,7 +34,7 @@ import java.util.List;
 
 /**
  * Trip tasks: the list of stuff to do each trip, tracking progress, EXP candy for each one (bigger with more stars),
- * and a golden ball when you finish the lot.
+ * and a golden ball (plus the Taskmaster advancement) when you finish the lot.
  */
 public class Tasks {
     public enum Kind {
@@ -67,7 +66,7 @@ public class Tasks {
     }
 
     public record Sync(List<Line> tasks, List<Line> missions) implements CustomPacketPayload {
-        public static final Type<Sync> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "tasks"));
+        public static final Type<Sync> TYPE = new Type<>(Hyperspace.id("tasks"));
         public static final StreamCodec<ByteBuf, Sync> CODEC = StreamCodec.composite(Line.CODEC.apply(ByteBufCodecs.list()), Sync::tasks,
                 Line.CODEC.apply(ByteBufCodecs.list()), Sync::missions, Sync::new);
 
@@ -118,7 +117,8 @@ public class Tasks {
     }
 
     public static void arrive(ServerPlayer player, WorldData.Trip trip) {
-        WorldData data = WorldData.get(player.server);
+        MinecraftServer server = player.server;
+        WorldData data = WorldData.get(server);
         CompoundTag board = data.tasks.computeIfAbsent(trip.island, island -> create(player.getRandom()));
         if (!board.contains("special") && trip.legendaryPending) {
             board.putInt("special", Kind.LEGENDARY.ordinal());
@@ -127,7 +127,7 @@ public class Tasks {
         }
         data.setDirty();
         if (complete(board)) golden(player, trip.island, board);
-        sendAll(player.server, trip.island);
+        sendAll(server, trip.island);
     }
 
     public static void left(ServerPlayer player) {
@@ -143,36 +143,39 @@ public class Tasks {
     }
 
     public static void progress(ServerPlayer player, Kind kind) {
+        if (kind == Kind.BALLS) FloatingBalls.popping(player);
         int island = island(player);
         if (island < 0) return;
-        WorldData data = WorldData.get(player.server);
+        MinecraftServer server = player.server;
+        WorldData data = WorldData.get(server);
         CompoundTag board = data.tasks.get(island);
         if (board == null) return;
-        int[] kinds = board.getIntArray("kinds");
-        int[] progress = board.getIntArray("progress");
+        int[] kinds = ints(board, "kinds");
+        int[] progress = ints(board, "progress");
         boolean changed = false;
         for (int i = 0; i < kinds.length; i++) {
             if (kinds[i] != kind.ordinal() || progress[i] >= kind.goal) continue;
             progress[i]++;
             changed = true;
             if (progress[i] < kind.goal) continue;
-            for (ServerPlayer member : members(player.server, island)) {
+            for (ServerPlayer member : members(server, island)) {
                 give(member, HoopaStars.candy(member), 1);
                 member.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.MASTER, 0.6f, 1.2f);
             }
         }
         board.putIntArray("progress", progress);
         if (changed && complete(board)) {
-            for (ServerPlayer member : members(player.server, island)) {
-                member.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.7f, 1.2f);
+            for (ServerPlayer member : members(server, island)) {
+                Trips.notifySound(member, SoundEvents.PLAYER_LEVELUP, 0.7f, 1.2f);
                 golden(member, island, board);
+                HyperspaceAdvancements.tasks(member);
             }
         }
         if (board.contains("special") && board.getInt("special") == kind.ordinal() && !board.getBoolean("specialDone")) {
             board.putBoolean("specialDone", true);
             changed = true;
-            for (ServerPlayer member : members(player.server, island)) {
-                member.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.6f, 1f);
+            for (ServerPlayer member : members(server, island)) {
+                Trips.notifySound(member, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.6f, 1f);
                 if (kind != Kind.LEGENDARY) continue;
                 give(member, Items.ENCHANTED_GOLDEN_APPLE, 1);
                 give(member, HoopaStars.candy(member), 3);
@@ -180,7 +183,7 @@ public class Tasks {
         }
         if (!changed) return;
         data.setDirty();
-        sendAll(player.server, island);
+        sendAll(server, island);
     }
 
     private static CompoundTag create(RandomSource random) {
@@ -195,8 +198,8 @@ public class Tasks {
     }
 
     private static boolean complete(CompoundTag board) {
-        int[] kinds = board.getIntArray("kinds");
-        int[] progress = board.getIntArray("progress");
+        int[] kinds = ints(board, "kinds");
+        int[] progress = ints(board, "progress");
         for (int i = 0; i < kinds.length; i++) {
             if (progress[i] < Kind.values()[kinds[i]].goal) return false;
         }
@@ -237,8 +240,8 @@ public class Tasks {
         }
         String candy = HoopaStars.candyName(player);
         List<Line> tasks = new ArrayList<>();
-        int[] kinds = board.getIntArray("kinds");
-        int[] progress = board.getIntArray("progress");
+        int[] kinds = ints(board, "kinds");
+        int[] progress = ints(board, "progress");
         for (int i = 0; i < kinds.length; i++) {
             Kind kind = Kind.values()[kinds[i]];
             tasks.add(new Line(kind.text, candy + " x1", Math.min(progress[i], kind.goal), kind.goal));
@@ -251,11 +254,19 @@ public class Tasks {
         ServerPlayNetworking.send(player, new Sync(tasks, missions));
     }
 
+    private static int[] ints(CompoundTag board, String key) {
+        return board.getIntArray(key);
+    }
+
     private static void give(ServerPlayer player, Item item, int count) {
         while (count > 0) {
             ItemStack stack = new ItemStack(item, Math.min(count, item.getDefaultMaxStackSize()));
             count -= stack.getCount();
-            if (!player.getInventory().add(stack)) player.drop(stack, false);
+            give(player, stack);
         }
+    }
+
+    static void give(ServerPlayer player, ItemStack stack) {
+        if (!player.getInventory().add(stack)) player.drop(stack, false);
     }
 }

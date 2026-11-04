@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "hyperspace_wormholes:block/white_sand"
+  }
+}

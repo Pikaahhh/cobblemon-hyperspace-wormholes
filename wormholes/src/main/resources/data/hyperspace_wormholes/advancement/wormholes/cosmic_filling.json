@@ -1,0 +1,25 @@
+{
+  "parent": "hyperspace_wormholes:wormholes/magical_summoner",
+  "display": {
+    "icon": {
+      "id": "hyperspace_wormholes:cosmic_jar",
+      "components": {
+        "hyperspace_wormholes:cosmic_energy": 4
+      }
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.cosmic_filling.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.cosmic_filling.description"
+    }
+  },
+  "criteria": {
+    "cosmic_filling": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "jar"
+      }
+    }
+  }
+}

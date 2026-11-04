@@ -18,13 +18,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -132,6 +129,8 @@ public class Spawns {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> load(server.getResourceManager()));
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (!level.dimension().equals(Hyperspace.HYPERSPACE) || !(entity instanceof PokemonEntity pokemon) || !pokemon.getPokemon().isWild()) return;
+            // the Hoopa event's boss and the legendaries it rings in aren't island spawns (no BORN stamp)
+            if (HoopaEvent.ours(entity)) return;
             if (Zones.leftover(entity.blockPosition(), pokemon.getPokemon().getPersistentData().getLong(BORN))) leftovers.add(entity);
         });
     }
@@ -178,6 +177,7 @@ public class Spawns {
         for (ServerPlayer player : hyperspace.players()) {
             if (player.isSpectator() || !player.isAlive()) continue;
             WorldData.Trip trip = data.trips.get(player.getUUID());
+            if (trip != null && HoopaEvent.held(trip.island)) continue;
             if (trip != null && trip.megaPending && spawnMega(hyperspace, player, trip)) {
                 trip.megaPending = false;
                 data.setDirty();
@@ -187,7 +187,7 @@ public class Spawns {
             if (trip != null && now - arrived.computeIfAbsent(player.getUUID(), id -> now) < 60) continue;
 
             int nearby = (int) wild(hyperspace).stream().filter(entity -> entity.distanceToSqr(player) < 32 * 32).count();
-            for (int i = 0; i < 2 && nearby < maxNearby; i++) {
+            for (int i = 0; i < 2 && nearby < (trip == null ? maxNearby : trip.powers.nearbyCap(maxNearby)); i++) {
                 if (spawn(hyperspace, player, trip)) nearby++;
             }
         }
@@ -250,6 +250,7 @@ public class Spawns {
         Pokemon pokemon = species.create(level(stars(trip), random));
         if (random.nextFloat() < alphaChance(trip)) pokemon.setAlpha(true);
         rollShiny(pokemon, trip, random);
+        rollSize(pokemon, trip, random);
         return place(level, pokemon, pos, random) != null;
     }
 
@@ -268,6 +269,7 @@ public class Spawns {
             if (spot == null) continue;
             Pokemon follower = kinds.get(random.nextInt(kinds.size())).create(level(stars(trip), random));
             rollShiny(follower, trip, random);
+            rollSize(follower, trip, random);
             follower.getPersistentData().putUUID(HERD, head.getUUID());
             place(level, follower, spot, random);
         }
@@ -323,6 +325,10 @@ public class Spawns {
         if (random.nextFloat() < rolls / Math.max(1f, Cobblemon.INSTANCE.getConfig().getShinyRate())) pokemon.setShiny(true);
     }
 
+    private static void rollSize(Pokemon pokemon, WorldData.Trip trip, RandomSource random) {
+        if (trip != null) trip.powers.size(pokemon, random);
+    }
+
     public static float alphaChance(WorldData.Trip trip) {
         return trip == null ? DonutBoosts.ALPHA_CHANCE : trip.alphaChance;
     }
@@ -346,7 +352,7 @@ public class Spawns {
             trip.legendaryDone = true;
             trip.legendaryPending = false;
             data.setDirty();
-            announce(level, player, species, rareName(species, pokemon.getForm()), random);
+            announce(level, player, species, random);
             OtherPlayersLegendaries.sync(level);
         }
     }
@@ -369,22 +375,10 @@ public class Spawns {
         return pokemon;
     }
 
-    private static MutableComponent rareName(Species species, FormData form) {
-        MutableComponent name = species.getTranslatedName().copy();
-        String formName = form.getName().replace("-", " ").trim();
-        if (formName.isEmpty() || formName.equalsIgnoreCase("normal")) return name;
-        if (formName.toLowerCase(Locale.ROOT).startsWith("mega")) {
-            String letter = formName.substring(4).trim();
-            return Component.literal("Mega ").append(name).append(letter.isEmpty() ? "" : " " + letter);
-        }
-        return Component.literal(formName + " ").append(name);
-    }
-
-    private static void announce(ServerLevel level, ServerPlayer player, Species species, MutableComponent name, RandomSource random) {
-        player.sendSystemMessage(Component.literal("A rare ").append(name).append(" has appeared in this hyperspace!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+    private static void announce(ServerLevel level, ServerPlayer player, Species species, RandomSource random) {
         ResourceLocation cry = species.getNationalPokedexNumber() > 1025
                 ? ResourceLocation.fromNamespaceAndPath("cobblemon", "pokemon." + species.getResourceIdentifier().getPath() + ".cry")
-                : ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "cry." + species.getNationalPokedexNumber());
+                : Hyperspace.id("cry." + species.getNationalPokedexNumber());
         Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(cry));
         player.connection.send(new ClientboundSoundPacket(sound, SoundSource.NEUTRAL, player.getX(), player.getY(), player.getZ(), 1f, 1f, random.nextLong()));
         for (int i = 0; i < ECHOES.length; i++) {
@@ -440,7 +434,7 @@ public class Spawns {
 
     public static List<String> readTag(ResourceManager resources, String path) {
         List<String> names = new ArrayList<>();
-        for (Resource resource : resources.getResourceStack(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, path))) {
+        for (Resource resource : resources.getResourceStack(Hyperspace.id(path))) {
             try (Reader reader = resource.openAsReader()) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                 if (json.has("replace") && json.get("replace").getAsBoolean()) names.clear();
@@ -496,7 +490,7 @@ public class Spawns {
         pokemon.setCurrentHealth(pokemon.getMaxHealth());
         if (place(level, pokemon, pos, random) == null) return false;
         for (ServerPlayer near : level.players()) {
-            if (near.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 64 * 64) announce(level, near, pick.species(), rareName(pick.species(), pick.form()), random);
+            if (near.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 64 * 64) announce(level, near, pick.species(), random);
         }
         return true;
     }
@@ -542,12 +536,16 @@ public class Spawns {
         return labels.contains("legendary") && !labels.contains("ultra_beast") && !labels.contains("paradox");
     }
 
+    public static boolean legendary(Species species) {
+        return legendTagged.contains(species) || species.getLabels().contains("legendary") || species.getLabels().contains("mythical");
+    }
+
     public static List<Species> legendPool() {
         List<Species> pool = new ArrayList<>();
         boolean monuments = FabricLoader.getInstance().isModLoaded("legendarymonuments");
         for (Species species : PokemonSpecies.getImplemented()) {
-            if (!legendTagged.contains(species) || NOT_SPAWNED.contains(species.getResourceIdentifier().getPath())) continue;
-            if (monuments && MONUMENT_LEGENDS.contains(species.getResourceIdentifier().getPath())) continue;
+            String path = species.getResourceIdentifier().getPath();
+            if (!legendTagged.contains(species) || NOT_SPAWNED.contains(path) || monuments && MONUMENT_LEGENDS.contains(path)) continue;
             if (!species.getBehaviour().getMoving().getWalk().getCanWalk() && !species.getBehaviour().getMoving().getFly().getCanFly()) continue;
             pool.add(species);
         }

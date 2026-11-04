@@ -112,15 +112,12 @@ public class QuickBattles {
         final UUID owner;
         final Entity target;
         final Move move;
-        final boolean physical;
-        final boolean runs;
+        final boolean physical, runs;
         final ActionEffectTimeline timeline;
         final int contact;
         boolean ran;
-        int age;
-        int started = -1;
+        int age, stuck, started = -1;
         Vec3 last;
-        int stuck;
         BlockPos goal;
         final Set<BlockPos> avoid = new HashSet<>();
 
@@ -142,7 +139,7 @@ public class QuickBattles {
     private static Set<String> sounds;
 
     public record Payload(int ball, int slot, int contact, Optional<UUID> pokemon, boolean runs) implements CustomPacketPayload {
-        public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "ball_attack"));
+        public static final Type<Payload> TYPE = new Type<>(Hyperspace.id("ball_attack"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC =
                 StreamCodec.composite(ByteBufCodecs.VAR_INT, Payload::ball, ByteBufCodecs.VAR_INT, Payload::slot, ByteBufCodecs.VAR_INT, Payload::contact,
                         ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), Payload::pokemon, ByteBufCodecs.BOOL, Payload::runs, Payload::new);
@@ -154,7 +151,7 @@ public class QuickBattles {
     }
 
     public record Aim(Optional<UUID> pokemon) implements CustomPacketPayload {
-        public static final Type<Aim> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "ball_aim"));
+        public static final Type<Aim> TYPE = new Type<>(Hyperspace.id("ball_aim"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Aim> CODEC =
                 StreamCodec.composite(ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), Aim::pokemon, Aim::new);
 
@@ -171,7 +168,7 @@ public class QuickBattles {
     }
 
     public record Moves(List<MoveInfo> moves, boolean busy) implements CustomPacketPayload {
-        public static final Type<Moves> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "ball_moves"));
+        public static final Type<Moves> TYPE = new Type<>(Hyperspace.id("ball_moves"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Moves> CODEC =
                 StreamCodec.composite(MoveInfo.CODEC.apply(ByteBufCodecs.list()), Moves::moves, ByteBufCodecs.BOOL, Moves::busy, Moves::new);
 
@@ -367,9 +364,9 @@ public class QuickBattles {
         if (!attack.ran) {
             new PlayPosableAnimationPacket(pokemon.getId(), new LinkedHashSet<>(animations(attack.move.getName(), attack.physical)), List.of())
                     .sendToPlayers(PlayerLookup.tracking(pokemon));
-            String name = attack.move.getName().toLowerCase(Locale.ROOT);
-            String actor = has("move." + name + ".actor") ? "move." + name + ".actor" : has("move." + name + ".actor_1") ? "move." + name + ".actor_1" : null;
-            if (actor != null) play((ServerLevel) pokemon.level(), pokemon.position(), actor);
+            String actor = "move." + attack.move.getName().toLowerCase(Locale.ROOT) + ".actor";
+            if (!has(actor)) actor += "_1";
+            if (has(actor)) play((ServerLevel) pokemon.level(), pokemon.position(), actor);
         }
         ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);
         if (owner != null) {
@@ -391,9 +388,8 @@ public class QuickBattles {
                 level.sendParticles(dust, p.x, p.y, p.z, 1, 0.05, 0.05, 0.05, 0);
             }
         }
-        String name = attack.move.getName().toLowerCase(Locale.ROOT);
-        String sound = has("move." + name + ".target") ? "move." + name + ".target"
-                : "impact." + attack.move.getType().getName().toLowerCase(Locale.ROOT);
+        String sound = "move." + attack.move.getName().toLowerCase(Locale.ROOT) + ".target";
+        if (!has(sound)) sound = "impact." + attack.move.getType().getName().toLowerCase(Locale.ROOT);
         if (!attack.ran || !(attack.target instanceof PokemonEntity)) play(level, centre, sound);
         if (attack.target instanceof FloatingBall ball) {
             ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);

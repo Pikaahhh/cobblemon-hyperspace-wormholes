@@ -5,9 +5,6 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.Level;
 
-/**
- * No breaking blocks in Hyperspace.
- */
 public class NoBlockBreaking {
     public static void register() {
         AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->

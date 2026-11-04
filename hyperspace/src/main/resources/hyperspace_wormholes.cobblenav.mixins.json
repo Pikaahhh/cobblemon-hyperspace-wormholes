@@ -3,10 +3,10 @@
   "package": "dev.hyperspacewormholes.hyperspace.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "SpawnDataHelperMixin",
-    "LocationScreenInitDataPacketMixin"
+    "SpawnDataHelperMixin"
   ],
   "injectors": {
     "defaultRequire": 0
-  }
+  },
+  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
 }

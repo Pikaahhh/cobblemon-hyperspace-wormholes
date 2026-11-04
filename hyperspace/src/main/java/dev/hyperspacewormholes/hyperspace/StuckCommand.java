@@ -8,10 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
-/**
- * /stuck. If you get stuck in Hyperspace it ends your trip and sends you back where you came from, or to Overworld
- * spawn if you're not on a trip. Recalls your Pokemon first.
- */
+/** /stuck ends your trip and sends you back where you came from, or to Overworld spawn if not on one. */
 public class StuckCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, env) -> dispatcher.register(

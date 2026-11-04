@@ -1,0 +1,20 @@
+{
+  "name": "Hoopa Unbound",
+  "properties": "hoopa djinn_state=unbound level=100 moves=hyperspacefury,psychic,darkpulse,focusblast",
+  "moves": ["hyperspacefury", "psychic", "darkpulse", "focusblast", "gunkshot", "nastyplot"],
+  "hp_per_trainer": 10,
+  "scaling": [10, 20, 30, 40],
+  "max_trainers": 4,
+  "scale": 1.0,
+  "ai_skill": 5,
+  "boosts": {"highest": 1},
+  "music": "hyperspace_wormholes:music.hoopa_unbound_battle",
+  "forms": [
+    {"hp_below": 0.8, "name": "Hoopa Unbound"},
+    {"hp_below": 0.4, "name": "Hoopa Unbound"}
+  ],
+  "defeated_properties": "djinn_state=confined level=70 moves=hyperspacehole,psychic,shadowball,nastyplot",
+  "opening_transition_seconds": 7.2,
+  "banned_moves": ["fissure", "sheercold", "guillotine", "horndrill", "endeavor", "painsplit", "finalgambit", "superfang",
+    "naturesmadness", "ruination", "guardianofalola", "destinybond", "perishsong"]
+}

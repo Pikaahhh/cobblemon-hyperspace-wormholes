@@ -10,7 +10,10 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * The config file, config/hyperspace_wormholes.json, which says which Pokemon can be ridden into a wormhole.
+ * The config file, config/hyperspace_wormholes.json, which says which Pokemon can be ridden into a wormhole (the way
+ * home out of the Ultra Space Wilds and the Ultra Beast worlds takes you on foot or on any mount), and whether the
+ * tunnel's Pokemon wormholes use the game's colours (gameWormholeColours, the default: red, green, yellow and blue,
+ * each to its Ultra Space Wilds world) or difficulty colours (green, orange, red, mostly to the Overworld).
  */
 public final class WormholeConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -18,6 +21,7 @@ public final class WormholeConfig {
 
     public boolean requireMount = true;
     public List<String> allowedMounts = List.of("cobblemon:solgaleo", "cobblemon:lunala", "cobblemon:necrozma");
+    public boolean gameWormholeColours = true;
 
     public static WormholeConfig get() {
         return instance;

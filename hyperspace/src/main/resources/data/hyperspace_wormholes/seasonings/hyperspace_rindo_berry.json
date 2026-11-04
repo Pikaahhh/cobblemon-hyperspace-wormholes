@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_rindo_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_rindo_berry",
+  "flavours": {
+    "SPICY": 40,
+    "BITTER": 60
+  }
+}

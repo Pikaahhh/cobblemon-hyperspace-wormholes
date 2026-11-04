@@ -9,10 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * The tunnel on a warp stone ride. One wormhole per waystone, as far along as that waystone is away, coloured by its
- * dimension.
- */
+/** The tunnel on a warp stone ride: one wormhole per waystone, as far along as it is away, coloured by dimension. */
 public final class WaystoneWormholes {
     private static final double FIRST = 150;
     private static final double MIN_GAP = 60;

@@ -14,12 +14,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Harmless lightning that strikes the open ground around players in the Ultra Plant, just for show.
+ * Harmless lightning that strikes the open ground around players in the Ultra Plant, just for show. STATUE_SHARE of
+ * the strikes go to the star of a statue Xurkitree within STRIKE_RANGE instead, when one stands there.
  */
 public final class UltraPlantLightning {
     private static final int STRIKE_EVERY_TICKS = 70;
     private static final int STRIKE_RANGE = 72;
     private static final int FLOOR_TRIES = 8;
+    private static final float STATUE_SHARE = 0.3f;
 
     private UltraPlantLightning() {}
 
@@ -37,6 +39,13 @@ public final class UltraPlantLightning {
         RandomSource random = level.getRandom();
         for (ServerPlayer player : level.players()) {
             if (random.nextInt(STRIKE_EVERY_TICKS) != 0) continue;
+            if (random.nextFloat() < STATUE_SHARE) {
+                Vec3 star = PlantXurkitrees.statueStar(level, player.position(), STRIKE_RANGE, random);
+                if (star != null) {
+                    strike(level, star);
+                    continue;
+                }
+            }
             for (int tries = 0; tries < FLOOR_TRIES; tries++) {
                 int x = player.getBlockX() + random.nextInt(STRIKE_RANGE * 2 + 1) - STRIKE_RANGE;
                 int z = player.getBlockZ() + random.nextInt(STRIKE_RANGE * 2 + 1) - STRIKE_RANGE;
@@ -46,15 +55,15 @@ public final class UltraPlantLightning {
                 int floor = level.getChunkSource().getGenerator().getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG,
                         level, level.getChunkSource().randomState());
                 if (target.getY() > floor + 1) continue;
-                strike(level, target);
+                strike(level, Vec3.atBottomCenterOf(target));
                 break;
             }
         }
     }
 
-    private static void strike(ServerLevel level, BlockPos at) {
+    private static void strike(ServerLevel level, Vec3 at) {
         LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
-        bolt.moveTo(Vec3.atBottomCenterOf(at));
+        bolt.moveTo(at);
         bolt.setVisualOnly(true);
         level.addFreshEntity(bolt);
     }

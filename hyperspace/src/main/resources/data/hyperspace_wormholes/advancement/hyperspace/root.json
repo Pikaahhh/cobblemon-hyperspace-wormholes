@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "id": "mega_showdown:prison_bottle"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.root.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.root.description"
+    },
+    "background": "minecraft:textures/entity/end_portal.png"
+  },
+  "criteria": {
+    "root": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "hyperspace_wormholes:distortion_splicer"
+          }
+        ]
+      }
+    }
+  }
+}

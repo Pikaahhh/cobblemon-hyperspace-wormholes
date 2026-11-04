@@ -1,0 +1,9 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/wilds_290",
+  "step": "underground_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "wilds_290",
+  "processors": "hyperspace_wormholes:wilds_290"
+}

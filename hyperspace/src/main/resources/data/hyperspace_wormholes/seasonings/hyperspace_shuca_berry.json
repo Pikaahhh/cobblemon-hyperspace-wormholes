@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_shuca_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_shuca_berry",
+  "flavours": {
+    "SPICY": 40,
+    "SWEET": 60
+  }
+}

@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_roseli_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_roseli_berry",
+  "flavours": {
+    "SWEET": 100,
+    "BITTER": 40
+  }
+}

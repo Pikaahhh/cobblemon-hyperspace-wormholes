@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_kebia_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_kebia_berry",
+  "flavours": {
+    "DRY": 60,
+    "SOUR": 40
+  }
+}

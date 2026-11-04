@@ -3,7 +3,6 @@ package dev.hyperspacewormholes.hyperspace;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -22,8 +21,7 @@ public record HoopaStarsCount() implements LootItemFunction {
     private static LootItemFunctionType<HoopaStarsCount> type;
 
     public static void register() {
-        type = Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE,
-                ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "hoopa_stars_count"), new LootItemFunctionType<>(CODEC));
+        type = Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, Hyperspace.id("hoopa_stars_count"), new LootItemFunctionType<>(CODEC));
     }
 
     public static float factor(int stars) {

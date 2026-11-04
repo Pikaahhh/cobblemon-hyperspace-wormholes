@@ -7,10 +7,6 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 
-/**
- * Fits a move name into a tile by shrinking it and wrapping it onto a second line if it has to, keeping clear of the
- * text to its right.
- */
 public class MoveNames {
     private static final float MIN_SCALE = 0.5f;
     private static final float SCALE_STEP = 0.05f;

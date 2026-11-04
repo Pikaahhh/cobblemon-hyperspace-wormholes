@@ -1,0 +1,1 @@
+{"timeline":[{"holds":["effects"],"type":"add_holds"},{"type":"hyperspace_wormholes:light_that_burns_the_sky"},{"holds":["effects"],"type":"remove_holds"},{"animation":["recoil"],"entityCondition":"q.entity.is_user == false && q.missed(q.entity.uuid) == false","type":"animation"},{"pause":1.5,"type":"pause"}]}

@@ -1,0 +1,12 @@
+{
+  "species": "cobblemon:xurkitree",
+  "order": 1,
+  "variations": [
+    {
+      "aspects": [
+        "hyperspace_statue"
+      ],
+      "poser": "cobblemon:xurkitree_statue"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package dev.hyperspacewormholes.wormholes.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.hyperspacewormholes.wormholes.network.RoarRequestPayload;
+
 import dev.hyperspacewormholes.wormholes.ride.LegendRoar;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRules;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -14,10 +15,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * The legend's roar on the client: the key that asks for it, and keeping track of which legends are mid-roar so they
- * animate.
- */
 public final class RoarClient {
     private static final Map<Integer, Long> ROARING_SINCE = new HashMap<>();
     private static KeyMapping key;

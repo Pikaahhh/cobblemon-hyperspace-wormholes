@@ -42,6 +42,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -69,14 +70,12 @@ public class QuickBattleTargeting {
     private static final double CONTACT_AT = 0.5;
     private static final double TARGET_RANGE = 8;
     private static final double CONE = Math.cos(Math.toRadians(20));
+    private static final int MONEY_CLEARANCE = 24;
 
     public static int target = -1;
     private static Optional<UUID> lastSelected = Optional.empty();
-    private static boolean aiming;
-    private static boolean holding;
-    private static boolean busy;
-    private static final int MONEY_CLEARANCE = 24;
-    private static java.lang.reflect.Method moneyPosition;
+    private static boolean aiming, holding, busy;
+    private static Method moneyPosition;
     private static Object moneyConfig;
     private static int aimTicks;
     private static List<QuickBattles.MoveInfo> moves = List.of();
@@ -100,13 +99,14 @@ public class QuickBattleTargeting {
     private static void tick(Minecraft mc) {
         for (int slot = 0; slot < 4; slot++) if (cooldowns[slot] > 0) cooldowns[slot]--;
         boolean was = aiming;
-        boolean ready = mc.player != null && mc.level != null && mc.screen == null && CobblemonClient.INSTANCE.getBattle() == null
-                && commander(mc) != null;
         boolean shared = TARGET.same(mc.options.keyPickItem);
         int presses = 0;
         while (TARGET.consumeClick()) presses++;
         if (shared) while (mc.options.keyPickItem.consumeClick()) presses++;
         boolean held = held(mc);
+        // Only worked out when the key is in use, since finding your sent-out Pokemon searches 48 blocks around you.
+        boolean ready = (presses > 0 || held && holding) && mc.player != null && mc.level != null && mc.screen == null
+                && CobblemonClient.INSTANCE.getBattle() == null && commander(mc) != null;
         if (presses > 0) {
             boolean onBlock = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK;
             holding = ready && (!onBlock || pick(mc) >= 0);

@@ -25,9 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Your Solgaleo or Lunala roaring a wormhole open in front of it. Doesn't work in Hyperspace.
- */
+/** Your Solgaleo or Lunala roaring a wormhole open in front of it. Doesn't work in Hyperspace. */
 public final class LegendRoar {
     public static final int ROAR_TICKS = 30;
     private static final int OPEN_AT = 16;

@@ -1,0 +1,22 @@
+{
+  "parent": "hyperspace_wormholes:hyperspace/poppin_time",
+  "display": {
+    "icon": {
+      "id": "cobblemon:citrine_ball"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.golden_glow.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.golden_glow.description"
+    }
+  },
+  "criteria": {
+    "golden_glow": {
+      "trigger": "hyperspace_wormholes:hyperspace",
+      "conditions": {
+        "event": "golden"
+      }
+    }
+  }
+}

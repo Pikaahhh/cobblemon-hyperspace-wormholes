@@ -1,0 +1,11 @@
+{
+  "type": "hyperspace_wormholes:ultra_wilds_crag",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "hyperspace_wormholes:ultra_wilds_crag",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "hyperspace_wormholes:ultra_wilds_crag"
+    }
+  }
+}

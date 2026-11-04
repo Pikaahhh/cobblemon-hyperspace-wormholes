@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 
 /**
  * Rules for our Ultra dimensions. They get wiped every world load, anyone who logged out in one gets sent home when
- * they come back, and no waystones in there.
+ * they come back, and no waystones in there (and no building, UltraNoBuilding).
  */
 public final class UltraDimensions {
     private static final String WAYSTONES = "waystones";

@@ -10,13 +10,11 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Draws a single wormhole: a glowing pixel-art grid funnel sinking into a bright throat, coloured by its type, with
- * its rarity rings around the mouth.
+ * Draws a single wormhole: a glowing pixel-art grid funnel into a bright throat, coloured by type, with rarity rings.
  */
 public final class WormholeVisual {
     private static final float[] RING_COLOR = {1.00f, 0.78f, 0.25f};
     private static final int PROFILE = 16;
-    private static final int SEGMENTS = 32;
     private static final int SPECKS = 8;
     private static final int BANDS = 4;
 
@@ -102,6 +100,7 @@ public final class WormholeVisual {
         float frameV = (float) frame / WarpTextures.FUNNEL_FRAMES;
         float frameH = 1f / WarpTextures.FUNNEL_FRAMES;
         float[] col = new float[3];
+        int segments = WarpTextures.FUNNEL_SEGMENTS;
         for (int j = 0; j < PROFILE - 1; j++) {
             float r0 = funnel.radiusAt(j), r1 = funnel.radiusAt(j + 1);
             float z0 = -funnel.depthAt(r0), z1 = -funnel.depthAt(r1);
@@ -111,8 +110,8 @@ public final class WormholeVisual {
             float white = band == BANDS - 1 ? 0.35f : 0f;
             for (int k = 0; k < 3; k++) col[k] = Mth.lerp(white, c[k] * shade, 1f);
             float a = alpha * (j == 0 ? 0.35f : j == 1 ? 0.7f : 1f);
-            for (int s = 0; s < SEGMENTS; s++) {
-                float t0 = s * Mth.TWO_PI / SEGMENTS, t1 = (s + 1) * Mth.TWO_PI / SEGMENTS;
+            for (int s = 0; s < segments; s++) {
+                float t0 = s * Mth.TWO_PI / segments, t1 = (s + 1) * Mth.TWO_PI / segments;
                 corner(vc, m, funnel, Mth.cos(t0) * r0, Mth.sin(t0) * r0, z0, frameV, frameH, col, a);
                 corner(vc, m, funnel, Mth.cos(t1) * r0, Mth.sin(t1) * r0, z0, frameV, frameH, col, a);
                 corner(vc, m, funnel, Mth.cos(t1) * r1, Mth.sin(t1) * r1, z1, frameV, frameH, col, a);

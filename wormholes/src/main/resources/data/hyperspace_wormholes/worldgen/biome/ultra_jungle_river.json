@@ -1,0 +1,44 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.95,
+  "downfall": 0.9,
+  "effects": {
+    "fog_color": 8570111,
+    "sky_color": 2263038,
+    "water_color": 4180920,
+    "water_fog_color": 2002820,
+    "grass_color": 5619278,
+    "foliage_color": 3705902,
+    "music": {
+      "max_delay": 200,
+      "min_delay": 20,
+      "replace_current_music": true,
+      "sound": "hyperspace_wormholes:music.ultra_jungle"
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [],
+    [],
+    [
+      "hyperspace_wormholes:zone_slot", "hyperspace_wormholes:jungle_286_trees"
+    ],
+    [],
+    [],
+    [],
+    [
+      "minecraft:disk_sand",
+      "minecraft:disk_clay",
+      "minecraft:disk_gravel"
+    ],
+    [],
+    [],
+    [
+      "minecraft:seagrass_river",
+      "minecraft:patch_sugar_cane"
+    ],
+    []
+  ]
+}

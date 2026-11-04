@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_occa_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_occa_berry",
+  "flavours": {
+    "SPICY": 60,
+    "SWEET": 40
+  }
+}

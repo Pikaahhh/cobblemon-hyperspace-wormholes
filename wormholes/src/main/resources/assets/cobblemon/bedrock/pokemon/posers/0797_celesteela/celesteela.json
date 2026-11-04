@@ -1,0 +1,34 @@
+{
+  "faint": "q.bedrock('celesteela', 'faint')",
+  "head": "head",
+  "portraitScale": 1.45,
+  "portraitTranslation": [-0.4, 4.97, 0],
+  "poses": {
+    "floating": {
+      "animations": ["q.bedrock('celesteela', 'ground_idle')"],
+      "poseName": "floating",
+      "poseTypes": ["FLOAT"],
+      "transformTicks": 10
+    },
+    "standing": {
+      "animations": ["look", "q.bedrock('celesteela', 'ground_idle')"],
+      "poseName": "standing",
+      "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
+      "transformTicks": 10
+    },
+    "swimming": {
+      "animations": ["q.bedrock('celesteela', 'ground_walk')"],
+      "poseName": "swimming",
+      "poseTypes": ["SWIM"],
+      "transformTicks": 10
+    },
+    "walking": {
+      "animations": ["q.bedrock('celesteela', 'ground_walk')"],
+      "poseName": "walking",
+      "poseTypes": ["WALK"],
+      "transformTicks": 10
+    }
+  },
+  "profileScale": 0.25,
+  "profileTranslation": [0, 1.4, 0]
+}

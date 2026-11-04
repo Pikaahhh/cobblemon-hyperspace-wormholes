@@ -7,7 +7,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -25,7 +24,7 @@ public class OtherPlayersLegendaries {
     public static final Set<Integer> hidden = ConcurrentHashMap.newKeySet();
 
     public record Payload(List<Integer> ids) implements CustomPacketPayload {
-        public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "hidden_bosses"));
+        public static final Type<Payload> TYPE = new Type<>(Hyperspace.id("hidden_bosses"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC =
                 StreamCodec.composite(ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list()), Payload::ids, Payload::new);
 
@@ -55,6 +54,7 @@ public class OtherPlayersLegendaries {
     }
 
     public static boolean hides(Entity entity) {
-        return entity.level().isClientSide() && entity.level().dimension().equals(Hyperspace.HYPERSPACE) && hidden.contains(entity.getId());
+        return !hidden.isEmpty() && entity.level().isClientSide() && entity.level().dimension().equals(Hyperspace.HYPERSPACE)
+                && hidden.contains(entity.getId());
     }
 }

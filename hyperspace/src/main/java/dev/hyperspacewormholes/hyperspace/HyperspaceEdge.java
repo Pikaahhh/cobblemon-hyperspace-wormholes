@@ -9,18 +9,23 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -35,14 +40,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Draws the edge of the island you're on: a curtain of Hyperspace sky coming up from the drop and a glowing rainbow
- * strip along the ground's edge, traced from the terrain around you.
+ * Draws the island's edge: a curtain of Hyperspace sky rising from the drop and a glowing rainbow strip along the
+ * ground.
  */
 public class HyperspaceEdge {
     private static final int HALF = 52;
     private static final int SIZE = HALF * 2 + 1;
-    private static final int CURTAIN_STEPS = 5;
-    private static final float CURTAIN_STEP = 12.8f;
+    private static final float CURTAIN_DEPTH = 64f;
     private static final int RES = 4;
     private static final float FAR = 4f;
     private static final float CREEP = 0.5f;
@@ -56,22 +60,22 @@ public class HyperspaceEdge {
     };
 
     private static final Map<Integer, Edge> edges = new HashMap<>();
-    private static Edge current;
+    private static Edge current, meshed;
     private static DynamicTexture mask;
     private static float creep;
 
-    private static final float[] P_U = new float[CURTAIN_STEPS + 1], P_V = new float[CURTAIN_STEPS + 1];
-    private static final float[] Q_U = new float[CURTAIN_STEPS + 1], Q_V = new float[CURTAIN_STEPS + 1];
-    private static final float[] UV = new float[2];
-    private static final float[] QUAD_U = new float[4];
-    private static double skyCos, skySin;
+    private static ShaderInstance curtainShader;
+    private static VertexBuffer curtainMesh;
+    private static boolean curtainEmpty = true;
     private static Frustum culling;
+    private static final float[] FROM = cornerSlots(), TO = cornerSlots(), LOW = cornerSlots(), HIGH = cornerSlots();
 
     private static class Edge {
         int x0, z0;
         int[][] height = new int[SIZE][SIZE];
         boolean[][] solid = new boolean[SIZE][SIZE];
         int[][] lowest = new int[SIZE][SIZE];
+        float[][] snow = new float[SIZE][SIZE];
         int[][][] surfaces = new int[SIZE][SIZE][];
         long built;
         List<float[][]> loops = new ArrayList<>();
@@ -79,6 +83,12 @@ public class HyperspaceEdge {
     }
 
     private record Line(float[][] points, boolean closed) {
+    }
+
+    public static void register() {
+        CoreShaderRegistrationCallback.EVENT.register(context -> context.register(
+                Hyperspace.id("edge_curtain"), DefaultVertexFormat.POSITION,
+                shader -> curtainShader = shader));
     }
 
     public static void prepare(WorldRenderContext context) {
@@ -221,29 +231,39 @@ public class HyperspaceEdge {
         RenderSystem.disableCull();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-        BufferBuilder space = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        float angle = HyperspaceSky.angle(ticks);
-        skyCos = Math.cos(angle);
-        skySin = Math.sin(angle);
         culling = context.frustum();
-        for (Line line : current.lines) {
-            float[][] loop = line.points();
-            for (int i = 0; i < (line.closed() ? loop.length : loop.length - 1); i++) {
-                float[] p = loop[i], q = loop[(i + 1) % loop.length];
-                if (p[2] == q[2]) {
-                    curtain(space, p, q, cam);
-                } else {
-                    curtain(space, p, between(p, q, q[5], p[2]), cam);
-                    curtain(space, between(p, q, q[5], q[2]), q, cam);
+        if (meshed != current) {
+            meshed = current;
+            BufferBuilder space = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            for (Line line : current.lines) {
+                float[][] loop = line.points();
+                for (int i = 0; i < (line.closed() ? loop.length : loop.length - 1); i++) {
+                    float[] p = loop[i], q = loop[(i + 1) % loop.length];
+                    if (p[2] == q[2]) {
+                        curtain(space, p, q, current);
+                    } else {
+                        curtain(space, p, between(p, q, q[5], p[2]), current);
+                        curtain(space, between(p, q, q[5], q[2]), q, current);
+                    }
                 }
             }
+            MeshData spaceMesh = space.build();
+            curtainEmpty = spaceMesh == null;
+            if (spaceMesh != null) {
+                if (curtainMesh == null) curtainMesh = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                curtainMesh.bind();
+                curtainMesh.upload(spaceMesh);
+                VertexBuffer.unbind();
+            }
         }
-        MeshData spaceMesh = space.build();
-        if (spaceMesh != null) {
+        if (!curtainEmpty && curtainShader != null) {
             RenderSystem.defaultBlendFunc();
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, HyperspaceSky.TEXTURE);
-            BufferUploader.drawWithShader(spaceMesh);
+            curtainShader.safeGetUniform("CornerOffset").set((float) (current.x0 - cam.x), (float) -cam.y, (float) (current.z0 - cam.z));
+            curtainShader.safeGetUniform("SkyAngle").set(HyperspaceSky.angle(ticks));
+            curtainMesh.bind();
+            curtainMesh.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), curtainShader);
+            VertexBuffer.unbind();
         }
 
         BufferBuilder glow = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
@@ -263,51 +283,14 @@ public class HyperspaceEdge {
         RenderSystem.applyModelViewMatrix();
     }
 
-    private static void curtain(BufferBuilder buffer, float[] p, float[] q, Vec3 cam) {
-        double px = p[0] + p[3] * 0.06, pz = p[1] + p[4] * 0.06, qx = q[0] + q[3] * 0.06, qz = q[1] + q[4] * 0.06;
-        double depth = CURTAIN_STEPS * CURTAIN_STEP + 0.02;
-        if (culling != null && !culling.isVisible(new AABB(Math.min(px, qx), Math.min(p[2], q[2]) - depth, Math.min(pz, qz),
-                Math.max(px, qx), Math.max(p[2], q[2]), Math.max(pz, qz)))) return;
-        float rx = (float) (px - cam.x), rz = (float) (pz - cam.z), sx = (float) (qx - cam.x), sz = (float) (qz - cam.z);
-        for (int k = 0; k <= CURTAIN_STEPS; k++) {
-            double y = -0.02 - k * CURTAIN_STEP;
-            skyUv(rx, p[2] + y - cam.y, rz);
-            P_U[k] = UV[0];
-            P_V[k] = UV[1];
-            skyUv(sx, q[2] + y - cam.y, sz);
-            Q_U[k] = UV[0];
-            Q_V[k] = UV[1];
-        }
-        for (int k = 0; k < CURTAIN_STEPS; k++) {
-            float top = -0.02f - k * CURTAIN_STEP, bottom = top - CURTAIN_STEP;
-            QUAD_U[0] = P_U[k];
-            QUAD_U[1] = Q_U[k];
-            QUAD_U[2] = Q_U[k + 1];
-            QUAD_U[3] = P_U[k + 1];
-            float low = Math.min(Math.min(QUAD_U[0], QUAD_U[1]), Math.min(QUAD_U[2], QUAD_U[3]));
-            float high = Math.max(Math.max(QUAD_U[0], QUAD_U[1]), Math.max(QUAD_U[2], QUAD_U[3]));
-            if (high - low > 0.5f) for (int c = 0; c < 4; c++) if (QUAD_U[c] < 0.5f) QUAD_U[c] += 1f;
-            float py = (float) (p[2] - cam.y), qy = (float) (q[2] - cam.y);
-            buffer.addVertex(rx, py + top, rz).setUv(QUAD_U[0], P_V[k]).setColor(1f, 1f, 1f, 1f);
-            buffer.addVertex(sx, qy + top, sz).setUv(QUAD_U[1], Q_V[k]).setColor(1f, 1f, 1f, 1f);
-            buffer.addVertex(sx, qy + bottom, sz).setUv(QUAD_U[2], Q_V[k + 1]).setColor(1f, 1f, 1f, 1f);
-            buffer.addVertex(rx, py + bottom, rz).setUv(QUAD_U[3], P_V[k + 1]).setColor(1f, 1f, 1f, 1f);
-        }
-    }
-
-    private static void skyUv(double wx, double wy, double wz) {
-        double length = Math.sqrt(wx * wx + wy * wy + wz * wz);
-        if (length < 1.0E-4) {
-            UV[0] = 0f;
-            UV[1] = 0.5f;
-            return;
-        }
-        double lx = (skyCos * wx - skySin * wz) / length, lz = (skySin * wx + skyCos * wz) / length, ly = wy / length;
-        double azimuth = Mth.atan2(lz, lx);
-        if (azimuth < 0) azimuth += Math.PI * 2;
-        double elevation = Mth.atan2(ly, Math.sqrt(lx * lx + lz * lz));
-        UV[0] = (float) (azimuth / (Math.PI * 2));
-        UV[1] = (float) ((Math.PI / 2 - elevation) / Math.PI);
+    private static void curtain(BufferBuilder buffer, float[] p, float[] q, Edge edge) {
+        float px = p[0] - edge.x0 + p[3] * 0.06f, pz = p[1] - edge.z0 + p[4] * 0.06f;
+        float qx = q[0] - edge.x0 + q[3] * 0.06f, qz = q[1] - edge.z0 + q[4] * 0.06f;
+        float top = -0.02f, bottom = top - CURTAIN_DEPTH;
+        buffer.addVertex(px, p[2] + top, pz);
+        buffer.addVertex(qx, q[2] + top, qz);
+        buffer.addVertex(qx, q[2] + bottom, qz);
+        buffer.addVertex(px, p[2] + bottom, pz);
     }
 
     private static Edge build(ClientLevel level, BlockPos centre) {
@@ -341,8 +324,14 @@ public class HyperspaceEdge {
         List<Integer> found = new ArrayList<>();
         int lowest = Integer.MAX_VALUE, gap = 0;
         boolean above = false;
-        for (int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, wx, wz) - 1; y >= floor; y--) {
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, wx, wz);
+        edge.snow[x][z] = snow(level.getBlockState(pos.set(wx, top, wz)));
+        for (int y = top - 1; y >= floor; y--) {
             BlockState state = level.getBlockState(pos.set(wx, y, wz));
+            if (state.is(Blocks.SNOW) && lowest == Integer.MAX_VALUE) {
+                edge.snow[x][z] = snow(state);
+                continue;
+            }
             boolean here = !state.isAir() && !state.is(BlockTags.LEAVES) && !state.is(BlockTags.LOGS)
                     && !state.getCollisionShape(level, pos).isEmpty();
             if (here) {
@@ -359,6 +348,21 @@ public class HyperspaceEdge {
         edge.lowest[x][z] = lowest;
         edge.solid[x][z] = surfaces.length > 0;
         edge.height[x][z] = surfaces.length > 0 ? surfaces[0] : floor;
+    }
+
+    private static float snow(BlockState state) {
+        return state.is(Blocks.SNOW) ? state.getValue(SnowLayerBlock.LAYERS) / 8f : 0;
+    }
+
+    /** The snow lying on this surface round a corner: the line sits on top of it, or a thin layer hides it. */
+    private static float snowAt(Edge edge, int cx, int cz, int h) {
+        float most = 0;
+        for (int x = Math.max(cx - 1, 0); x <= Math.min(cx, SIZE - 1); x++) {
+            for (int z = Math.max(cz - 1, 0); z <= Math.min(cz, SIZE - 1); z++) {
+                if (edge.height[x][z] == h) most = Math.max(most, edge.snow[x][z]);
+            }
+        }
+        return most;
     }
 
     private static boolean open(Edge edge, int x, int z, float height) {
@@ -424,7 +428,8 @@ public class HyperspaceEdge {
             float[][] points = new float[path.size()][];
             for (int i = 0; i < path.size(); i++) {
                 long k = path.get(i);
-                points[i] = new float[]{edge.x0 + (int) (k >> 40), edge.z0 + (int) ((k >> 20) & 0xFFFFF), (int) (k & 0xFFFFF) - 4096};
+                int cx = (int) (k >> 40), cz = (int) ((k >> 20) & 0xFFFFF), h = (int) (k & 0xFFFFF) - 4096;
+                points[i] = new float[]{edge.x0 + cx, edge.z0 + cz, h + snowAt(edge, cx, cz, h)};
             }
             edge.lines.add(new Line(finish(edge, chaikin(chaikin(points, closed), closed), closed), closed));
         }
@@ -546,29 +551,43 @@ public class HyperspaceEdge {
     private static void ribbon(BufferBuilder buffer, Line line, Vec3 cam, float time) {
         float[][] loop = line.points();
         int n = loop.length;
+        float[] from = FROM, to = TO;
+        int ready = -1;
         for (int i = 0; i < (line.closed() ? n : n - 1); i++) {
             float[] p = loop[i], q = loop[(i + 1) % n];
             if (culling != null && !culling.isVisible(new AABB(Math.min(p[0], q[0]) - 0.5, Math.min(p[2], q[2]), Math.min(p[1], q[1]) - 0.5,
                     Math.max(p[0], q[0]) + 0.5, Math.max(p[2], q[2]) + 0.2, Math.max(p[1], q[1]) + 0.5))) continue;
             float sq = i + 1 == n ? p[5] + (float) Math.hypot(q[0] - p[0], q[1] - p[1]) : q[5];
+            if (ready != i) corners(from, p, p[5], cam, time);
+            corners(to, q, sq, cam, time);
             if (p[2] == q[2]) {
-                strip(buffer, p, along(p, p[5], time), q, along(q, sq, time), cam, time);
-                continue;
+                strip(buffer, from, to);
+            } else {
+                float[] low = between(p, q, sq, p[2]), high = between(p, q, sq, q[2]);
+                corners(LOW, low, low[5], cam, time);
+                corners(HIGH, high, high[5], cam, time);
+                strip(buffer, from, LOW);
+                strip(buffer, HIGH, to);
+                strip(buffer, LOW, HIGH);
             }
-            float[] low = between(p, q, sq, p[2]), high = between(p, q, sq, q[2]), m = along(low, low[5], time);
-            strip(buffer, p, along(p, p[5], time), low, m, cam, time);
-            strip(buffer, high, along(high, high[5], time), q, along(q, sq, time), cam, time);
-            strip(buffer, low, m, high, m, cam, time);
+            float[] drawn = from;
+            from = to;
+            to = drawn;
+            ready = i + 1;
         }
     }
 
-    private static void strip(BufferBuilder buffer, float[] p, float[] a, float[] q, float[] b, Vec3 cam, float time) {
-        for (float[] band : BANDS) {
-            corner(buffer, p, a, band, band[0], band[2], cam, time);
-            corner(buffer, q, b, band, band[0], band[2], cam, time);
-            corner(buffer, q, b, band, band[1], band[3], cam, time);
-            corner(buffer, p, a, band, band[1], band[3], cam, time);
+    private static void strip(BufferBuilder buffer, float[] from, float[] to) {
+        for (int k = 0; k < from.length; k += 14) {
+            vertex(buffer, from, k);
+            vertex(buffer, to, k);
+            vertex(buffer, to, k + 7);
+            vertex(buffer, from, k + 7);
         }
+    }
+
+    private static void vertex(BufferBuilder buffer, float[] corner, int k) {
+        buffer.addVertex(corner[k], corner[k + 1], corner[k + 2]).setColor(corner[k + 3], corner[k + 4], corner[k + 5], corner[k + 6]);
     }
 
     private static float[] between(float[] p, float[] q, float sq, float height) {
@@ -586,25 +605,45 @@ public class HyperspaceEdge {
         return new float[]{(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, height, nx, nz, (p[5] + sq) / 2, p[6] + phase / 2};
     }
 
-    private static float[] along(float[] p, float s, float time) {
+    private static void corners(float[] out, float[] p, float s, Vec3 cam, float time) {
         float shift = CREEP * (0.5f - 0.5f * Mth.cos((creep + p[6]) * Mth.TWO_PI));
         float wave = 0.65f + 0.35f * Mth.sin(s * 0.3f - time * 3.5f);
-        return new float[]{shift, wave};
+        float px = p[0], pz = p[1], nx = p[3], nz = p[4], y = (float) (p[2] + 0.06 - cam.y);
+        int k = 0;
+        for (float[] band : BANDS) {
+            for (int side = 0; side < 2; side++, k += 7) {
+                float d = band[side] - shift;
+                double x = px + nx * d, z = pz + nz * d;
+                float a = Mth.clamp(band[side + 2] * wave, 0f, 1f);
+                out[k] = (float) (x - cam.x);
+                out[k + 1] = y;
+                out[k + 2] = (float) (z - cam.z);
+                if (band[4] >= 0) {
+                    out[k + 6] = a;
+                    continue;
+                }
+                float hue = (float) (time * 0.04 + x * 0.035 + z * 0.025 + 0.12 * Math.sin(time * 0.8 + x * 0.21 - z * 0.17));
+                hue -= (float) Math.floor(hue);
+                float pulse = 0.8f + 0.2f * Mth.sin((float) (time * 2.2 + (x + z) * 0.45));
+                int rgb = Mth.hsvToRgb(hue, 0.8f, 1f);
+                out[k + 3] = ((rgb >> 16) & 255) / 255f;
+                out[k + 4] = ((rgb >> 8) & 255) / 255f;
+                out[k + 5] = (rgb & 255) / 255f;
+                out[k + 6] = Mth.clamp(a * pulse, 0f, 1f);
+            }
+        }
     }
 
-    private static void corner(BufferBuilder buffer, float[] p, float[] motion, float[] band, float offset, float alpha, Vec3 cam, float time) {
-        float d = offset - motion[0];
-        double x = p[0] + p[3] * d, z = p[1] + p[4] * d, y = p[2] + 0.06;
-        float a = Mth.clamp(alpha * motion[1], 0f, 1f);
-        if (band[4] >= 0) {
-            buffer.addVertex((float) (x - cam.x), (float) (y - cam.y), (float) (z - cam.z)).setColor(band[4], band[5], band[6], a);
-            return;
+    private static float[] cornerSlots() {
+        float[] slots = new float[BANDS.length * 14];
+        for (int b = 0; b < BANDS.length; b++) {
+            if (BANDS[b][4] < 0) continue;
+            for (int k = b * 14; k < b * 14 + 14; k += 7) {
+                slots[k + 3] = BANDS[b][4];
+                slots[k + 4] = BANDS[b][5];
+                slots[k + 5] = BANDS[b][6];
+            }
         }
-        float hue = (float) (time * 0.04 + x * 0.035 + z * 0.025 + 0.12 * Math.sin(time * 0.8 + x * 0.21 - z * 0.17));
-        hue -= (float) Math.floor(hue);
-        float pulse = 0.8f + 0.2f * Mth.sin((float) (time * 2.2 + (x + z) * 0.45));
-        int rgb = Mth.hsvToRgb(hue, 0.8f, 1f);
-        buffer.addVertex((float) (x - cam.x), (float) (y - cam.y), (float) (z - cam.z))
-                .setColor(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, Mth.clamp(a * pulse, 0f, 1f));
+        return slots;
     }
 }

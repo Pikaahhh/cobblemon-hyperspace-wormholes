@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:cache_2d",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": 66.0,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": {
+        "type": "minecraft:clamp",
+        "input": {
+          "type": "minecraft:mul",
+          "argument1": 4.5,
+          "argument2": {
+            "type": "minecraft:noise",
+            "noise": "hyperspace_wormholes:crag_plain",
+            "xz_scale": 1.0,
+            "y_scale": 0.0
+          }
+        },
+        "min": -4.0,
+        "max": 4.0
+      },
+      "argument2": {
+        "type": "minecraft:add",
+        "argument1": 1.0,
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": -1.0,
+          "argument2": {
+            "type": "hyperspace_wormholes:zone_clearing",
+            "zone": "wilds_290",
+            "inner": 66.0,
+            "outer": 96.0
+          }
+        }
+      }
+    }
+  }
+}

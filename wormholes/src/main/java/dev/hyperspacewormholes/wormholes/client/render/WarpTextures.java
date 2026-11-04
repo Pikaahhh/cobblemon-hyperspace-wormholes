@@ -10,8 +10,9 @@ import net.minecraft.util.Mth;
 import java.util.Random;
 
 /**
- * Pixel-art textures made in code the first time they're needed (glows, clouds, stars, nebulae, the wormhole funnel
- * grid and rings). They're greyscale with the shape in alpha so they can be tinted.
+ * Pixel-art textures made in code the first time they're needed (glows, clouds, stars, nebulae, the wormhole funnel grid
+ * and rings), greyscale with the shape in alpha so they can be tinted. The funnel grid keeps only pixels wholly inside
+ * the funnel's mesh (FUNNEL_SEGMENTS sides, open at the throat), so its rim is a stepped circle of whole pixels.
  */
 public final class WarpTextures {
     public static final ResourceLocation GLOW = Wormholes.id("dynamic/glow");
@@ -21,6 +22,7 @@ public final class WarpTextures {
     public static final ResourceLocation FUNNEL = Wormholes.id("dynamic/funnel");
     public static final int FUNNEL_FRAMES = 12;
     public static final float FUNNEL_THROAT = 0.16f / 1.7f;
+    public static final int FUNNEL_SEGMENTS = 32;
     public static final ResourceLocation RING = Wormholes.id("dynamic/ring");
     public static final float RING_RADIUS = 0.9f;
     public static final ResourceLocation RING_GLOW = Wormholes.id("dynamic/ring_glow");
@@ -130,6 +132,7 @@ public final class WarpTextures {
         double twist = 0.12, minGap = 3;
         NativeImage img = new NativeImage(size, size * frames, false);
         double half = size / 2.0;
+        double edge = Math.cos(Math.PI / FUNNEL_SEGMENTS);
         double logSpan = Math.log(1 / FUNNEL_THROAT);
         double ringRatio = Math.exp(logSpan / rings);
         for (int f = 0; f < frames; f++) {
@@ -139,8 +142,10 @@ public final class WarpTextures {
                     double cx = x + 0.5 - half, cy = y + 0.5 - half;
                     double rpx = Math.sqrt(cx * cx + cy * cy);
                     double r = rpx / half;
+                    double far = Math.hypot(Math.abs(cx) + 0.5, Math.abs(cy) + 0.5) / half;
+                    double near = Math.hypot(Math.max(0, Math.abs(cx) - 0.5), Math.max(0, Math.abs(cy) - 0.5)) / half;
                     float alpha = 0;
-                    if (r <= 1 && r >= FUNNEL_THROAT) {
+                    if (far <= edge && near >= FUNNEL_THROAT) {
                         double ringCoord = Math.log(r / FUNNEL_THROAT) / logSpan * rings + phase;
                         long k = Math.round(ringCoord);
                         double ringPx = FUNNEL_THROAT * half * Math.exp((k - phase) * logSpan / rings);

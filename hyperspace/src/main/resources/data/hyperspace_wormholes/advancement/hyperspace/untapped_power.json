@@ -1,0 +1,22 @@
+{
+  "parent": "hyperspace_wormholes:hyperspace/enter_hyperspace",
+  "display": {
+    "icon": {
+      "id": "mega_showdown:keystone"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.untapped_power.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.untapped_power.description"
+    }
+  },
+  "criteria": {
+    "untapped_power": {
+      "trigger": "hyperspace_wormholes:hyperspace",
+      "conditions": {
+        "event": "mega"
+      }
+    }
+  }
+}

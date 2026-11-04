@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:abs",
+    "argument": "minecraft:overworld/ridges"
+  },
+  "argument2": {
+    "type": "minecraft:mul",
+    "argument1": 0.5,
+    "argument2": {
+      "type": "hyperspace_wormholes:zone_clearing",
+      "zone": "jungle_286",
+      "inner": 190.0,
+      "outer": 320.0
+    }
+  }
+}

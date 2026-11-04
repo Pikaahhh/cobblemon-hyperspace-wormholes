@@ -37,7 +37,8 @@ final class FlatLandingSearch {
 
     private final ServerLevel level;
     private final WormholeDestinations.Plan plan;
-    private final boolean wantWater;
+    private final boolean wantWater, underwater;
+    private final int sideX, sideZ;
     private final ChunkGenerator generator;
     private final RandomState randomState;
     private final int[][] candidates;
@@ -55,6 +56,9 @@ final class FlatLandingSearch {
         this.level = level;
         this.plan = plan;
         this.wantWater = plan.type() == WormholeType.BLUE;
+        this.underwater = UltraWarpRules.isUnderwater(level);
+        this.sideX = -plan.dirZ();
+        this.sideZ = plan.dirX();
         this.generator = level.getChunkSource().getGenerator();
         this.randomState = level.getChunkSource().randomState();
         List<int[]> grid = new ArrayList<>();
@@ -67,7 +71,7 @@ final class FlatLandingSearch {
 
     static @Nullable FlatLandingSearch start(MinecraftServer server, WormholeDestinations.Plan plan) {
         ServerLevel level = server.getLevel(plan.dimension());
-        if (level == null || level.dimensionType().hasCeiling()) return null;
+        if (level == null || level.dimensionType().hasCeiling() || UltraZones.isZone(level)) return null;
         return new FlatLandingSearch(level, plan);
     }
 
@@ -109,12 +113,9 @@ final class FlatLandingSearch {
 
     private void check(int index) {
         int offset = candidates[index][0] + alongOffset, across = candidates[index][1];
-        int sideX = -plan.dirZ(), sideZ = plan.dirX();
         int x = plan.x() + plan.dirX() * offset + sideX * across;
         int z = plan.z() + plan.dirZ() * offset + sideZ * across;
-        if (!level.getWorldBorder().isWithinBounds(x, z)) return;
-        if (!looksFlat(x, z)) return;
-
+        if (!level.getWorldBorder().isWithinBounds(x, z) || !looksFlat(x, z)) return;
         int y0 = groundY(x, z);
         if (y0 == Integer.MIN_VALUE) return;
         int maxStep = 0;
@@ -141,7 +142,6 @@ final class FlatLandingSearch {
     private boolean looksFlat(int x, int z) {
         int y0 = generatedHeight(x, z);
         if (y0 == Integer.MIN_VALUE) return false;
-        int sideX = -plan.dirZ(), sideZ = plan.dirX();
         for (int a = -BEHIND; a <= AHEAD; a += SCREEN_STEP) {
             for (int b = -HALF_WIDTH; b <= HALF_WIDTH; b += SCREEN_STEP) {
                 int y = generatedHeight(x + plan.dirX() * a + sideX * b, z + plan.dirZ() * a + sideZ * b);
@@ -155,11 +155,10 @@ final class FlatLandingSearch {
         int ground = generator.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, randomState);
         if (ground <= level.getMinBuildHeight() + 1) return Integer.MIN_VALUE;
         int surface = generator.getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, randomState);
-        return UltraWarpRules.isUnderwater(level) || surface <= ground ? ground : Integer.MIN_VALUE;
+        return underwater || surface <= ground ? ground : Integer.MIN_VALUE;
     }
 
     private int groundY(int x, int z) {
-        boolean underwater = UltraWarpRules.isUnderwater(level);
         int y = level.getHeight(underwater ? Heightmap.Types.OCEAN_FLOOR : Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         int bottom = level.getMinBuildHeight() + 1;
         int terrainTop = generator.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, randomState);

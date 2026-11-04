@@ -46,14 +46,14 @@ public class IslandEdgeBlock {
         return next < 4 && next < now;
     }
 
+    /** How many of the box's corners, pushed out by MARGIN, have ground somewhere below them. */
     private static int support(Entity mover, AABB box) {
-        int count = 0;
-        for (double x : new double[]{box.minX - MARGIN, box.maxX + MARGIN}) {
-            for (double z : new double[]{box.minZ - MARGIN, box.maxZ + MARGIN}) {
-                AABB probe = new AABB(x - 1.0E-3, box.minY - DEPTH, z - 1.0E-3, x + 1.0E-3, box.minY - 1.0E-3, z + 1.0E-3);
-                if (!mover.level().noCollision(mover, probe)) count++;
-            }
-        }
-        return count;
+        double x0 = box.minX - MARGIN, x1 = box.maxX + MARGIN, z0 = box.minZ - MARGIN, z1 = box.maxZ + MARGIN;
+        return below(mover, box, x0, z0) + below(mover, box, x0, z1) + below(mover, box, x1, z0) + below(mover, box, x1, z1);
+    }
+
+    private static int below(Entity mover, AABB box, double x, double z) {
+        AABB probe = new AABB(x - 1.0E-3, box.minY - DEPTH, z - 1.0E-3, x + 1.0E-3, box.minY - 1.0E-3, z + 1.0E-3);
+        return mover.level().noCollision(mover, probe) ? 0 : 1;
     }
 }

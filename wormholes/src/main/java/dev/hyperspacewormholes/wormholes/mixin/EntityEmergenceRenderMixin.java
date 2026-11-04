@@ -13,10 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Draws riders tiny at a wormhole's mouth and growing as they glide out, and never culls them for being away from
- * their hitbox.
- */
+/** Draws riders tiny at a wormhole's mouth, growing as they glide out, and never culls them. */
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityEmergenceRenderMixin {
     @Unique

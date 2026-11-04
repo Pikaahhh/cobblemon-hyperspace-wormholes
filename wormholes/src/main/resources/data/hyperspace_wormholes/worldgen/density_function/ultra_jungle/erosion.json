@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:clamp",
+  "input": {
+    "type": "minecraft:add",
+    "argument1": 0.0,
+    "argument2": "minecraft:overworld/erosion"
+  },
+  "min": 0.3,
+  "max": 0.7
+}

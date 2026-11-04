@@ -9,16 +9,12 @@ import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Entry point for the Hyperspace half. Registers the dimension key, items, sounds, entities, loot types, commands and
- * all the server-side stuff.
- */
+/** Entry point for the Hyperspace half: registers the dimension, items, sounds, entities, loot types and commands. */
 public class Hyperspace implements ModInitializer {
     public static final String MOD_ID = "hyperspace_wormholes";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final ResourceKey<Level> HYPERSPACE = ResourceKey.create(Registries.DIMENSION,
-            ResourceLocation.fromNamespaceAndPath("hyperspace_wormholes", "hyperspace"));
+    public static final ResourceKey<Level> HYPERSPACE = ResourceKey.create(Registries.DIMENSION, id("hyperspace"));
 
     @Override
     public void onInitialize() {
@@ -31,16 +27,25 @@ public class Hyperspace implements ModInitializer {
         LevelScaling.register();
         Trips.register();
         Portals.register();
+        HoopaSummon.register();
+        HoopaEvent.register();
         Feeding.register();
+        Distortions.register();
+        MapDistortions.register();
         NoBlockBreaking.register();
         Spawns.register();
         HyperspaceCommand.register();
         StuckCommand.register();
         HyperspaceLegendaries.register();
-        BirdEggs.register();
         FloatingBalls.register();
         QuickBattles.register();
         Tasks.register();
+        DonutPowers.register();
+        HyperspaceAdvancements.register();
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
     public static boolean inHyperspace(ServerPlayer player) {

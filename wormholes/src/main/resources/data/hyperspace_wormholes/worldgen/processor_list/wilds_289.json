@@ -1,0 +1,12 @@
+{
+  "processors": [
+    {
+      "processor_type": "hyperspace_wormholes:zone_shading",
+      "floor": 58,
+      "top": 84
+    },
+    {
+      "processor_type": "hyperspace_wormholes:waterlog_in_water"
+    }
+  ]
+}

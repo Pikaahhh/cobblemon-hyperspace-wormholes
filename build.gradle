@@ -26,11 +26,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    // Cobblemon, CobbleNav and Radical Cobblemon Trainers are only needed at compile time; we only compile against them.
+    // Cobblemon and CobbleNav are only needed at compile time; we only compile against them.
     modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
     modCompileOnly("maven.modrinth:cobblemon-pokenav:BV5KiAcY") { transitive = false }  // CobbleNav 2.4.1
-    modCompileOnly("maven.modrinth:rctmod:rgfBfnW9") { transitive = false }  // RCT 0.19.2-beta
-    modCompileOnly("maven.modrinth:rctapi:bgmxNN26") { transitive = false }  // RCT API 0.16.1-beta
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
 
     // Dev-only runtime so runServer/runClient boot with Cobblemon; never bundled.
@@ -38,11 +36,25 @@ dependencies {
     modLocalRuntime 'net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20'
 }
 
+// usum/'s textures/particle/usum/ and the horizons_movefx_usum namespace hold files taken from Ultra Sun (textures, move
+// sounds and the imported model motions), for local testing only. They go into the jar only with -PwithUsum, so a plain
+// build never carries them.
+def withUsum = project.hasProperty('withUsum')
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'withUsum', withUsum
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
     }
+    if (!withUsum) {
+        exclude 'assets/horizons_movefx/textures/particle/usum/**'
+        exclude 'assets/horizons_movefx_usum/**'
+    }
+}
+
+// remapJar writes into an existing jar in place, so files since deleted from the sources would stay in it.
+remapJar {
+    doFirst { delete archiveFile }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -54,11 +66,21 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-// The mod is two halves (hyperspace, wormholes), each with its own code and resources; only fabric.mod.json
-// (in src/main/resources) is shared.
+// The mod is two halves (hyperspace, wormholes) plus usum (the Solgaleo / Lunala / Necrozma signature move animations
+// and the boss turning), each with its own code and resources; only fabric.mod.json (in src/main/resources) is shared.
 sourceSets {
     main {
-        java.srcDirs = ['hyperspace/src/main/java', 'wormholes/src/main/java']
-        resources.srcDirs = ['src/main/resources', 'hyperspace/src/main/resources', 'wormholes/src/main/resources']
+        java.srcDirs = ['hyperspace/src/main/java', 'wormholes/src/main/java', 'usum/src/main/java']
+        resources.srcDirs = ['src/main/resources', 'hyperspace/src/main/resources', 'wormholes/src/main/resources',
+                             'usum/src/main/resources']
     }
+    // Stand-ins for the few Jade API types the wormholes half's Jade plugin names; compiled against, never packaged.
+    jadeApi {
+        java.srcDirs = ['wormholes/src/jadeApi/java']
+        resources.srcDirs = []
+    }
+}
+
+dependencies {
+    compileOnly sourceSets.jadeApi.output
 }

@@ -1,0 +1,24 @@
+{
+  "parent": "hyperspace_wormholes:hyperspace/poppin_time",
+  "display": {
+    "icon": {
+      "id": "cobblemon:ultra_ball"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.professional_popper.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.professional_popper.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "criteria": {
+    "professional_popper": {
+      "trigger": "hyperspace_wormholes:hyperspace",
+      "conditions": {
+        "event": "all_popped"
+      }
+    }
+  }
+}

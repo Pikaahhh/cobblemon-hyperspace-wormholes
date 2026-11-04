@@ -13,9 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-/**
- * Shows the Hyperspace spawn pool in CobbleNav while you're in Hyperspace.
- */
+/** Shows the Hyperspace spawn pool in CobbleNav while you're in Hyperspace. */
 @Pseudo
 @Mixin(targets = "com.metacontent.cobblenav.spawndata.SpawnDataHelper", remap = false)
 public class SpawnDataHelperMixin {

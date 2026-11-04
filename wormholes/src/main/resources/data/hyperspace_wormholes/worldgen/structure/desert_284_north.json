@@ -1,0 +1,15 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/desert_284",
+  "step": "vegetal_decoration",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "desert_284",
+  "processors": "hyperspace_wormholes:desert_284",
+  "tiles": [
+    0,
+    0,
+    3,
+    3
+  ]
+}

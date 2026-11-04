@@ -1,0 +1,13 @@
+{
+  "type": "hyperspace_wormholes:ultra_wilds_cave",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:ultra_wilds_cave",
+      "layers": [{"block": "minecraft:bedrock", "height": 1}],
+      "features": true,
+      "lakes": false,
+      "structure_overrides": ["hyperspace_wormholes:wilds_291"]
+    }
+  }
+}

@@ -16,16 +16,13 @@ import net.minecraft.world.item.Rarity;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Registers the Hyperspace items (Hoopa Ring, donut, the portal display items, Legendary Essence and the Hyperspace
- * berries, which work like the normal ones when held in battle) and the creative tab.
- */
+/** Registers the Hyperspace items (Distortion Splicer, donut, display items, berries) and the creative tab. */
 public class ModItems {
-    public static final Item HOOPA_RING = register("hoopa_ring", new HoopaRingItem());
+    public static final Item DISTORTION_SPLICER = register("distortion_splicer", new DistortionSplicer(new Item.Properties()));
     public static final DonutItem DONUT = register("donut", new DonutItem());
     public static final Item HOOPA_PORTAL = register("hoopa_portal", new Item(new Item.Properties().stacksTo(1)));
     public static final Item HOOPA_PORTAL_CLOSED = register("hoopa_portal_closed", new Item(new Item.Properties().stacksTo(1)));
-    public static final Item LEGENDARY_ESSENCE = register("legendary_essence", new Item(new Item.Properties().rarity(Rarity.EPIC)));
+    public static final Item HOOPA_THROWN_RING = register("hoopa_thrown_ring", new Item(new Item.Properties().stacksTo(1)));
     public static final Map<String, Item> HYPERSPACE_BERRIES = new LinkedHashMap<>();
 
     static {
@@ -40,26 +37,21 @@ public class ModItems {
         }
     }
 
-    public static final ResourceKey<CreativeModeTab> TAB = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id("hyperspace"));
+    public static final ResourceKey<CreativeModeTab> TAB = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Hyperspace.id("hyperspace"));
 
     public static void register() {
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, TAB, FabricItemGroup.builder()
                 .title(Component.translatable("itemGroup.hyperspace_wormholes.hyperspace"))
-                .icon(() -> new ItemStack(HOOPA_RING))
+                .icon(() -> new ItemStack(DISTORTION_SPLICER))
                 .displayItems((params, output) -> {
-                    output.accept(HOOPA_RING);
+                    output.accept(DISTORTION_SPLICER);
                     output.accept(DONUT);
-                    output.accept(LEGENDARY_ESSENCE);
                     for (Item berry : HYPERSPACE_BERRIES.values()) output.accept(berry);
                 })
                 .build());
     }
 
     private static <T extends Item> T register(String name, T item) {
-        return Registry.register(BuiltInRegistries.ITEM, id(name), item);
-    }
-
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, path);
+        return Registry.register(BuiltInRegistries.ITEM, Hyperspace.id(name), item);
     }
 }

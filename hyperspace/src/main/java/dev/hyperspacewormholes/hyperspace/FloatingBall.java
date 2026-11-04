@@ -12,7 +12,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,7 +30,9 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -50,13 +51,12 @@ public class FloatingBall extends Entity implements PosableEntity {
     private EntitySideDelegate<FloatingBall> delegate;
     private QueryStruct struct;
     public static final float SIZE = 0.75f;
-    public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE,
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "gameplay/floating_poke_ball"));
+    public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE, Hyperspace.id("gameplay/floating_poke_ball"));
     public static final float GOLDEN_SCALE = 1.5f;
     public static final long MONEY = 2_500;
     public static final long GOLDEN_MONEY = 10_000;
     public static final ResourceKey<LootTable> GOLDEN_LOOT = ResourceKey.create(Registries.LOOT_TABLE,
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "gameplay/golden_floating_poke_ball"));
+            Hyperspace.id("gameplay/golden_floating_poke_ball"));
 
     private long born = -1;
 
@@ -103,14 +103,22 @@ public class FloatingBall extends Entity implements PosableEntity {
         Vec3 centre = position().add(0, size() / 2, 0);
         LootParams params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, centre)
                 .withOptionalParameter(LootContextParams.THIS_ENTITY, onlineOwner()).create(LootContextParamSets.CHEST);
-        LootTable table = level.getServer().reloadableRegistries().getLootTable(golden() ? GOLDEN_LOOT : LOOT);
-        for (ItemStack stack : table.getRandomItems(params)) {
+        DonutPowers powers = FloatingBalls.powers(level, onlineOwner());
+        boolean rich = golden() || random.nextFloat() < powers.itemChance();
+        LootTable table = level.getServer().reloadableRegistries().getLootTable(rich ? GOLDEN_LOOT : LOOT);
+        List<ItemStack> loot = new ArrayList<>(table.getRandomItems(params));
+        for (int i = 0; i < powers.bigHaul(); i++) {
+            List<ItemStack> more = table.getRandomItems(params);
+            if (!more.isEmpty()) loot.add(more.get(0));
+        }
+        for (ItemStack stack : loot) {
             if (!stack.isEmpty()) spawnAtLocation(stack, size() / 2);
         }
         level.playSound(null, centre.x, centre.y, centre.z, SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.NEUTRAL, 1.5f, 1.4f);
         level.sendParticles(ParticleTypes.POOF, centre.x, centre.y, centre.z, 12, 0.4, 0.4, 0.4, 0.05);
         level.sendParticles(new DustParticleOptions(new Vector3f(0.93f, 0.2f, 0.2f), 1.5f), centre.x, centre.y + 0.3, centre.z, 16, 0.5, 0.3, 0.5, 0);
         level.sendParticles(new DustParticleOptions(new Vector3f(1f, 1f, 1f), 1.5f), centre.x, centre.y - 0.3, centre.z, 16, 0.5, 0.3, 0.5, 0);
+        FloatingBalls.popped(this, onlineOwner());
         discard();
     }
 

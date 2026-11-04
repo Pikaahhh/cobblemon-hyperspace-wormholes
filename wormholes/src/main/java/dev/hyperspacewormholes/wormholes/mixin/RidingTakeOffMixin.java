@@ -14,10 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Makes a legend start flying if you first get on it in mid-air, instead of Cobblemon thinking it's swimming and
- * chucking you off.
- */
+/** A legend you first get on in mid-air starts flying, instead of Cobblemon treating it as swimming and throwing you off. */
 @Mixin(value = RidingController.class, remap = false)
 public abstract class RidingTakeOffMixin {
     @Shadow @Final private PokemonEntity entity;

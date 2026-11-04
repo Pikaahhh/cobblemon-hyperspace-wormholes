@@ -1,0 +1,18 @@
+{
+  "type": "hyperspace_wormholes:ultra_megalopolis",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:ultra_megalopolis",
+      "layers": [
+        {
+          "block": "minecraft:cave_air",
+          "height": 1
+        }
+      ],
+      "features": true,
+      "lakes": false,
+      "structure_overrides": ["hyperspace_wormholes:megalo_281"]
+    }
+  }
+}

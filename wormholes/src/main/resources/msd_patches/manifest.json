@@ -1,0 +1,696 @@
+{
+ "dim": {
+  "glow_rects": [
+   [351, 0, 16, 25],
+   [448, 17, 4, 1],
+   [448, 18, 12, 1],
+   [448, 19, 4, 1],
+   [456, 19, 4, 1],
+   [448, 20, 2, 1],
+   [458, 20, 2, 1],
+   [448, 21, 1, 1],
+   [459, 21, 1, 1],
+   [326, 25, 66, 8],
+   [416, 27, 14, 18],
+   [398, 45, 50, 7],
+   [448, 61, 10, 6],
+   [442, 67, 22, 3],
+   [405, 74, 20, 13],
+   [392, 87, 46, 17],
+   [339, 96, 32, 21],
+   [318, 117, 74, 18],
+   [326, 135, 8, 8],
+   [318, 143, 24, 8],
+   [285, 159, 42, 21],
+   [264, 180, 84, 21],
+   [406, 223, 24, 16],
+   [449, 231, 6, 3],
+   [446, 234, 12, 5],
+   [390, 239, 68, 5],
+   [390, 244, 56, 6],
+   [91, 251, 10, 5],
+   [338, 255, 34, 4],
+   [86, 256, 20, 14],
+   [334, 259, 42, 4],
+   [338, 263, 34, 4],
+   [334, 267, 42, 4],
+   [21, 291, 34, 21],
+   [75, 296, 1, 2],
+   [75, 303, 1, 2],
+   [0, 312, 76, 19],
+   [432, 322, 24, 4],
+   [428, 326, 32, 4],
+   [432, 330, 24, 4],
+   [428, 334, 32, 4],
+   [223, 339, 10, 5],
+   [218, 344, 20, 14],
+   [305, 346, 18, 21],
+   [365, 346, 18, 21],
+   [284, 367, 120, 17],
+   [232, 382, 18, 20],
+   [345, 384, 24, 17],
+   [13, 399, 18, 13],
+   [328, 401, 58, 11],
+   [115, 402, 18, 13],
+   [212, 402, 58, 9],
+   [0, 412, 44, 17],
+   [102, 415, 44, 17],
+   [254, 430, 24, 4],
+   [360, 431, 12, 8],
+   [63, 432, 10, 5],
+   [110, 432, 12, 8],
+   [280, 432, 2, 2],
+   [250, 434, 32, 4],
+   [138, 435, 12, 8],
+   [166, 435, 12, 8],
+   [314, 435, 8, 4],
+   [58, 437, 20, 9],
+   [310, 439, 16, 8],
+   [352, 439, 28, 3],
+   [84, 440, 10, 6],
+   [102, 440, 28, 3],
+   [192, 442, 10, 6],
+   [358, 442, 10, 6],
+   [24, 443, 8, 4],
+   [40, 443, 8, 4],
+   [130, 443, 56, 3],
+   [58, 446, 42, 3],
+   [277, 446, 6, 3],
+   [289, 446, 6, 3],
+   [20, 447, 32, 8],
+   [186, 448, 22, 3],
+   [352, 448, 22, 3],
+   [274, 449, 24, 10],
+   [968, 883, 14, 11],
+   [922, 894, 9, 17],
+   [931, 931, 8, 17],
+   [952, 931, 10, 17],
+   [942, 948, 10, 4],
+   [931, 952, 44, 2],
+   [975, 961, 8, 30]
+  ],
+  "dark_base": [16.4, 16.4, 20.75],
+  "dark_per_brightness": [0.1065, 0.1065, 0.1345],
+  "stages": 3
+ },
+ "pieces": [
+  {
+   "name": "burst_core",
+   "skip_file": "assets/cobblemon/bedrock/pokemon/resolvers/0800_necrozma/10_hyperspace_wormholes_necrozma_burst_core.json",
+   "skip_json": {
+    "species": "cobblemon:necrozma",
+    "order": 10,
+    "variations": []
+   },
+   "outputs": [
+    {
+     "path": "assets/cobblemon/bedrock/pokemon/models/0800_necrozma/necrozma_duskmane_burst.geo.json",
+     "source": "assets/cobblemon/bedrock/pokemon/models/0800_necrozma/necrozma_duskmane.geo.json",
+     "sha256": "abddbddaf25135335b60c24bce90fc1f7d56787c04c6d91f858f99bc8f789d96",
+     "op": "json",
+     "set": {
+      "/minecraft:geometry/0/description/identifier": "geometry.necrozma_duskmane_burst"
+     },
+     "append": {
+      "/minecraft:geometry/0/bones": {
+       "name": "core",
+       "parent": "necrozma_duskmane",
+       "pivot": [0, 0, 0],
+       "cubes": [
+        {
+         "origin": [-5, -16, -2],
+         "size": [10, 32, 4],
+         "uv": [708, 2]
+        },
+        {
+         "origin": [-4, 16, -2],
+         "size": [8, 1, 4],
+         "uv": [708, 38]
+        },
+        {
+         "origin": [-3, 17, -2],
+         "size": [6, 1, 4],
+         "uv": [708, 43]
+        },
+        {
+         "origin": [-2, 18, -2],
+         "size": [4, 1, 4],
+         "uv": [708, 48]
+        },
+        {
+         "origin": [-1, 19, -2],
+         "size": [2, 1, 4],
+         "uv": [708, 53]
+        },
+        {
+         "origin": [-4, -17, -2],
+         "size": [8, 1, 4],
+         "uv": [708, 58]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "path": "assets/cobblemon/bedrock/pokemon/models/0800_necrozma/necrozma_dawnwings_burst.geo.json",
+     "source": "assets/cobblemon/bedrock/pokemon/models/0800_necrozma/necrozma_dawnwings.geo.json",
+     "sha256": "8b2e586331e10e46b0f1ba66ff5bb15927cb707111404e7bb923c62d0dde98d1",
+     "op": "json",
+     "set": {
+      "/minecraft:geometry/0/description/identifier": "geometry.necrozma_dawnwings_burst"
+     },
+     "append": {
+      "/minecraft:geometry/0/bones": {
+       "name": "core",
+       "parent": "necrozma_dawnwings",
+       "pivot": [0, 0, 0],
+       "cubes": [
+        {
+         "origin": [-5, -16, -2],
+         "size": [10, 32, 4],
+         "uv": [334, 2]
+        },
+        {
+         "origin": [-4, 16, -2],
+         "size": [8, 1, 4],
+         "uv": [334, 38]
+        },
+        {
+         "origin": [-3, 17, -2],
+         "size": [6, 1, 4],
+         "uv": [334, 43]
+        },
+        {
+         "origin": [-2, 18, -2],
+         "size": [4, 1, 4],
+         "uv": [334, 48]
+        },
+        {
+         "origin": [-1, 19, -2],
+         "size": [2, 1, 4],
+         "uv": [334, 53]
+        },
+        {
+         "origin": [-4, -17, -2],
+         "size": [8, 1, 4],
+         "uv": [334, 58]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_duskmane_burst_emissive.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_duskmane_emissive.png",
+     "sha256": "0587547d50d34db783400b81a710bcefff52f4bdf3d11f0dd78d1c9175e27015",
+     "op": "overlay",
+     "image": "core_overlay.png",
+     "x": 708,
+     "y": 2
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_duskmane_burst_shiny_emissive.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_duskmane_shiny_emissive.png",
+     "sha256": "cb4b17e09413c035a6a2435e2309192427d573a7e9f4ca30b6c94564e27320d6",
+     "op": "overlay",
+     "image": "core_overlay.png",
+     "x": 708,
+     "y": 2
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_dawnwings_burst_emissive.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_dawnwings_emissive.png",
+     "sha256": "9a7e383549a9b41f7c2084dfe8eb6f8a208cef5d89f57b45d9062700ffc46800",
+     "op": "overlay",
+     "image": "core_overlay.png",
+     "x": 334,
+     "y": 2
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_dawnwings_burst_shiny_emissive.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_dawnwings_shiny_emissive.png",
+     "sha256": "4a9ac8e1b5e4f2435cc287d9ece5ba4fd5f36297f71dc48ff6a6ae193642f3c8",
+     "op": "overlay",
+     "image": "core_overlay.png",
+     "x": 334,
+     "y": 2
+    }
+   ]
+  },
+  {
+   "name": "ultra_dim",
+   "skip_file": "assets/cobblemon/bedrock/pokemon/resolvers/0800_necrozma/11_hyperspace_wormholes_necrozma_ultra_dim.json",
+   "skip_json": {
+    "species": "cobblemon:necrozma",
+    "order": 11,
+    "variations": []
+   },
+   "outputs": [
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_dim1.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra.png",
+     "sha256": "b97bd055126c53d1771138c5523add41d0e2ce4cc8f1fdb143ac891cd061d230",
+     "op": "dim",
+     "stage": 1
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_dim2.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra.png",
+     "sha256": "b97bd055126c53d1771138c5523add41d0e2ce4cc8f1fdb143ac891cd061d230",
+     "op": "dim",
+     "stage": 2
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_dim3.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra.png",
+     "sha256": "b97bd055126c53d1771138c5523add41d0e2ce4cc8f1fdb143ac891cd061d230",
+     "op": "dim",
+     "stage": 3
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim1.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny.png",
+     "sha256": "ff88e8449428ae1007a49c47a48761165a051c33c2a731e8ca7584b8d57d89ac",
+     "op": "dim",
+     "stage": 1
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim2.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny.png",
+     "sha256": "ff88e8449428ae1007a49c47a48761165a051c33c2a731e8ca7584b8d57d89ac",
+     "op": "dim",
+     "stage": 2
+    },
+    {
+     "path": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny_dim3.png",
+     "source": "assets/cobblemon/textures/pokemon/0800_necrozma/necrozma_ultra_shiny.png",
+     "sha256": "ff88e8449428ae1007a49c47a48761165a051c33c2a731e8ca7584b8d57d89ac",
+     "op": "dim",
+     "stage": 3
+    }
+   ]
+  },
+  {
+   "name": "necrozma_power_down_particles",
+   "text": {
+    "cobblemon:mega_evolution": "hyperspace_wormholes:necrozma_power_down",
+    "q.entity_size": "12",
+    "q.entity_radius": "6"
+   },
+   "outputs": [
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution.particle.json",
+     "sha256": "505fd67a283183675ca1313d7f1b8818ef048f94251a167dd1e4999c280d52db",
+     "op": "json",
+     "remove": [
+      "/particle_effect/events/event_icon",
+      "/particle_effect/components/minecraft:emitter_lifetime_events/timeline/7.60"
+     ]
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_buildup.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_buildup.particle.json",
+     "sha256": "5562ed36daafd47e3704083e762be6daa98f1eae60e68fa114bb4b301a868585",
+     "op": "json",
+     "gradient": {
+      "0.2": "#FFFFC838",
+      "0.92": "#FFD6AB3A"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_burst2.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_burst2.particle.json",
+     "sha256": "609b98776545134163a1c1f1f41b49773234e6bad8c0b674ade1ced8b989df4d",
+     "op": "json",
+     "gradient": {
+      "0.2": "#FF3E3E42",
+      "0.92": "#FF3E3E42"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_bursttrail.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_bursttrail.particle.json",
+     "sha256": "19784383fdac60cdbd3a9faec7577a4d77815e2a014f02527e355235e3283fe4",
+     "op": "json",
+     "gradient": {
+      "0.03": "#C23E3E42",
+      "0.21": "#FF3E3E42",
+      "0.47": "#FF3E3E42",
+      "0.86": "#AB3E3E42"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_disc.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_disc.particle.json",
+     "sha256": "0f193e43a896fd64cdb65edaf6e187005880c05ef32fe353601cc478ee6bca9b",
+     "op": "json",
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle",
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_disc1.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_disc1.particle.json",
+     "sha256": "8a17a3db834402f5422a711f5ea3b904e74253d1e4874ba092fe25c13f8af5fb",
+     "op": "json",
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle",
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_disc2.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_disc2.particle.json",
+     "sha256": "77f1b78b223e67d200df64ca111f801de20cc851410bfe17a5a7af994cd64127",
+     "op": "json",
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle",
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_disc3.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_disc3.particle.json",
+     "sha256": "e905060d200a32595e78a841810960f7581055e96197772a3c936e2000be47a0",
+     "op": "json",
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle",
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_disc4.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_disc4.particle.json",
+     "sha256": "4b3e6a079dcb9ed5559b9a7d09ee8c6774a638bd0a06c015915d5b31c05349ec",
+     "op": "json",
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle",
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_dust.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_dust.particle.json",
+     "sha256": "2103586dc061f45887f374d5428f9dcae3b696591360c1bccacc162b43f1a0a6",
+     "op": "json",
+     "set": {
+      "/particle_effect/components/minecraft:particle_appearance_tinting/color": {
+       "interpolant": "v.particle_age / v.particle_lifetime",
+       "gradient": {
+        "0.0": "#FF3E3E42",
+        "1.0": "#FF3E3E42"
+       }
+      }
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_endtrail.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_endtrail.particle.json",
+     "sha256": "a705f3bf8414f22670d0d1972dc9d5d5c98b55fc73c65d9ca53c886c205c89f5",
+     "op": "json",
+     "gradient": {
+      "0.03": "#A13E3E42",
+      "0.23": "#B33E3E42",
+      "0.46": "#A63E3E42",
+      "0.7": "#A83E3E42",
+      "0.9": "#A63E3E42"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_inward_godrays.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_inward_godrays.particle.json",
+     "sha256": "d08194fb53938f27b95890d96f7a782b05385536706d788c42ebbe8c854138f5",
+     "op": "json",
+     "gradient": {
+      "0.0": "#00AE8E3C",
+      "0.24": "#FFC69F3B",
+      "0.5": "#FFDDB03A",
+      "0.8": "#FFF2BE39",
+      "1.0": "#00FBC538"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_outward_godrays.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_outward_godrays.particle.json",
+     "sha256": "7c8ab5e13b428346b8ca683695495ae0a50ac1da1f1877abc889969ecb31256c",
+     "op": "json",
+     "gradient": {
+      "0.0": "#003E3E42",
+      "0.24": "#FF3E3E42",
+      "0.5": "#FF3F3F42",
+      "0.8": "#FF474442",
+      "1.0": "#004E4A41"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_scythe1.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_scythe1.particle.json",
+     "sha256": "9a9a9959487bd845775329f5819024a922617358d4fb28dd16ebe89a67375a4b",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF3E3E42",
+      "0.22": "#FF3E3E42",
+      "0.56": "#FF3E3E42",
+      "0.77": "#FF3E3E42",
+      "1.0": "#FF3E3E42"
+     },
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_scythe2.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_scythe2.particle.json",
+     "sha256": "4e7a2b54765153f43fcd72ec79858a64fc90538b15be81f04b5004308a5cc608",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF3E3E42",
+      "0.22": "#FF3E3E42",
+      "0.56": "#FF3E3E42",
+      "0.77": "#FF3E3E42",
+      "1.0": "#FF3E3E42"
+     },
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_scythe3.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_scythe3.particle.json",
+     "sha256": "b07c9a23430c6dae406540ce545898842c99d60658161ef1b85302c42f040a66",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF3E3E42",
+      "0.22": "#FF3E3E42",
+      "0.56": "#FF3E3E42",
+      "0.77": "#FF3E3E42",
+      "1.0": "#FF3E3E42"
+     },
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_sparkleburst.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_sparkleburst.particle.json",
+     "sha256": "10f284c146149368267df234f5ff2e192205205575a0c0ab10e6726544ee2cd9",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF3E3E42",
+      "0.22": "#FF3E3E42",
+      "0.56": "#FF3E3E42",
+      "0.77": "#FF3E3E42",
+      "1.0": "#FF3E3E42"
+     },
+     "set": {
+      "/particle_effect/description/basic_render_parameters/texture": "textures/particles/generic/sparkle/glowingsparkle"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_sphere1.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_sphere1.particle.json",
+     "sha256": "f2549b2e29d53b828d56a4fbca93cbdc4d25ebb1c899611070980ae02a8f0b2f",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FFFCC638",
+      "0.19": "#FFEAB939",
+      "0.48": "#FFB7953C",
+      "0.78": "#FF7A693F",
+      "1.0": "#FF554E41"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_sphere2.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_sphere2.particle.json",
+     "sha256": "37832fde08b11a7dcbd27183c4f7a9b0b7fe75b334087a15d74af6f7191fb82a",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF806D3F",
+      "1.0": "#FF3E3E42"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_sphere3.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_sphere3.particle.json",
+     "sha256": "5b543ec4348e9b46e62a3db7da815c3c5d3c09d8287cc9613a02dbe394ef5fe0",
+     "op": "json",
+     "gradient": {
+      "0.0": "#FF4E4A41",
+      "1.0": "#FF3E3E42"
+     }
+    },
+    {
+     "path": "assets/hyperspace_wormholes/bedrock/particles/necrozma_power_down_trail.particle.json",
+     "source": "assets/cobblemon/bedrock/particles/mega_evolution_trail.particle.json",
+     "sha256": "221100d7d6a37b587bbaeb42943cc4f12a8ea77e6140fc65f012958e1c040e13",
+     "op": "json",
+     "gradient": {
+      "0.03": "#EBFAC438",
+      "0.21": "#E8DFB13A",
+      "0.5": "#ED997F3D",
+      "0.86": "#ED4B4841"
+     }
+    }
+   ]
+  },
+  {
+   "name": "necrozma_riding",
+   "outputs": [
+    {
+     "path": "assets/cobblemon/bedrock/pokemon/posers/0800_necrozma/necrozma.json",
+     "source": "assets/cobblemon/bedrock/pokemon/posers/0800_necrozma/necrozma.json",
+     "sha256": "9687dd229e375e921c8290684503b5f6878f2e05f01d8aad9a6db0e807b0aebe",
+     "op": "json",
+     "insert_before": [
+      {
+       "at": "/poses",
+       "key": "ride-fly",
+       "before": "fly",
+       "value": {
+        "transformTicks": 5,
+        "condition": "q.is_ridden",
+        "poseTypes": [
+         "FLY"
+        ],
+        "animations": [
+         "q.bedrock('necrozma', 'ride_air_fly')"
+        ]
+       }
+      }
+     ],
+     "set": {
+      "/poses/fly/condition": "!q.is_sprinting && !q.is_ridden"
+     }
+    }
+   ]
+  },
+  {
+   "name": "hoopa_split",
+   "skip_file": "assets/cobblemon/bedrock/pokemon/resolvers/0720_hoopa/2_hoopa_unbound_hyperspace.json",
+   "skip_json": {
+    "species": "cobblemon:hoopa",
+    "order": 2,
+    "variations": []
+   },
+   "outputs": [
+    {
+     "path": "assets/cobblemon/bedrock/pokemon/models/0720_hoopa/hoopa_unbound_split.geo.json",
+     "source": "assets/cobblemon/bedrock/pokemon/models/0720_hoopa/hoopa_unbound.geo.json",
+     "sha256": "a84bf1be1550f87fb4e39b266368f14b337bd9f931e009a2b49b1e5c7f0c81af",
+     "op": "json",
+     "split_bones": {
+      "at": "/minecraft:geometry/0/bones",
+      "bones": [
+       {
+        "bone": "wrist_ring_left1",
+        "parent": "elbow_left",
+        "pivot": [10.5, 8.0, -34.0],
+        "cube": 1
+       },
+       {
+        "bone": "wrist_ring_left2",
+        "parent": "elbow_left2",
+        "pivot": [23.5, 8.0, -34.0],
+        "cube": 1
+       },
+       {
+        "bone": "wrist_ring_left3",
+        "parent": "elbow_left3",
+        "pivot": [36.5, 8.0, -34.0],
+        "cube": 1
+       },
+       {
+        "bone": "wrist_ring_right1",
+        "parent": "elbow_right",
+        "pivot": [-10.5, 8.0, -34.0],
+        "cube": 1
+       },
+       {
+        "bone": "wrist_ring_right2",
+        "parent": "elbow_right2",
+        "pivot": [-23.5, 8.0, -34.0],
+        "cube": 1
+       },
+       {
+        "bone": "wrist_ring_right3",
+        "parent": "elbow_right3",
+        "pivot": [-36.5, 8.0, -34.0],
+        "cube": 1
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "necrozma_power_down_effect",
+   "outputs": [
+    {
+     "path": "data/hyperspace_wormholes/mega_showdown/effect/necrozma_power_down.json",
+     "source": "data/mega_showdown/mega_showdown/effect/mega_evolution.json",
+     "sha256": "9825de83f8ea13c9f7bc1dda9ab3ed79ef4e28ec529da29fcf4de2c67936e0fe",
+     "op": "json",
+     "remove": [
+      "/snowstorm/animations"
+     ],
+     "set": {
+      "/snowstorm/particle_apply": "hyperspace_wormholes:necrozma_power_down",
+      "/snowstorm/apply_after": 4.5
+     }
+    }
+   ]
+  }
+ ]
+}

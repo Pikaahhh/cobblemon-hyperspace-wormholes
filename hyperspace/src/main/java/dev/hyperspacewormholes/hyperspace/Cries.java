@@ -12,10 +12,7 @@ import net.minecraft.util.RandomSource;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Plays a Pokemon's cry from our own sounds when its model doesn't have a cry animation, using the right form's cry if
- * there is one.
- */
+/** Plays a Pokemon's cry from our own sounds when its model has no cry animation, using the right form's cry. */
 public class Cries {
     private static final Map<String, String> ALIASES = Map.ofEntries(
             Map.entry("658.bond", "battle-bond"),
@@ -39,7 +36,7 @@ public class Cries {
 
     private static ResourceLocation find(Pokemon pokemon) {
         int dex = pokemon.getSpecies().getNationalPokedexNumber();
-        ResourceLocation base = ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "cry." + dex);
+        ResourceLocation base = Hyperspace.id("cry." + dex);
         String form = pokemon.getForm().getName().toLowerCase(Locale.ROOT)
                 .replace(' ', '-').replace('_', '-').replace("'", "").replace("%", "");
         form = ALIASES.getOrDefault(dex + "." + form, form);

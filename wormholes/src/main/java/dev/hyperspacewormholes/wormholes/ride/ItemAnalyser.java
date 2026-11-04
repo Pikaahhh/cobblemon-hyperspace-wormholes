@@ -7,9 +7,8 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.BigBattery;
 import dev.hyperspacewormholes.wormholes.CosmicJar;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import dev.hyperspacewormholes.wormholes.UltraHide;
+import dev.hyperspacewormholes.wormholes.WormholesAdvancements;
 import dev.hyperspacewormholes.wormholes.mixin.TextDisplayAccessor;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -58,12 +57,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * The Item Analyser. Cobblemon's Fossil Analyzer with a Data Monitor on top. Load it with a type gem and an Ultra Hide
- * or Blaze Powder, power it with lightning or a Big Battery, and it pulls a Pokemon through a wormhole. Handles its
+ * The Item Analyser. Cobblemon's Fossil Analyzer with a Data Monitor on top. Load it with a type gem and Blaze Powder
+ * (or a full Cosmic Jar and a golden apple), power it with lightning or a Big Battery, and it pulls a Pokemon through a wormhole. Handles its
  * screens, sounds, overheating and burnt-out monitors.
  */
 public final class ItemAnalyser {
@@ -80,7 +80,6 @@ public final class ItemAnalyser {
     private static final double LIGHTNING_BREAK_CHANCE = 0.90;
     private static final long OVERHEAT_TICKS = 5 * 60 * 20;
     private static final long ERROR_TICKS = 5 * 20;
-    private static final double HIDE_CHANCE = 0.20;
     private static final double BLAZE_CHANCE = 0.05;
 
     private static final String DISPLAY_TAG = "hyperspace_wormholes_cloning";
@@ -97,7 +96,7 @@ public final class ItemAnalyser {
     public static final Item ERROR_SCREEN = Registry.register(BuiltInRegistries.ITEM, Wormholes.id("error_screen"),
             new Item(new Item.Properties()));
 
-    private enum Recipe { HIDE, BLAZE, COSMOG }
+    private enum Recipe { BLAZE, COSMOG }
 
     private record Running(ServerLevel level, BlockPos monitor, double breakChance, int closesIn) {}
 
@@ -124,7 +123,6 @@ public final class ItemAnalyser {
                 activate(server, analyser, loaded, store, player, 0);
                 return InteractionResult.CONSUME;
             }
-            if (noUltraBeast(server, loaded)) warnNoUltraBeast(player, loaded);
             if (overheated(server, analyser, store)) {
                 store.errorUntil.put(analyser.asLong(), now(server) + ERROR_TICKS);
                 server.levelEvent(LevelEvent.LAVA_FIZZ, pos, 0);
@@ -161,19 +159,7 @@ public final class ItemAnalyser {
 
         showContents(server, pos, loaded);
         refreshScreen(server, pos);
-        if (noUltraBeast(server, loaded)) warnNoUltraBeast(player, loaded);
         return InteractionResult.CONSUME;
-    }
-
-    private static boolean noUltraBeast(ServerLevel level, Loaded loaded) {
-        return loaded.recipe() == Recipe.HIDE
-                && WormholePokemon.ultraBeastOfType(typeOf(loaded.core.getItem()), level.getRandom()) == null;
-    }
-
-    private static void warnNoUltraBeast(Player player, Loaded loaded) {
-        Component type = Component.translatable("cobblemon.type." + typeOf(loaded.core.getItem()));
-        player.displayClientMessage(Component.translatable("hyperspace_wormholes.analyser.no_ultra_beast", type)
-                .withStyle(ChatFormatting.RED), true);
     }
 
     private static long now(ServerLevel level) {
@@ -217,7 +203,7 @@ public final class ItemAnalyser {
     private static boolean ready(ServerLevel level, BlockPos pos, Store store) {
         if (overheated(level, pos, store)) return false;
         Loaded loaded = store.devices.get(pos.asLong());
-        return loaded != null && loaded.recipe() != null && !noUltraBeast(level, loaded);
+        return loaded != null && loaded.recipe() != null;
     }
 
     private static void refreshScreen(ServerLevel level, BlockPos pos) {
@@ -255,11 +241,10 @@ public final class ItemAnalyser {
     }
 
     private static boolean isPartner(ItemStack stack) {
-        return stack.is(UltraHide.ITEM) || stack.is(Items.BLAZE_POWDER) || stack.is(Items.GOLDEN_APPLE);
+        return stack.is(Items.BLAZE_POWDER) || stack.is(Items.GOLDEN_APPLE);
     }
 
     private static @Nullable Recipe recipeFor(ItemStack core, ItemStack partner) {
-        if (core.is(TYPE_GEMS) && partner.is(UltraHide.ITEM)) return Recipe.HIDE;
         if (core.is(TYPE_GEMS) && partner.is(Items.BLAZE_POWDER)) return Recipe.BLAZE;
         if (core.is(CosmicJar.ITEM) && partner.is(Items.GOLDEN_APPLE)) return Recipe.COSMOG;
         return null;
@@ -291,15 +276,12 @@ public final class ItemAnalyser {
             return;
         }
         if (isRunning(level, monitorPos)) return;
+        if (player instanceof ServerPlayer builder) WormholesAdvancements.machine(builder);
         Direction screen = monitor.getValue(BlockStateProperties.HORIZONTAL_FACING).getOpposite();
         Recipe recipe = loaded.recipe();
         String type = recipe == Recipe.COSMOG ? "psychic" : typeOf(loaded.core.getItem());
         boolean hasUltraBeast = recipe != Recipe.COSMOG && WormholePokemon.ultraBeastOfType(type, level.getRandom()) != null;
-        if (recipe == Recipe.HIDE && !hasUltraBeast) {
-            refuse(level, pos);
-            return;
-        }
-        double chance = recipe == Recipe.HIDE ? HIDE_CHANCE : recipe == Recipe.BLAZE ? BLAZE_CHANCE : 0;
+        double chance = recipe == Recipe.BLAZE ? BLAZE_CHANCE : 0;
         boolean ultraBeast = hasUltraBeast && level.getRandom().nextDouble() < chance;
         String properties = recipe == Recipe.COSMOG ? "cosmog level=5"
                 : ultraBeast ? WormholePokemon.ultraBeastOfType(type, level.getRandom())
@@ -331,8 +313,12 @@ public final class ItemAnalyser {
         store.setDirty();
         if (recipe == Recipe.COSMOG) Block.popResource(level, pos.above(2), new ItemStack(CosmicJar.ITEM));
         PokemonArrivals.start(level, entity, landing, yaw,
-                ultraBeast || recipe == Recipe.COSMOG ? WormholeType.WHITE : WormholeType.GREEN, false, false);
+                ultraBeast || recipe == Recipe.COSMOG ? WormholeType.WHITE : WormholeType.GREEN, false);
         if (player instanceof ServerPlayer serverPlayer) CosmicJar.maybeCharge(serverPlayer);
+        if (player instanceof ServerPlayer summoner) {
+            if (recipe == Recipe.COSMOG) WormholesAdvancements.cosmog(summoner);
+            else WormholesAdvancements.summoned(summoner);
+        }
         level.setBlockAndUpdate(monitorPos, withScreen(monitor, screenFor(type)));
         level.playSound(null, monitorPos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.5f, 1.4f);
         level.playSound(null, monitorPos, SoundEvent.createVariableRangeEvent(PC_ON), SoundSource.BLOCKS, 1.5f, 0.5f);
@@ -474,22 +460,25 @@ public final class ItemAnalyser {
     }
 
     public static void tick(MinecraftServer server) {
-        List<Hiss> waiting = new ArrayList<>();
-        for (Hiss h : HISSES) {
-            if (h.in() > 1) waiting.add(new Hiss(h.level(), h.monitor(), h.in() - 1));
-            else h.level().playSound(null, h.monitor(), SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 1f, 1f);
+        for (ListIterator<Hiss> it = HISSES.listIterator(); it.hasNext(); ) {
+            Hiss h = it.next();
+            if (h.in() > 1) {
+                it.set(new Hiss(h.level(), h.monitor(), h.in() - 1));
+                continue;
+            }
+            it.remove();
+            h.level().playSound(null, h.monitor(), SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 1f, 1f);
         }
-        HISSES.clear();
-        HISSES.addAll(waiting);
         if (server.getTickCount() % 20 == 0) cooledDown(server);
         if (server.getTickCount() % 3 == 0) smoke(server);
         errorsShown(server);
-        List<Running> next = new ArrayList<>();
-        for (Running r : RUNNING) {
+        for (ListIterator<Running> it = RUNNING.listIterator(); it.hasNext(); ) {
+            Running r = it.next();
             if (r.closesIn() > 1) {
-                next.add(new Running(r.level(), r.monitor(), r.breakChance(), r.closesIn() - 1));
+                it.set(new Running(r.level(), r.monitor(), r.breakChance(), r.closesIn() - 1));
                 continue;
             }
+            it.remove();
             ServerLevel level = r.level();
             BlockState monitor = level.getBlockState(r.monitor());
             if (!is(monitor, MONITOR)) continue;
@@ -505,8 +494,6 @@ public final class ItemAnalyser {
                 level.playSound(null, r.monitor(), SoundEvent.createVariableRangeEvent(PC_OFF), SoundSource.BLOCKS, 1.5f, 0.5f);
             }
         }
-        RUNNING.clear();
-        RUNNING.addAll(next);
     }
 
     private static MonitorBlock.MonitorScreen screenFor(String type) {
@@ -589,7 +576,6 @@ public final class ItemAnalyser {
                     ResourceLocation gem = ResourceLocation.tryParse(device.getString("Gem"));
                     if (gem != null) loaded.core = new ItemStack(BuiltInRegistries.ITEM.get(gem));
                 }
-                if (device.getBoolean("Hide")) loaded.partner = new ItemStack(UltraHide.ITEM);
                 loaded.partnerLast = device.getBoolean("PartnerLast");
                 store.devices.put(device.getLong("Pos"), loaded);
             }

@@ -17,8 +17,7 @@ import org.joml.Matrix4fStack;
  * The Hyperspace sky, which is just a slowly spinning textured sphere around the camera.
  */
 public class HyperspaceSky {
-    public static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "textures/environment/hyperspace_sky.png");
+    public static final ResourceLocation TEXTURE = Hyperspace.id("textures/environment/hyperspace_sky.png");
     private static final int COLUMNS = 48;
     private static final int ROWS = 24;
     private static final float RADIUS = 100f;

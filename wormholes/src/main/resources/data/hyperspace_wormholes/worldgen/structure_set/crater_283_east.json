@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "hyperspace_wormholes:crater_283_east",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "hyperspace_wormholes:zone_spot",
+    "salt": 567,
+    "chunk_x": 12,
+    "chunk_z": 6,
+    "repeat": 625
+  }
+}

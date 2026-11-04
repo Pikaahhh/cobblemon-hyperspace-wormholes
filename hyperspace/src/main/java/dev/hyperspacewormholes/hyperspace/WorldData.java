@@ -19,13 +19,15 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Hyperspace's saved data, so everyone's current trip (island, ring, pool seed, tasks and progress) survives a
- * restart.
+ * Hyperspace's saved data, so everyone's current trip (island, ring, pool seed, tasks and progress, whether it came
+ * through a Distortion Splicer and whether it's the Hoopa event) and the spatial distortions around the Overworld
+ * survive a restart.
  */
 public class WorldData extends SavedData {
     public final Map<UUID, Trip> trips = new HashMap<>();
     public final Map<Integer, Zones.Zone> zones = new HashMap<>();
     public final Map<Integer, CompoundTag> tasks = new HashMap<>();
+    public final List<Distortions.Distortion> distortions = new ArrayList<>();
 
     public static class Trip {
         ResourceKey<Level> dim;
@@ -33,9 +35,10 @@ public class WorldData extends SavedData {
         float yaw, pitch;
         int ticksLeft, rarity, shiny, stars;
         List<String> types = new ArrayList<>();
-        boolean megaPending, legendaryPending, legendaryDone;
+        boolean megaPending, legendaryPending, legendaryDone, splice, hoopa;
         String megaSpecies, legendarySpecies;
         float legendaryChance, alphaChance = DonutBoosts.ALPHA_CHANCE, legendaryShiny, legendaryAlpha;
+        DonutPowers powers = DonutPowers.NONE;
         long poolSeed;
         int island = -1;
     }
@@ -70,10 +73,13 @@ public class WorldData extends SavedData {
             trip.legendaryDone = t.getBoolean("legendDone");
             trip.legendaryChance = t.contains("legendChance") ? t.getFloat("legendChance") : trip.stars >= 5 ? DonutBoosts.LEGENDARY_CHANCE : 0f;
             trip.alphaChance = t.contains("alpha") ? t.getFloat("alpha") : DonutBoosts.ALPHA_CHANCE;
+            trip.powers = DonutPowers.load(t.getIntArray("powers"));
             trip.poolSeed = t.getLong("poolSeed");
             trip.legendaryShiny = t.getFloat("legendShiny");
             trip.legendaryAlpha = t.getFloat("legendAlpha");
             trip.island = t.contains("island") ? t.getInt("island") : -1;
+            trip.splice = t.getBoolean("splice");
+            trip.hoopa = t.getBoolean("hoopa");
             data.trips.put(t.getUUID("player"), trip);
         }
 
@@ -84,6 +90,8 @@ public class WorldData extends SavedData {
         }
         CompoundTag tasks = tag.getCompound("tasks");
         for (String key : tasks.getAllKeys()) data.tasks.put(Integer.parseInt(key), tasks.getCompound(key));
+        ListTag distortions = tag.getList("distortions", Tag.TAG_COMPOUND);
+        for (int i = 0; i < distortions.size(); i++) data.distortions.add(Distortions.Distortion.load(distortions.getCompound(i)));
         return data;
     }
 
@@ -114,10 +122,13 @@ public class WorldData extends SavedData {
             t.putBoolean("legendDone", trip.legendaryDone);
             t.putFloat("legendChance", trip.legendaryChance);
             t.putFloat("alpha", trip.alphaChance);
+            t.putIntArray("powers", trip.powers.saved());
             t.putLong("poolSeed", trip.poolSeed);
             t.putFloat("legendShiny", trip.legendaryShiny);
             t.putFloat("legendAlpha", trip.legendaryAlpha);
             t.putInt("island", trip.island);
+            if (trip.splice) t.putBoolean("splice", true);
+            if (trip.hoopa) t.putBoolean("hoopa", true);
             list.add(t);
         }
         tag.put("trips", list);
@@ -132,6 +143,9 @@ public class WorldData extends SavedData {
         CompoundTag taskTag = new CompoundTag();
         for (Map.Entry<Integer, CompoundTag> entry : tasks.entrySet()) taskTag.put(String.valueOf(entry.getKey()), entry.getValue());
         tag.put("tasks", taskTag);
+        ListTag distortionList = new ListTag();
+        for (Distortions.Distortion distortion : distortions) distortionList.add(distortion.save());
+        tag.put("distortions", distortionList);
         return tag;
     }
 }

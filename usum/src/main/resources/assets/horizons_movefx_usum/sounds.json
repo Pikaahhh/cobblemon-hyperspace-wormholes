@@ -1,0 +1,602 @@
+{
+ "se.c003f.3f092605": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c003f_3f092605",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0040": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0040",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0047.504f0c01": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0047_504f0c01",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c005b": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c005b",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0063.30b4944d": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0063_30b4944d",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c007e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c007e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0093": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0093",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c00a3": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c00a3",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c00c2.2188139c": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c00c2_2188139c",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0156": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0156",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c018e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c018e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c019e.927ebb89": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c019e_927ebb89",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c019e.e63e000e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c019e_e63e000e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c01b3": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c01b3",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0221": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0221",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0223": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0223",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0223.a446ae74": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0223_a446ae74",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0228.49b61b90": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0228_49b61b90",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0228.c0b9c4f7": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0228_c0b9c4f7",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c024b.2a1d088b": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c024b_2a1d088b",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c024c.1e00d334": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c024c_1e00d334",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c024c.d3f76979": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c024c_d3f76979",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02bd.436733f6": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02bd_436733f6",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02c2": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02c2",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02d3.49b61b90": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02d3_49b61b90",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02d3.58b21e4f": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02d3_58b21e4f",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02d9.2a1d088b": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02d9_2a1d088b",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c02db.504f0c01": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c02db_504f0c01",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0328": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0328",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0339.27a445c0": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0339_27a445c0",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0339.cc01610d": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0339_cc01610d",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c033a": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c033a",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c033c": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c033c",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c033d": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c033d",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c033e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c033e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c033f": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c033f",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0348": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0348",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0380": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0380",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0381": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0381",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c038e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c038e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c038f": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c038f",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0390": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0390",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0391.1e5d4f9d": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0391_1e5d4f9d",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0391.34c89a45": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0391_34c89a45",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0391.d0639cb9": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0391_d0639cb9",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0392": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0392",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0393": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0393",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0394": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0394",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0395": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0395",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0396": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0396",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0396.07f83192": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0396_07f83192",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0397": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0397",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0398": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0398",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c0399": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c0399",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c039a": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c039a",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c039b": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c039b",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c039c": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c039c",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c039e": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c039e",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c039f": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c039f",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a0": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a0",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a1": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a1",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a2": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a2",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a3": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a3",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a4": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a4",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a5": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a5",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a6": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a6",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a7.cb0128a4": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a7_cb0128a4",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a8": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a8",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03a9.8d83ef6a": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03a9_8d83ef6a",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03aa": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03aa",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03ad": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03ad",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03ae": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03ae",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03af": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03af",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03bb": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03bb",
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "se.c03ca.d6468541": {
+  "sounds": [
+   {
+    "name": "horizons_movefx_usum:se/c03ca_d6468541",
+    "attenuation_distance": 48
+   }
+  ]
+ }
+}

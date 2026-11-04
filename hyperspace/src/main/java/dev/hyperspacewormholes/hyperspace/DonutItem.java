@@ -11,29 +11,22 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The donut item. Keeps its berries, icing, sprinkles and glint on the stack, and the name and tooltip show what Hoopa
- * Ring stars it'll give you.
+ * The donut item. Keeps its berries, icing, sprinkles and glint on the stack. Like Legends Z-A, the icing and name come
+ * from the donut's strongest flavour (Meringue, Curry, Jam, Chocolate, Cream, or Rainbow on a tie) and the berry it has
+ * the most of, and the name and tooltip show its stars.
  */
 public class DonutItem extends Item {
     public static final List<String> ICINGS = List.of(
             "plain", "orangey", "pink", "lime", "green", "violet", "blue", "skyblue", "aqua", "deep_blue",
             "inverted_orangey", "inverted_pink", "inverted_lime", "inverted_green", "inverted_violet", "inverted_blue",
-            "inverted_skyblue", "inverted_aqua", "inverted_deep_blue");
-
-    public static final Map<String, String> ICING = Map.ofEntries(
-            Map.entry("cobblemon:occa_berry", "orangey"), Map.entry("cobblemon:shuca_berry", "orangey"),
-            Map.entry("cobblemon:charti_berry", "orangey"), Map.entry("cobblemon:wacan_berry", "orangey"),
-            Map.entry("cobblemon:chilan_berry", "orangey"), Map.entry("cobblemon:chople_berry", "pink"),
-            Map.entry("cobblemon:haban_berry", "pink"), Map.entry("cobblemon:roseli_berry", "pink"),
-            Map.entry("cobblemon:rindo_berry", "lime"), Map.entry("cobblemon:babiri_berry", "lime"),
-            Map.entry("cobblemon:kebia_berry", "green"), Map.entry("cobblemon:tanga_berry", "green"),
-            Map.entry("cobblemon:payapa_berry", "violet"), Map.entry("cobblemon:colbur_berry", "violet"),
-            Map.entry("cobblemon:passho_berry", "blue"), Map.entry("cobblemon:coba_berry", "skyblue"),
-            Map.entry("cobblemon:yache_berry", "aqua"), Map.entry("cobblemon:kasib_berry", "deep_blue"));
+            "inverted_skyblue", "inverted_aqua", "inverted_deep_blue",
+            "meringue", "curry", "jam", "chocolate", "cream", "rainbow");
 
     public static final List<String> SPRINKLE_ORDER = List.of(
             "minecraft:diamond", "minecraft:emerald", "minecraft:gold_ingot", "minecraft:iron_ingot", "minecraft:copper_ingot");
@@ -47,19 +40,18 @@ public class DonutItem extends Item {
     }
 
     public static List<ResourceLocation> berries(ItemStack stack) {
-        IngredientComponent ingredients = stack.get(CobblemonItemComponents.INGREDIENT);
-        if (ingredients == null) return List.of();
-        return ingredients.getIngredientIds().stream().filter(id -> DonutBoosts.baseBerry(id.toString()) != null)
-                .distinct().toList();
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (String id : DonutBoosts.ids(stack)) {
+            if (DonutBoosts.isBerry(id)) counts.merge(id, 1, Integer::sum);
+        }
+        List<String> ids = new ArrayList<>(counts.keySet());
+        ids.sort((a, b) -> counts.get(b) - counts.get(a));
+        return ids.stream().map(ResourceLocation::parse).toList();
     }
 
     public static int icing(ItemStack stack) {
-        List<ResourceLocation> list = berries(stack);
-        if (list.isEmpty()) return 0;
-        String berry = list.get(0).toString();
-        String icing = ICING.get(DonutBoosts.baseBerry(berry));
-        if (icing == null) return 0;
-        return Math.max(0, ICINGS.indexOf(DonutBoosts.TRIPLED.containsKey(berry) ? "inverted_" + icing : icing));
+        String kind = DonutBoosts.kind(DonutBoosts.ids(stack));
+        return kind == null ? 0 : Math.max(0, ICINGS.indexOf(kind));
     }
 
     public static int sprinkles(ItemStack stack) {
@@ -93,12 +85,10 @@ public class DonutItem extends Item {
     @Override
     public Component getName(ItemStack stack) {
         List<ResourceLocation> list = berries(stack);
-        MutableComponent name = switch (list.size()) {
-            case 0 -> Component.translatable(getDescriptionId());
-            case 1 -> Component.translatable(getDescriptionId() + ".berry",
-                    BuiltInRegistries.ITEM.get(list.get(0)).getDescription());
-            default -> Component.translatable(getDescriptionId() + ".mixed");
-        };
+        String kind = DonutBoosts.kind(DonutBoosts.ids(stack));
+        MutableComponent name = list.isEmpty() || kind == null ? Component.translatable(getDescriptionId())
+                : Component.translatable(getDescriptionId() + "." + kind,
+                        Component.translatable(BuiltInRegistries.ITEM.get(list.get(0)).getDescriptionId()));
         int stars = DonutBoosts.stars(stack);
         if (stars > 0) name.append(Component.literal(" " + DonutBoosts.starText(stars)).withStyle(ChatFormatting.GOLD));
         return name;

@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "mega_showdown:ultranecrozium_z"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.root.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.root.description"
+    },
+    "background": "minecraft:textures/block/obsidian.png"
+  },
+  "criteria": {
+    "root": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "machine"
+      }
+    }
+  }
+}

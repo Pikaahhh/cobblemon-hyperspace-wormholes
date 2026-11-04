@@ -1,0 +1,90 @@
+{
+  "species": "cobblemon:necrozma",
+  "order": 10,
+  "variations": [
+    {
+      "aspects": [
+        "dusk-fusion",
+        "ultra-burst-core"
+      ],
+      "model": "cobblemon:necrozma_duskmane_burst.geo",
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_duskmane_burst_emissive.png",
+          "translucent": false
+        },
+        {
+          "name": "translucent",
+          "emissive": false,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_duskmane_translucent.png",
+          "translucent": true
+        }
+      ]
+    },
+    {
+      "aspects": [
+        "shiny",
+        "dusk-fusion",
+        "ultra-burst-core"
+      ],
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_duskmane_burst_shiny_emissive.png",
+          "translucent": false
+        },
+        {
+          "name": "translucent",
+          "emissive": false,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_duskmane_shiny_translucent.png",
+          "translucent": true
+        }
+      ]
+    },
+    {
+      "aspects": [
+        "dawn-fusion",
+        "ultra-burst-core"
+      ],
+      "model": "cobblemon:necrozma_dawnwings_burst.geo",
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_dawnwings_burst_emissive.png",
+          "translucent": false
+        },
+        {
+          "name": "translucent",
+          "emissive": false,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_dawnwings_translucent.png",
+          "translucent": true
+        }
+      ]
+    },
+    {
+      "aspects": [
+        "shiny",
+        "dawn-fusion",
+        "ultra-burst-core"
+      ],
+      "layers": [
+        {
+          "name": "glow",
+          "emissive": true,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_dawnwings_burst_shiny_emissive.png",
+          "translucent": false
+        },
+        {
+          "name": "translucent",
+          "emissive": false,
+          "texture": "cobblemon:textures/pokemon/0800_necrozma/necrozma_dawnwings_shiny_translucent.png",
+          "translucent": true
+        }
+      ]
+    }
+  ]
+}

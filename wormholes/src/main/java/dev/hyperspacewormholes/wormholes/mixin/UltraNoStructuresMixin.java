@@ -1,31 +1,32 @@
 package dev.hyperspacewormholes.wormholes.mixin;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.world.level.StructureManager;
-import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.List;
 
 /**
- * Keeps structures out of the Ultra Beast worlds. They're only tagged ocean and jungle so Cobblemon spawns the right
- * things.
+ * Keeps other structures out of the Ultra Beast worlds, leaving only the mod's own zones (ZoneStructure). They're only
+ * tagged ocean and jungle so Cobblemon spawns the right things. The flat worlds do this with structure_overrides in
+ * their dimension files; a noise generator has no such field.
  */
 @Mixin(ChunkGenerator.class)
 public abstract class UltraNoStructuresMixin {
-    @Inject(method = "createStructures", at = @At("HEAD"), cancellable = true)
-    private void hyperspace_wormholes$noStructures(RegistryAccess registryAccess, ChunkGeneratorStructureState structureState,
-                                                StructureManager structureManager, ChunkAccess chunk,
-                                                StructureTemplateManager templateManager, CallbackInfo ci) {
-        if ((Object) this instanceof NoiseBasedChunkGenerator noise
-                && noise.generatorSettings().unwrapKey().map(key -> key.location().getNamespace().equals(Wormholes.MOD_ID)).orElse(false)) {
-            ci.cancel();
+    @Redirect(method = "createStructures", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/chunk/ChunkGeneratorStructureState;possibleStructureSets()Ljava/util/List;"))
+    private List<Holder<StructureSet>> hyperspace_wormholes$onlyZones(ChunkGeneratorStructureState state) {
+        List<Holder<StructureSet>> sets = state.possibleStructureSets();
+        if (!((Object) this instanceof NoiseBasedChunkGenerator noise
+                && noise.generatorSettings().unwrapKey().map(key -> key.location().getNamespace().equals(Wormholes.MOD_ID)).orElse(false))) {
+            return sets;
         }
+        return sets.stream().filter(set -> set.unwrapKey().map(key -> key.location().getNamespace().equals(Wormholes.MOD_ID)).orElse(false)).toList();
     }
 }

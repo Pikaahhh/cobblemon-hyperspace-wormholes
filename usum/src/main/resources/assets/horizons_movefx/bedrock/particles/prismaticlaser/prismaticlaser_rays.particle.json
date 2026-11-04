@@ -1,0 +1,90 @@
+{
+  "format_version": "1.10.0",
+  "particle_effect": {
+    "description": {
+      "identifier": "horizons_movefx:prismaticlaser_rays",
+      "basic_render_parameters": {
+        "material": "particles_add",
+        "texture": "horizons_movefx:speed_line"
+      }
+    },
+    "components": {
+      "minecraft:emitter_rate_steady": {
+        "spawn_rate": 50,
+        "max_particles": 30
+      },
+      "minecraft:emitter_lifetime_once": {
+        "active_time": 1.167
+      },
+      "minecraft:emitter_shape_sphere": {
+        "radius": "0.4*math.clamp(v.entity_height,0.8,1.8)",
+        "surface_only": true,
+        "direction": "outwards",
+        "offset": [
+          "((v.target_distance>0.5)?(-v.target_deltax/math.max(math.sqrt(v.target_deltax*v.target_deltax+v.target_deltaz*v.target_deltaz),0.01)):0)*(0.35*q.entity_width+0.3)",
+          "0.5*q.entity_height",
+          "((v.target_distance>0.5)?(-v.target_deltaz/math.max(math.sqrt(v.target_deltax*v.target_deltax+v.target_deltaz*v.target_deltaz),0.01)):1)*(0.35*q.entity_width+0.3)"
+        ]
+      },
+      "minecraft:particle_lifetime_expression": {
+        "max_lifetime": 0.45
+      },
+      "minecraft:particle_initial_speed": 16,
+      "minecraft:particle_motion_dynamic": {
+        "linear_acceleration": [
+          0,
+          0,
+          0
+        ],
+        "linear_drag_coefficient": 0
+      },
+      "minecraft:particle_appearance_billboard": {
+        "size": [
+          "1.8*math.clamp(v.entity_height,0.8,1.8)",
+          "0.1*math.clamp(v.entity_height,0.8,1.8)"
+        ],
+        "facing_camera_mode": "lookat_direction",
+        "uv": {
+          "texture_width": 16,
+          "texture_height": 4,
+          "uv": [
+            0,
+            0
+          ],
+          "uv_size": [
+            16,
+            4
+          ]
+        },
+        "direction": {
+          "mode": "derive_from_velocity",
+          "min_speed_threshold": 0.01
+        }
+      },
+      "minecraft:particle_appearance_tinting": {
+        "color": {
+          "interpolant": "v.particle_random_1",
+          "gradient": {
+            "0.000": "#FFFF5A5A",
+            "0.124": "#FFFF5A5A",
+            "0.125": "#FFFFB43C",
+            "0.249": "#FFFFB43C",
+            "0.250": "#FFFFF05A",
+            "0.374": "#FFFFF05A",
+            "0.375": "#FF78FF78",
+            "0.499": "#FF78FF78",
+            "0.500": "#FF5AF0FF",
+            "0.624": "#FF5AF0FF",
+            "0.625": "#FF7896FF",
+            "0.749": "#FF7896FF",
+            "0.750": "#FFDC78FF",
+            "0.874": "#FFDC78FF",
+            "0.875": "#FFFFFFFF",
+            "0.999": "#FFFFFFFF",
+            "1.000": "#FFFFFFFF"
+          }
+        }
+      }
+    }
+  }
+}

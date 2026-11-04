@@ -9,9 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Stops players walking off the edge of an island.
- */
+/** Stops players walking off the edge of an island. */
 @Mixin(Player.class)
 public abstract class PlayerMixin {
     @Inject(method = "maybeBackOffFromEdge", at = @At("RETURN"), cancellable = true)

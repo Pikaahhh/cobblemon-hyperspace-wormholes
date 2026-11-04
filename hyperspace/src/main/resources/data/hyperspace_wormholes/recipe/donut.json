@@ -20,5 +20,6 @@
     "count": 1
   },
   "seasoningTag": "hyperspace_wormholes:donut_seasonings",
-  "seasoningProcessors": ["ingredient"]
+  "seasoningProcessors": [],
+  "group": "hyperspace_wormholes_donut_plain"
 }

@@ -1,6 +1,7 @@
 package dev.hyperspacewormholes.wormholes.client;
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.mixin.SoundEngineAccessor;
 import dev.hyperspacewormholes.wormholes.mixin.SoundManagerAccessor;
@@ -27,6 +28,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,10 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-/**
- * Client side of the Ultra Warp Ride. Simulates flying forward and steering, spots when you fly through a wormhole or
- * golden ring, handles stamina, and tells the server where you're at every tick.
- */
 public final class RideClient {
     public static final int TRAIL_LENGTH = 26;
     private static final float STEER_ACCEL = 0.17f;
@@ -124,8 +123,22 @@ public final class RideClient {
         return Mth.lerp(partialTick, prevRoll, roll);
     }
 
-    public static float facingYaw() {
-        return facingYaw;
+    public static void bank(Entity entity, PoseStack poseStack, float partialTick) {
+        if (!active) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+        Entity mount = player.getVehicle();
+        if (entity != player && entity != mount) return;
+        float roll = roll(partialTick);
+        if (Math.abs(roll) < 0.05f) return;
+
+        Entity body = mount != null ? mount : player;
+        Vec3 pivot = body.getPosition(partialTick).add(0, body.getBbHeight() * 0.5, 0)
+                .subtract(entity.getPosition(partialTick));
+        float yaw = facingYaw * Mth.DEG_TO_RAD;
+        poseStack.translate(pivot.x, pivot.y, pivot.z);
+        poseStack.mulPose(new Quaternionf().rotationAxis(roll * Mth.DEG_TO_RAD, -Mth.sin(yaw), 0, Mth.cos(yaw)));
+        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
     }
 
     public static float speed() {
@@ -175,7 +188,8 @@ public final class RideClient {
         List<RideStartPayload.WaystoneHole> holes = payload.waystones();
         active = true;
         seed = payload.seed();
-        layout = holes.isEmpty() ? TunnelLayout.seeded(seed, payload.override()) : TunnelLayout.fixed(seed,
+        layout = holes.isEmpty() ? TunnelLayout.seeded(seed, payload.gameColours(),
+                payload.only() < 0 ? null : WormholeType.byId(payload.only()), payload.onlyRings()) : TunnelLayout.fixed(seed,
                 IntStream.range(0, holes.size()).mapToObj(i -> new WarpTunnel.Wormhole(i, holes.get(i).distance(),
                         holes.get(i).x(), holes.get(i).y(), 0, WormholeType.byId(holes.get(i).type()))).toList(),
                 holes.stream().map(RideStartPayload.WaystoneHole::name).toList());
@@ -468,11 +482,13 @@ public final class RideClient {
     }
 
     private static void tickStreaks() {
-        RandomSource random = RandomSource.create();
+        RandomSource random = null;
         for (Streak s : STREAKS) {
             s.prevZ = s.z;
             s.z -= speed * s.speedFactor;
-            if (s.z < -60) respawnStreak(s, random);
+            if (s.z >= -60) continue;
+            if (random == null) random = RandomSource.create();
+            respawnStreak(s, random);
         }
     }
 

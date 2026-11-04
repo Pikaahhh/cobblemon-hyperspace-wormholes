@@ -36,6 +36,7 @@ public final class DuplicatePokemonCleanup {
 
     private static void tick(MinecraftServer server) {
         ticks++;
+        if (PENDING.isEmpty()) return;
         List<Check> due = new ArrayList<>();
         PENDING.removeIf(c -> {
             if (c.at() > ticks) return false;

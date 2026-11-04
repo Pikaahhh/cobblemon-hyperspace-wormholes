@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "hyperspace_wormholes:dark_oak_wood_stairs",
+    "hyperspace_wormholes:jungle_wood_stairs",
+    "hyperspace_wormholes:mangrove_wood_stairs",
+    "hyperspace_wormholes:stripped_dark_oak_wood_stairs",
+    "hyperspace_wormholes:stripped_spruce_wood_stairs",
+    "hyperspace_wormholes:deepslate_stairs",
+    "hyperspace_wormholes:basalt_stairs",
+    "hyperspace_wormholes:smooth_basalt_stairs",
+    "hyperspace_wormholes:luminescent_ice_stairs",
+    "hyperspace_wormholes:calcite_stairs"
+  ]
+}

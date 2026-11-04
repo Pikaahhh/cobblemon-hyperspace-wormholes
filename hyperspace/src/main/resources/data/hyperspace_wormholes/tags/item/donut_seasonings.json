@@ -1,22 +1,4 @@
 {
   "replace": false,
-  "values": [
-    "#hyperspace_wormholes:donut_berries",
-    "minecraft:glistering_melon_slice",
-    "minecraft:golden_carrot",
-    "minecraft:golden_apple",
-    "minecraft:enchanted_golden_apple",
-    "minecraft:copper_ingot",
-    "minecraft:iron_ingot",
-    "minecraft:gold_ingot",
-    "minecraft:emerald",
-    "minecraft:diamond",
-    "minecraft:copper_block",
-    "minecraft:iron_block",
-    "minecraft:gold_block",
-    "minecraft:emerald_block",
-    "minecraft:diamond_block",
-    "#cobblemon:mint_leaves",
-    "hyperspace_wormholes:legendary_essence"
-  ]
+  "values": []
 }

@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_tanga_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_tanga_berry",
+  "flavours": {
+    "SPICY": 80,
+    "SOUR": 40
+  }
+}

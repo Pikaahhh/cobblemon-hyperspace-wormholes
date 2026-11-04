@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_coba_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_coba_berry",
+  "flavours": {
+    "DRY": 40,
+    "BITTER": 60
+  }
+}

@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_yache_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_yache_berry",
+  "flavours": {
+    "DRY": 40,
+    "SOUR": 60
+  }
+}

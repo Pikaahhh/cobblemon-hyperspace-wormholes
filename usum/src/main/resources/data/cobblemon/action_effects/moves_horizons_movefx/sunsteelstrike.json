@@ -1,0 +1,1111 @@
+{
+  "timeline": [
+    {
+      "type": "add_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_solgaleo', 'sunsteelstrike', q.curve('one'))",
+        "sunsteelstrike",
+        "physical"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:solgaleo'"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_necrozma_duskmane', 'sunsteelstrike', q.curve('one'))",
+        "sunsteelstrike",
+        "physical"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dusk-fusion') && !q.entity.has_aspect('ultra-fusion')"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "sunsteelstrike",
+        "physical"
+      ],
+      "entityCondition": "q.entity.is_user == true && !(q.entity.species.identifier == 'cobblemon:solgaleo') && !(q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dusk-fusion') && !q.entity.has_aspect('ultra-fusion'))"
+    },
+    {
+      "type": "horizons_movefx:model_motion",
+      "who": "user",
+      "delay": 0.0,
+      "keys": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.433,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.6,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.7,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.9,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          2.167,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          2.633,
+          0.0,
+          3.0,
+          0.0,
+          -30.0,
+          0.0,
+          0.0
+        ],
+        [
+          3.767,
+          0.0,
+          3.0,
+          0.0,
+          -30.0,
+          0.0,
+          0.0
+        ],
+        [
+          4.1,
+          -1.5,
+          1.7,
+          0.0,
+          -38.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5
+        ],
+        [
+          4.433,
+          -3.0,
+          0.3,
+          0.0,
+          -40.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          4.5,
+          -3.0,
+          0.3,
+          0.0,
+          -40.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          4.567,
+          -2.667,
+          0.978,
+          0.0,
+          -27.56,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.8889
+        ],
+        [
+          4.633,
+          -2.333,
+          1.478,
+          0.0,
+          -4.44,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.7778
+        ],
+        [
+          4.7,
+          -2.0,
+          1.8,
+          0.0,
+          8.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.6667
+        ],
+        [
+          4.767,
+          -1.667,
+          1.944,
+          0.0,
+          2.07,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5556
+        ],
+        [
+          4.833,
+          -1.333,
+          1.911,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.4444
+        ],
+        [
+          4.9,
+          -1.0,
+          1.7,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.3333
+        ],
+        [
+          4.967,
+          -0.667,
+          1.311,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.2222
+        ],
+        [
+          5.033,
+          -0.333,
+          0.744,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.1111
+        ],
+        [
+          5.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          5.767,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "type": "horizons_movefx:model_motion",
+      "who": "target",
+      "delay": 4.033,
+      "keys": [
+        [
+          0.4,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.433,
+          0.0,
+          0.0,
+          0.0214,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.467,
+          0.0,
+          0.0,
+          -0.0305,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.5,
+          0.0,
+          0.0,
+          0.0217,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.567,
+          0.0,
+          0.0,
+          -0.0221,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.6,
+          0.0,
+          0.0,
+          0.0315,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.633,
+          0.0,
+          0.0,
+          -0.0225,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.7,
+          0.0,
+          0.0,
+          0.0228,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.733,
+          0.0,
+          0.0,
+          -0.0325,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.767,
+          0.0,
+          0.0,
+          0.0232,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.833,
+          0.0,
+          0.0,
+          -0.0235,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.867,
+          0.0,
+          0.0,
+          0.0335,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.9,
+          0.0,
+          0.0,
+          -0.0239,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.967,
+          0.0,
+          0.0,
+          0.0242,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0345,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.033,
+          0.0,
+          0.0,
+          0.0246,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.1,
+          0.0,
+          0.0,
+          -0.0249,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.133,
+          0.0,
+          0.0,
+          0.0355,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.167,
+          0.0,
+          0.0,
+          -0.0253,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.233,
+          0.0,
+          0.0,
+          0.0256,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.267,
+          0.0,
+          0.0,
+          -0.0365,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.3,
+          0.0,
+          0.0,
+          0.026,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.367,
+          0.0,
+          0.0,
+          -0.0263,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.4,
+          0.0,
+          0.0,
+          0.0375,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.433,
+          0.0,
+          0.0,
+          -0.0267,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.5,
+          0.0,
+          0.0,
+          0.027,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.533,
+          0.0,
+          0.0,
+          -0.0385,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.567,
+          0.0,
+          0.0,
+          0.0274,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.633,
+          0.0,
+          0.0,
+          -0.0278,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.667,
+          0.0,
+          0.0,
+          0.0395,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.7,
+          0.0,
+          0.0,
+          -0.0281,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.733,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.767,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 0.433,
+      "duration": 0.2,
+      "from": 6,
+      "to": 2,
+      "rate": 2
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 0.867,
+      "duration": 0.767,
+      "from": 0,
+      "to": 2,
+      "rate": 15
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 2.067,
+      "duration": 0.667,
+      "from": 5,
+      "to": 2,
+      "rate": 5
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 2.733,
+      "duration": 0.767,
+      "from": 15,
+      "to": 0,
+      "rate": 15
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 4.433,
+      "duration": 0.333,
+      "from": 30,
+      "to": 20,
+      "rate": 4
+    },
+    {
+      "type": "horizons_movefx:camera_shake",
+      "delay": 4.767,
+      "duration": 0.967,
+      "from": 5,
+      "to": 0,
+      "rate": 10
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_radiant",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_glints",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "pause",
+      "pause": 0.433
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_dust",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_rocks",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_grit",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.generic.explode",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c005b",
+      "delay": 0.0,
+      "volume": 0.9449,
+      "pitch": 0.9567,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c003f.3f092605",
+      "delay": 0.0,
+      "volume": 0.7559,
+      "pitch": 1.4331,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.467
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:block.beacon.activate",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c007e",
+      "delay": 0.0,
+      "volume": 0.8661,
+      "pitch": 1.0,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0040",
+      "delay": 0.167,
+      "volume": 0.7874,
+      "pitch": 1.6299,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0063.30b4944d",
+      "delay": 0.167,
+      "volume": 1.0,
+      "pitch": 1.315,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.167
+    },
+    {
+      "type": "pause",
+      "pause": 0.4
+    },
+    {
+      "type": "pause",
+      "pause": 0.0
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_flare",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_rays",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_sun",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02db.504f0c01",
+      "delay": 0.6,
+      "volume": 0.7087,
+      "pitch": 1.6299,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.6
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_corona",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_ball",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_rings",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_flames",
+      "locators": [
+        "root"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:item.firecharge.use",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c02c2",
+      "delay": 0.666,
+      "volume": 0.9449,
+      "pitch": 0.8268,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c024c.1e00d334",
+      "delay": 0.666,
+      "volume": 1.0,
+      "pitch": 1.3465,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 1.567
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_solgaleo', 'sunsteelstrike_run', q.curve('one'))"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:solgaleo'"
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "q.bedrock_primary('horizons_movefx_necrozma_duskmane', 'sunsteelstrike_run', q.curve('one'))"
+      ],
+      "entityCondition": "q.entity.is_user == true && q.entity.species.identifier == 'cobblemon:necrozma' && q.entity.has_aspect('dusk-fusion') && !q.entity.has_aspect('ultra-fusion')"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0047.504f0c01",
+      "delay": 0.133,
+      "volume": 1.0,
+      "pitch": 0.9134,
+      "entityCondition": "q.entity.is_user == true"
+    },
+    {
+      "type": "pause",
+      "pause": 0.133
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_comet",
+      "locators": [
+        "root"
+      ],
+      "targetLocators": [
+        "middle"
+      ]
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_tail",
+      "locators": [
+        "root"
+      ],
+      "targetLocators": [
+        "middle"
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.blaze.shoot",
+          "entityCondition": "q.entity.is_user == true"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:travel",
+      "speed": 12,
+      "min": 0.667,
+      "max": 0.667,
+      "add": 0.0
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_burst",
+      "locators": [
+        "middle",
+        "target"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_blaze",
+      "locators": [
+        "middle",
+        "target"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "entity_particles",
+      "effect": "horizons_movefx:sunsteelstrike_embers",
+      "locators": [
+        "middle",
+        "target"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_sound",
+          "sound": "minecraft:entity.generic.explode",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+        }
+      ]
+    },
+    {
+      "type": "horizons_movefx:stand_in",
+      "keyframes": [
+        {
+          "type": "entity_molang",
+          "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false",
+          "expressions": [
+            "q.sound('move.fireblast.target');"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "animation",
+      "animation": [
+        "recoil"
+      ],
+      "entityCondition": "q.entity.is_user == false && q.hurt(q.entity.uuid) == true && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "remove_holds",
+      "holds": [
+        "effects"
+      ]
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c0093",
+      "delay": 0.0,
+      "volume": 0.9055,
+      "pitch": 1.2598,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "horizons_movefx:usum_sound",
+      "sound": "se.c018e",
+      "delay": 0.0,
+      "volume": 0.8661,
+      "pitch": 1.2598,
+      "entityCondition": "q.entity.is_user == false && q.missed(q.entity.uuid) == false"
+    },
+    {
+      "type": "pause",
+      "pause": 1.3
+    }
+  ]
+}

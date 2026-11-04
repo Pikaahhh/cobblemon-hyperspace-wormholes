@@ -24,6 +24,7 @@ import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -119,7 +120,9 @@ public final class RiderArrivalClient {
             return;
         }
         if (mc.screen instanceof ReceivingLevelScreen) return;
-        for (Emergence e : new ArrayList<>(ACTIVE.values())) {
+
+        for (Iterator<Emergence> it = ACTIVE.values().iterator(); it.hasNext(); ) {
+            Emergence e = it.next();
             Entity rider = mc.level.getEntity(e.riderId);
             if (rider != null) {
                 if (e.local && mc.player.getVehicle() == null && e.age > 2) {
@@ -140,7 +143,7 @@ public final class RiderArrivalClient {
             }
             e.age++;
             if (e.age >= e.emergeTicks + e.settleTicks) {
-                ACTIVE.remove(e.riderId);
+                it.remove();
                 finish(e, true);
             }
         }
@@ -195,7 +198,7 @@ public final class RiderArrivalClient {
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         if (cam.distanceToSqr(camera) > 0.25) return false;
 
-        Entity body = entity.getVehicle() != null ? entity.getVehicle() : entity;
+        Entity body = mountOf(entity);
         Vec3 pivot = body.getPosition(partialTick);
         float t = e.progress(partialTick);
         Vec3 at = e.pointAt(t);
@@ -233,7 +236,7 @@ public final class RiderArrivalClient {
         Vec3 spot = pullIn(middle, wanted, mc);
 
         Entity rider = mc.level.getEntity(e.riderId);
-        double height = rider != null ? (rider.getVehicle() != null ? rider.getVehicle().getBbHeight() : rider.getBbHeight()) : 1.8;
+        double height = rider != null ? mountOf(rider).getBbHeight() : 1.8;
         Vec3 target = e.pointAt(t).add(0, height * 0.5 * e.scaleAt(t), 0).lerp(middle, 0.35);
         Vec3 look = target.subtract(spot);
         double yaw = Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG;
@@ -246,12 +249,9 @@ public final class RiderArrivalClient {
         float s = e.scaleAt(t);
         Vec3 forward = flat(e.to.subtract(e.from));
         Entity rider = mc.level.getEntity(e.riderId);
-        Vec3 eyes = e.pointAt(t).add(0, 1.6 * s, 0);
-        if (rider != null && mc.player != null) {
-            Entity body = rider.getVehicle() != null ? rider.getVehicle() : rider;
-            Vec3 offset = mc.player.getEyePosition(partialTick).subtract(body.getPosition(partialTick));
-            eyes = e.pointAt(t).add(offset.scale(s));
-        }
+        Vec3 at = e.pointAt(t);
+        Vec3 eyes = rider == null ? at.add(0, 1.6 * s, 0)
+                : at.add(mc.player.getEyePosition(partialTick).subtract(mountOf(rider).getPosition(partialTick)).scale(s));
         float close = smooth(Mth.clamp((t - CHASE_CLOSE_FROM) / (1 - CHASE_CLOSE_FROM), 0f, 1f));
         double back = (1.2 + 7.0 * s) * (1 - close);
         double up = (0.3 + 1.8 * s) * (1 - close);
@@ -273,6 +273,10 @@ public final class RiderArrivalClient {
         if (hit.getType() == HitResult.Type.MISS) return to;
         Vec3 dir = to.subtract(from).normalize();
         return hit.getLocation().subtract(dir.scale(0.4));
+    }
+
+    private static Entity mountOf(Entity entity) {
+        return entity.getVehicle() != null ? entity.getVehicle() : entity;
     }
 
     private static Vec3 flat(Vec3 v) {

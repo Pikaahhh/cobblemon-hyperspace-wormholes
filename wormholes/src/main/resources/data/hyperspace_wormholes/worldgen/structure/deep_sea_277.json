@@ -1,0 +1,9 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/deep_sea_277",
+  "step": "local_modifications",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "deep_sea_277",
+  "processors": "hyperspace_wormholes:deep_sea_277"
+}

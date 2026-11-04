@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.hyperspacewormholes.usum.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "BodyLocatorMixin",
+    "CameraShakeMixin",
+    "HitCheckMixin",
+    "LocatorFallbackMixin",
+    "ModelMotionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+}

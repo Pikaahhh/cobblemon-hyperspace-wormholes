@@ -1,0 +1,12 @@
+{
+  "species": "cobblemon:celesteela",
+  "order": 1,
+  "variations": [
+    {
+      "aspects": [
+        "hyperspace_statue"
+      ],
+      "poser": "cobblemon:celesteela_statue"
+    }
+  ]
+}

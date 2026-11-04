@@ -1,0 +1,9 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/plant_282",
+  "step": "vegetal_decoration",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "plant_282",
+  "processors": "hyperspace_wormholes:plant_282"
+}

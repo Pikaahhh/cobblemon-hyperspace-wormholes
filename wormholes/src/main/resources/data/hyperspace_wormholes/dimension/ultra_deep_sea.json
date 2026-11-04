@@ -1,11 +1,22 @@
 {
   "type": "hyperspace_wormholes:ultra_deep_sea",
   "generator": {
-    "type": "minecraft:noise",
-    "biome_source": {
-      "type": "minecraft:fixed",
-      "biome": "hyperspace_wormholes:ultra_deep_sea"
-    },
-    "settings": "hyperspace_wormholes:ultra_deep_sea"
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:ultra_deep_sea",
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:water",
+          "height": 200
+        }
+      ],
+      "features": true,
+      "lakes": false,
+      "structure_overrides": ["hyperspace_wormholes:deep_sea_277"]
+    }
   }
 }

@@ -1,0 +1,31 @@
+{
+  "parent": "hyperspace_wormholes:wormholes/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:blaze_powder"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.magical_summoner.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.magical_summoner.description",
+      "extra": [
+        {
+          "text": "\n"
+        },
+        {
+          "translate": "advancements.hyperspace_wormholes.wormholes.magical_summoner.hint",
+          "color": "dark_gray"
+        }
+      ]
+    }
+  },
+  "criteria": {
+    "magical_summoner": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "summoned"
+      }
+    }
+  }
+}

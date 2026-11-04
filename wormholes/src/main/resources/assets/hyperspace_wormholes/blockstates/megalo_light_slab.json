@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "hyperspace_wormholes:block/megalo_light_slab"
+    },
+    "type=double": {
+      "model": "hyperspace_wormholes:block/megalo_light_slab_double"
+    },
+    "type=top": {
+      "model": "hyperspace_wormholes:block/megalo_light_slab_top"
+    }
+  }
+}

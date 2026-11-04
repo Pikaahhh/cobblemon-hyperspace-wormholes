@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "package": "dev.hyperspacewormholes.hyperspace.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "XaeroWorldMapMixin",
+    "XaeroMinimapMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+}

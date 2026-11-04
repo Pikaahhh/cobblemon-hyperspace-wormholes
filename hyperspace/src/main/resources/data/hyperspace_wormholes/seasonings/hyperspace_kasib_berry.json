@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_kasib_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_kasib_berry",
+  "flavours": {
+    "DRY": 40,
+    "SWEET": 80
+  }
+}

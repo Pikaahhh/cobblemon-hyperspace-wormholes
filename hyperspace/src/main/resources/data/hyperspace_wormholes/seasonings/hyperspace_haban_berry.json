@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_haban_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_haban_berry",
+  "flavours": {
+    "SWEET": 40,
+    "BITTER": 80
+  }
+}

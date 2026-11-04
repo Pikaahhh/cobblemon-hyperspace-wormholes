@@ -1,0 +1,22 @@
+{
+  "parent": "hyperspace_wormholes:hyperspace/enter_hyperspace",
+  "display": {
+    "icon": {
+      "id": "cobblemon:master_ball"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.legendary_encounter.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.legendary_encounter.description"
+    }
+  },
+  "criteria": {
+    "legendary_encounter": {
+      "trigger": "hyperspace_wormholes:hyperspace",
+      "conditions": {
+        "event": "legendary"
+      }
+    }
+  }
+}

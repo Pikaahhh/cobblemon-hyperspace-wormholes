@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "hyperspace_wormholes:plant_282",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "hyperspace_wormholes:zone_spot",
+    "salt": 564,
+    "chunk_x": 2,
+    "chunk_z": 5,
+    "repeat": 625
+  }
+}

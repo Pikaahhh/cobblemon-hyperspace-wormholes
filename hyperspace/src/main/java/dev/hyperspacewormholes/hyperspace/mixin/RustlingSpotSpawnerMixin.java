@@ -9,9 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * No Rustling Spots in Hyperspace.
- */
 @Pseudo
 @Mixin(targets = "net.levelscraft7.rustlingspots.spot.SpotSpawner", remap = false)
 public class RustlingSpotSpawnerMixin {

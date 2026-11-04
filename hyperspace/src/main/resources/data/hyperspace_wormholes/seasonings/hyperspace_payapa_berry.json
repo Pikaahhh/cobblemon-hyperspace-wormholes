@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_payapa_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_payapa_berry",
+  "flavours": {
+    "SWEET": 40,
+    "SOUR": 60
+  }
+}

@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -23,9 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
-/**
- * The Ultra Deep Sea: no drowning, walking on the sea floor with lighter gravity, nothing hostile, and dead coral.
- */
+/** The Ultra Deep Sea: no drowning, walking on the sea floor with lighter gravity, nothing hostile, and dead coral. */
 public final class UltraDeepSea {
     private static final double GRAVITY = 0.055;
     private static final ResourceLocation LIGHT_GRAVITY = Wormholes.id("deep_sea_gravity");
@@ -71,9 +70,8 @@ public final class UltraDeepSea {
         }
         ServerLevel sea = server.getLevel(Wormholes.ULTRA_DEEP_SEA);
         if (sea == null) return;
-        for (ServerPlayer player : sea.players()) {
-            breathe(player);
-            if (player.getVehicle() instanceof LivingEntity living) breathe(living);
+        for (Entity entity : sea.getAllEntities()) {
+            if (entity instanceof LivingEntity living) breathe(living);
         }
     }
 

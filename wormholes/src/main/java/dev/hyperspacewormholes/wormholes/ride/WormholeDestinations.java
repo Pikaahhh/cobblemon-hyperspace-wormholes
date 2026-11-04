@@ -2,8 +2,10 @@ package dev.hyperspacewormholes.wormholes.ride;
 
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
+import dev.hyperspacewormholes.wormholes.WormholeConfig;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
+import dev.hyperspacewormholes.wormholes.world.Zone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
@@ -15,13 +17,11 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,11 +30,16 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Where tunnel wormholes take you: the Overworld or the End, out along a line away from world spawn as far as you
- * flew. Finds and clears a landing and opens a way home.
+ * Where tunnel wormholes take you: a Pokemon wormhole in the game's colours leads to its Ultra Space Wilds world, the
+ * older difficulty colours to the Overworld, the End or now and then a Wilds world. It finds and clears a landing and
+ * opens a way home (at the zone's exit hole where it has one), and in an Ultra Beast's home the beast stands at the
+ * zone's spot and never moves. After NECROZMA_PITY white wormholes in a row the next white one is Necrozma's.
  */
 public final class WormholeDestinations {
     private static final int MIN_DISTANCE = 64;
+    private static final float EXIT_RADIUS = 3.82f;
+    private static final double WILDS_CHANCE = 0.25;
+    private static final int NECROZMA_PITY = 12;
     private static final double NEAR_SPAWN = 64;
     private static final int SEARCH_RANGE = 128;
     private static final int SEARCH_STEP = 8;
@@ -45,7 +50,6 @@ public final class WormholeDestinations {
     static final int WAYSTONE_RETURN_WORMHOLE_TICKS = 5 * 20;
     static final double EXIT_AIM_HEIGHT = 1.5;
     private static final int[] RETURN_BEHIND = {12, 10, 14, 8, 16, 18};
-    private static final int EXIT_LIFT = 4;
     private static final int[] RETURN_SIDE = {0, 4, -4, 8, -8};
     private static final int RETURN_MAX_RISE = 6;
     private static final int RETURN_MAX_CLIMB = 24;
@@ -53,13 +57,14 @@ public final class WormholeDestinations {
     private static final int RETURN_CLEAR_HEIGHT = 6;
     private static final int[] PLACEHOLDER_AHEAD = {9, 7, 11, 5, 13};
     private static final int[] PLACEHOLDER_SIDE = {0, 3, -3, 6, -6};
-    private static final int FLOAT_CLEARANCE = 3;
-    private static final int MAX_FLOAT = 24;
+    private static final String WILDS_PREFIX = "ultra_wilds_";
+    private static final double VISIT_LIGHT_YEARS = 5_000;
+    public static final String STAYS_PUT = "hyperspace_wormholes.stays_put";
 
     private WormholeDestinations() {}
 
     public record Plan(ResourceKey<Level> dimension, int x, int z, int dirX, int dirZ, WormholeType type, int rings,
-                       @Nullable String pokemon) {
+                       double lightYears, @Nullable String pokemon) {
         public float yaw() {
             return (float) (Mth.atan2(-dirX, dirZ) * Mth.RAD_TO_DEG);
         }
@@ -67,28 +72,120 @@ public final class WormholeDestinations {
 
     public record Arrival(ServerLevel level, Vec3 pos, float yaw, Plan plan) {}
 
+    public static List<String> names() {
+        List<String> names = new ArrayList<>(UltraBeastWorlds.HOMES.values().stream().map(w -> w.location().getPath()).sorted().toList());
+        names.addAll(wildsNames());
+        return names;
+    }
+
+    public static List<String> wildsNames() {
+        return UltraZones.WILDS.stream().map(w -> w.location().getPath().substring(WILDS_PREFIX.length())).toList();
+    }
+
+    public static boolean isWilds(ResourceKey<Level> world) {
+        return UltraZones.WILDS.contains(world);
+    }
+
+    public static @Nullable ResourceKey<Level> named(@Nullable String name) {
+        if (name == null) return null;
+        for (ResourceKey<Level> world : UltraBeastWorlds.HOMES.values()) {
+            if (world.location().getPath().equals(name)) return world;
+        }
+        for (ResourceKey<Level> world : UltraZones.WILDS) {
+            if (world.location().getPath().equals(WILDS_PREFIX + name)) return world;
+        }
+        return null;
+    }
+
+    public static WormholeType colourOf(ResourceKey<Level> world) {
+        return isWilds(world) ? WormholeType.ofWilds(world) : WormholeType.WHITE;
+    }
+
+    public static void visit(ServerPlayer player, WormholeOrder order, HomePoint home) {
+        ServerLevel level = player.server.getLevel(order.world());
+        if (level == null) return;
+        WormholeType type = colourOf(order.world());
+        String pokemon = order.chosenPokemon(player.getRandom(), player);
+        Zone zone = UltraZones.of(level);
+        Arrival arrival;
+        if (zone != null) {
+            zone = zone.near(player.getX(), player.getZ());
+            level.getChunk(zone.arrival());
+            arrival = arrival(level, zone.arrival(), zonePlan(level, zone, type, order.rings(), VISIT_LIGHT_YEARS, pokemon));
+        } else {
+            keepLoaded(level, 0, 0);
+            arrival = LandingClearing.clear(resolve(player.server,
+                    new Plan(level.dimension(), 0, 0, 1, 0, type, order.rings(), VISIT_LIGHT_YEARS, pokemon)));
+        }
+        WormholeEntity exit = openReturnWormhole(arrival, home, type, RETURN_WORMHOLE_TICKS, player);
+        UltraWarpRide.travel(player, arrival, exit);
+        spawnWild(arrival, false, player);
+    }
+
+    static Plan orderPlan(ServerPlayer player, WormholeOrder order, @Nullable HomePoint start, double lightYears) {
+        ServerLevel level = levelOr(player.server, order.world());
+        WormholeType type = colourOf(order.world());
+        String pokemon = order.chosenPokemon(player.getRandom(), player);
+        Zone zone = UltraZones.of(level);
+        if (zone != null) return zonePlan(level, near(zone, start), type, order.rings(), lightYears, pokemon);
+        keepLoaded(level, 0, 0);
+        return new Plan(level.dimension(), 0, 0, 1, 0, type, order.rings(), lightYears, pokemon);
+    }
+
     static Arrival arrivalAt(ServerLevel level, Vec3 pos, float yaw) {
-        float fx = -Mth.sin(yaw * Mth.DEG_TO_RAD), fz = Mth.cos(yaw * Mth.DEG_TO_RAD);
-        int dirX = Math.abs(fx) > Math.abs(fz) ? (int) Math.signum(fx) : 0;
-        int dirZ = dirX == 0 ? (fz < 0 ? -1 : 1) : 0;
-        Plan plan = new Plan(level.dimension(), Mth.floor(pos.x), Mth.floor(pos.z), dirX, dirZ, WormholeType.BLUE, 0, null);
+        int[] dir = axisOf(yaw);
+        Plan plan = new Plan(level.dimension(), Mth.floor(pos.x), Mth.floor(pos.z), dir[0], dir[1], WormholeType.BLUE, 0, 0, null);
         return new Arrival(level, pos, yaw, plan);
     }
 
-    static Plan plan(MinecraftServer server, WarpTunnel.Wormhole wormhole, long seed, double warpDistance,
-                     @Nullable String override, @Nullable HomePoint start) {
+    private static int[] axisOf(float yaw) {
+        return axis(-Mth.sin(yaw * Mth.DEG_TO_RAD), Mth.cos(yaw * Mth.DEG_TO_RAD));
+    }
+
+    private static int[] axis(double fx, double fz) {
+        int dirX = Math.abs(fx) > Math.abs(fz) ? (int) Math.signum(fx) : 0;
+        return new int[]{dirX, dirX == 0 ? (fz < 0 ? -1 : 1) : 0};
+    }
+
+    private static Zone near(Zone zone, @Nullable HomePoint start) {
+        return zone.near(start != null ? start.pos().x : 0, start != null ? start.pos().z : 0);
+    }
+
+    static ServerLevel levelOr(MinecraftServer server, ResourceKey<Level> dimension) {
+        ServerLevel level = server.getLevel(dimension);
+        return level != null ? level : server.overworld();
+    }
+
+    static Plan plan(ServerPlayer player, WarpTunnel.Wormhole wormhole, long seed, double warpDistance,
+                     @Nullable HomePoint start) {
+        MinecraftServer server = player.server;
         double roll = new Random(seed ^ (wormhole.index() * 0xC2B2AE3D27D4EB4FL)).nextDouble();
         ResourceKey<Level> dimension = switch (wormhole.type()) {
             case WHITE -> Level.END;
             case GOLD, GREEN -> roll < 0.85 ? Level.OVERWORLD : Level.END;
             default -> Level.OVERWORLD;
         };
+        Random wilds = new Random(seed ^ (wormhole.index() * 0x9E3779B97F4A7C15L) ^ 0x3A1D5L);
+        boolean gameColours = WormholeConfig.get().gameWormholeColours;
+        if (gameColours && wormhole.type().wildsWorld() != null) {
+            dimension = wormhole.type().wildsWorld();
+        } else if (!gameColours && (wormhole.type() == WormholeType.RED || wormhole.type() == WormholeType.ORANGE
+                || wormhole.type() == WormholeType.GREEN) && wilds.nextDouble() < WILDS_CHANCE) {
+            dimension = UltraZones.WILDS.get(wilds.nextInt(UltraZones.WILDS.size()));
+        }
         String pokemon = null;
-        if (override != null) {
-            pokemon = WormholePokemon.ultraBeastNamed(override, RandomSource.create(seed ^ wormhole.index()));
-        } else if (wormhole.type() == WormholeType.WHITE) {
-            pokemon = WormholePokemon.pick(WormholeType.WHITE, wormhole.rings(),
-                    RandomSource.create(seed ^ (wormhole.index() * 0x5851F42D4C957F2DL)));
+        if (wormhole.type() == WormholeType.WHITE) {
+            RandomSource random = RandomSource.create(seed ^ (wormhole.index() * 0x5851F42D4C957F2DL));
+            int missed = player.getAttachedOrElse(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
+            // no pity once this player has beaten Necrozma; its usual chance stays
+            boolean beaten = player.getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false);
+            if (missed >= NECROZMA_PITY && !beaten) pokemon = WormholePokemon.ultraBeastNamed("necrozma", random);
+            if (pokemon == null) {
+                pokemon = gameColours ? WormholePokemon.ultraBeastWorld(wormhole.rings(), random)
+                        : WormholePokemon.pick(WormholeType.WHITE, wormhole.rings(), random);
+            }
+            boolean necrozma = UltraBeastWorlds.homeOf(pokemon) == Wormholes.ULTRA_MEGALOPOLIS;
+            player.setAttached(Wormholes.WHITE_WITHOUT_NECROZMA, necrozma ? 0 : missed + 1);
         }
         ResourceKey<Level> home = UltraBeastWorlds.homeOf(pokemon);
         if (home != null) dimension = home;
@@ -97,6 +194,9 @@ public final class WormholeDestinations {
             dimension = Level.OVERWORLD;
             level = server.overworld();
         }
+        Zone zone = UltraZones.of(level);
+        double lightYears = WarpTunnel.lightYears(warpDistance);
+        if (zone != null) return zonePlan(level, near(zone, start), wormhole.type(), wormhole.rings(), lightYears, pokemon);
         boolean fromStart = start != null && home == null;
         double ox = fromStart ? start.pos().x : 0, oz = fromStart ? start.pos().z : 0;
         BlockPos spawn = level.getSharedSpawnPos();
@@ -113,12 +213,11 @@ public final class WormholeDestinations {
         int x = (int) Mth.clamp(Math.round(ox + dir[0] * distance), -limit, limit);
         int z = (int) Mth.clamp(Math.round(oz + dir[1] * distance), -limit, limit);
         keepLoaded(level, x, z);
-        return new Plan(dimension, x, z, dir[0], dir[1], wormhole.type(), wormhole.rings(), pokemon);
+        return new Plan(dimension, x, z, dir[0], dir[1], wormhole.type(), wormhole.rings(), lightYears, pokemon);
     }
 
     static Plan planUncharted(MinecraftServer server, @Nullable HomePoint start, double warpDistance, long seed) {
-        ServerLevel level = start == null || start.dimension() == Level.NETHER ? server.overworld() : server.getLevel(start.dimension());
-        if (level == null) level = server.overworld();
+        ServerLevel level = start == null || start.dimension() == Level.NETHER ? server.overworld() : levelOr(server, start.dimension());
         Vec3 from = start != null ? start.pos() : Vec3.atBottomCenterOf(level.getSharedSpawnPos());
         double angle = new Random(seed ^ 0x5EEDFA11L).nextDouble() * Math.PI * 2;
         double dx = -Math.sin(angle), dz = Math.cos(angle);
@@ -126,10 +225,17 @@ public final class WormholeDestinations {
         double limit = level.getWorldBorder().getSize() / 2 - SEARCH_RANGE - 32;
         int x = (int) Mth.clamp(Math.round(from.x + dx * distance), -limit, limit);
         int z = (int) Mth.clamp(Math.round(from.z + dz * distance), -limit, limit);
-        int dirX = Math.abs(dx) > Math.abs(dz) ? (int) Math.signum(dx) : 0;
-        int dirZ = dirX == 0 ? (dz < 0 ? -1 : 1) : 0;
+        int[] dir = axis(dx, dz);
         keepLoaded(level, x, z);
-        return new Plan(level.dimension(), x, z, dirX, dirZ, WormholeType.GREEN, 0, null);
+        return new Plan(level.dimension(), x, z, dir[0], dir[1], WormholeType.GREEN, 0, 0, null);
+    }
+
+    static Plan zonePlan(ServerLevel level, Zone zone, WormholeType type, int rings, double lightYears,
+                         @Nullable String pokemon) {
+        int[] dir = axisOf(zone.yaw());
+        keepLoaded(level, zone.arrival().getX(), zone.arrival().getZ());
+        return new Plan(level.dimension(), zone.arrival().getX(), zone.arrival().getZ(), dir[0], dir[1], type, rings, lightYears,
+                pokemon);
     }
 
     private static void keepLoaded(ServerLevel level, int x, int z) {
@@ -138,8 +244,7 @@ public final class WormholeDestinations {
     }
 
     static Arrival resolve(MinecraftServer server, Plan plan) {
-        ServerLevel level = server.getLevel(plan.dimension());
-        if (level == null) level = server.overworld();
+        ServerLevel level = levelOr(server, plan.dimension());
         boolean ceiling = level.dimensionType().hasCeiling();
 
         if (plan.type() == WormholeType.BLUE && !ceiling) {
@@ -237,19 +342,60 @@ public final class WormholeDestinations {
         return level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, centre);
     }
 
-    static void spawnWild(Arrival arrival, boolean rainbow) {
+    static void spawnWild(Arrival arrival, boolean rainbow, @Nullable ServerPlayer player) {
         ServerLevel level = arrival.level();
         Plan plan = arrival.plan();
-        String properties = plan.pokemon() != null ? plan.pokemon() : WormholePokemon.pick(plan.type(), plan.rings(), level.getRandom());
+        Zone zone = UltraZones.of(level);
+        if (zone != null) zone = zone.near(arrival.pos().x, arrival.pos().z);
+        if (zone != null && level.dimension() == Wormholes.ULTRA_MEGALOPOLIS) {
+            NecrozmaFight.arrive(level, zone, arrival.pos(), plan.pokemon());
+            return;
+        }
+        boolean wilds = zone != null && UltraZones.WILDS.contains(level.dimension());
+        String properties = plan.pokemon() != null ? plan.pokemon()
+                : wilds ? WormholePokemon.wilds(level.dimension(), plan.type(), plan.rings(), plan.lightYears(),
+                        level.getRandom(), player)
+                : zone != null ? null
+                : WormholePokemon.pick(plan.type(), plan.rings(), level.getRandom());
         if (properties == null) return;
-        if (plan.rings() >= WarpTunnel.SHINY_RINGS) properties = properties.replace("shiny=false", "shiny=true");
+        if (!WormholeConfig.get().gameWormholeColours && plan.rings() >= WarpTunnel.SHINY_RINGS) {
+            properties = properties.replace("shiny=false", "shiny=true");
+        }
         try {
             PokemonEntity entity = PokemonProperties.Companion.parse(properties).createEntity(level);
             WormholePokemon.atLeastAverageSize(entity.getPokemon());
-            if (level.getRandom().nextFloat() < WormholePokemon.alphaChance(plan.rings())) entity.getPokemon().setAlpha(true);
+            boolean atSpot = zone != null && zone.spot() != null;
+            boolean giant = atSpot && CraterGiants.fillsCrater(level, entity);
+            if (!giant && level.getRandom().nextFloat() < WormholePokemon.alphaChance(plan.rings())) entity.getPokemon().setAlpha(true);
+            if (giant) CraterGiants.fitCrater(entity);
             entity.refreshDimensions();
+            entity.addTag(STAYS_PUT);
+            UltraStays.keep(level, entity);
+            if (wilds && atSpot) {
+                WildsShadows.hide(level, entity, arrival.pos());
+                return;
+            }
+            if (atSpot && ZoneLeaps.waits(level)) {
+                ZoneLeaps.hide(level, entity, zone, arrival.pos());
+                return;
+            }
+            if (atSpot) {
+                Vec3 at = zone.standOn(zone.spot());
+                if (giant) at = CraterGiants.onFloor(level, at);
+                Vec3 faced = giant ? CraterGiants.walkEnd(zone, at) : null;
+                if (faced == null) faced = arrival.pos();
+                float facing = (float) (Mth.atan2(-(faced.x - at.x), faced.z - at.z) * Mth.RAD_TO_DEG);
+                entity.moveTo(at.x, at.y, at.z, facing, 0f);
+                entity.setYHeadRot(facing);
+                entity.setYBodyRot(facing);
+                entity.getEntityData().set(PokemonEntity.getSPAWN_DIRECTION(), Mth.wrapDegrees(facing));
+                entity.setNoAi(true);
+                if (UltraPlantLightning.isUltraPlant(level)) PlantXurkitrees.sleep(entity);
+                level.addFreshEntity(entity);
+                return;
+            }
             placeInOpenAir(entity, arrival);
-            PokemonArrivals.start(level, entity, entity.position(), arrival.yaw() + 180f, plan.type(), true, rainbow);
+            PokemonArrivals.start(level, entity, entity.position(), arrival.yaw() + 180f, plan.type(), rainbow);
         } catch (RuntimeException e) {
             Wormholes.LOGGER.error("Couldn't spawn the wormhole Pokémon '{}'", properties, e);
         }
@@ -265,10 +411,8 @@ public final class WormholeDestinations {
             for (int side : PLACEHOLDER_SIDE) {
                 int x = Mth.floor(arrival.pos().x) + plan.dirX() * ahead + sideX * side;
                 int z = Mth.floor(arrival.pos().z) + plan.dirZ() * ahead + sideZ * side;
-                BlockPos ground = level.dimensionType().hasCeiling()
-                        ? caveFloor(level, x, z, ay + RETURN_MAX_RISE, ay - RETURN_MAX_RISE)
-                        : surface(level, x, z, false);
-                if (ground == null || Math.abs(ground.getY() - ay) > RETURN_MAX_RISE) continue;
+                BlockPos ground = groundNear(level, x, z, ay);
+                if (ground == null) continue;
                 Vec3 pos = Vec3.atBottomCenterOf(ground);
                 entity.moveTo(pos.x, pos.y, pos.z, yaw, 0f);
                 if (level.noCollision(entity) && (UltraWarpRules.isUnderwater(level) || !level.containsAnyLiquid(entity.getBoundingBox()))) return;
@@ -288,31 +432,11 @@ public final class WormholeDestinations {
         }
     }
 
-    private static int highestFloor(ServerLevel level, int x, int z, int reach, int least) {
-        for (int dx = -reach; dx <= reach; dx++) {
-            for (int dz = -reach; dz <= reach; dz++) {
-                least = Math.max(least, level.getHeight(Heightmap.Types.OCEAN_FLOOR, x + dx, z + dz));
-            }
-        }
-        return least;
-    }
-
-    static double floatHeight(ServerLevel level, Vec3 spot, int reach, double least) {
-        if (level.dimensionType().hasCeiling()) return least;
-        int highest = highestFloor(level, Mth.floor(spot.x), Mth.floor(spot.z), reach, Mth.floor(spot.y));
-        return Mth.clamp(highest + FLOAT_CLEARANCE - spot.y, least, MAX_FLOAT);
-    }
-
-    static Vec3 floatStart(Arrival arrival, WormholeEntity exit) {
-        Vec3 ground = arrival.pos();
-        double wanted = exit.center().y - 1;
-        double y = ground.y;
-        while (y + 1 <= wanted) {
-            AABB box = EntityType.PLAYER.getDimensions().makeBoundingBox(ground.x, y + 1, ground.z);
-            if (!arrival.level().noCollision(box) || (!UltraWarpRules.isUnderwater(arrival.level()) && arrival.level().containsAnyLiquid(box))) break;
-            y++;
-        }
-        return new Vec3(ground.x, y, ground.z);
+    private static @Nullable BlockPos groundNear(ServerLevel level, int x, int z, int ay) {
+        BlockPos ground = level.dimensionType().hasCeiling()
+                ? caveFloor(level, x, z, ay + RETURN_MAX_RISE, ay - RETURN_MAX_RISE)
+                : surface(level, x, z, false);
+        return ground == null || Math.abs(ground.getY() - ay) > RETURN_MAX_RISE ? null : ground;
     }
 
     private static boolean isOpen(ServerLevel level, BlockPos base) {
@@ -355,7 +479,6 @@ public final class WormholeDestinations {
         WormholeEntity wormhole = openBehind(arrival, type, ultraHome ? 0 : lifetimeTicks, false);
         wormhole.setReturnTo(home);
         if (ultraHome) {
-            wormhole.setBeacon(true);
             WaysHome.trackUntilEmpty(wormhole, owner.getUUID());
         } else {
             WaysHome.track(wormhole, lifetimeTicks, owner.getUUID());
@@ -370,6 +493,16 @@ public final class WormholeDestinations {
 
     static WormholeEntity openBehind(Arrival arrival, WormholeType type, int lifetimeTicks, boolean decorative) {
         ServerLevel level = arrival.level();
+        Zone zone = UltraZones.of(level);
+        if (zone != null) zone = zone.near(arrival.pos().x, arrival.pos().z);
+        if (zone != null && zone.exit() != null) {
+            Zone.Exit exit = zone.exit();
+            float radius = Math.min(exit.radius(), EXIT_RADIUS);
+            Vec3 centre = exit.centre();
+            if (radius < exit.radius()) centre = new Vec3(centre.x, groundBelow(level, centre).y + radius, centre.z);
+            Vec3 at = centre.subtract(0, WormholeEntity.SIZE / 2, 0);
+            return open(level, at, exit.yaw(), exit.pitch(), radius / WormholeEntity.RIM, type, lifetimeTicks, decorative);
+        }
         Plan plan = arrival.plan();
         int ax = Mth.floor(arrival.pos().x), ay = Mth.floor(arrival.pos().y), az = Mth.floor(arrival.pos().z);
         int sideX = -plan.dirZ(), sideZ = plan.dirX();
@@ -379,47 +512,41 @@ public final class WormholeDestinations {
             for (int side : RETURN_SIDE) {
                 int cx = ax - plan.dirX() * back + sideX * side;
                 int cz = az - plan.dirZ() * back + sideZ * side;
-                BlockPos ground = level.dimensionType().hasCeiling()
-                        ? caveFloor(level, cx, cz, ay + RETURN_MAX_RISE, ay - RETURN_MAX_RISE)
-                        : surface(level, cx, cz, false);
-                if (ground == null || Math.abs(ground.getY() - ay) > RETURN_MAX_RISE) continue;
+                BlockPos ground = groundNear(level, cx, cz, ay);
+                if (ground == null) continue;
                 x = cx;
                 z = cz;
                 groundY = ground.getY();
                 break search;
             }
         }
-        int top = openingHeight(level, x, z, groundY);
-        BlockPos.MutableBlockPos base = new BlockPos.MutableBlockPos(x, top, z);
+        BlockPos.MutableBlockPos base = new BlockPos.MutableBlockPos(x, openingHeight(level, x, z, groundY), z);
         int lowest = Math.min(groundY, ay) - RETURN_MAX_RISE;
         while (base.getY() - 1 >= lowest && isOpen(level, base.below())) base.move(Direction.DOWN);
-        Vec3 start = Vec3.atBottomCenterOf(new BlockPos(x, top, z));
         Vec3 rest = Vec3.atBottomCenterOf(base);
+        Vec3 target = arrival.pos().add(0, EXIT_AIM_HEIGHT, 0);
+        double across = Math.sqrt(Mth.square(target.x - rest.x) + Mth.square(target.z - rest.z));
+        float yaw = across < 1 ? arrival.yaw() : (float) (Mth.atan2(-(target.x - rest.x), target.z - rest.z) * Mth.RAD_TO_DEG);
+        return open(level, rest, yaw, RiderArrival.EXIT_PITCH, 1f, type, lifetimeTicks, decorative);
+    }
 
+    static WormholeEntity open(ServerLevel level, Vec3 at, float yaw, float pitch, float scale,
+                                       WormholeType type, int lifetimeTicks, boolean decorative) {
         WormholeEntity wormhole = Wormholes.WORMHOLE.create(level);
         wormhole.setDecorative(decorative);
         wormhole.setWormholeType(type);
         wormhole.setLifetime(lifetimeTicks);
-        Vec3 target = arrival.pos().add(0, EXIT_AIM_HEIGHT, 0);
-        double across = Math.sqrt(Mth.square(target.x - rest.x) + Mth.square(target.z - rest.z));
-        float yaw = across < 1 ? arrival.yaw() : (float) (Mth.atan2(-(target.x - rest.x), target.z - rest.z) * Mth.RAD_TO_DEG);
-        wormhole.moveTo(start.x, start.y, start.z, yaw, RiderArrival.EXIT_PITCH);
-        wormhole.sinkTo(rest.y);
+        wormhole.setScale(scale);
+        wormhole.moveTo(at.x, at.y, at.z, yaw, pitch);
         level.addFreshEntity(wormhole);
-        WormholeSounds.open(level, start.add(0, WormholeEntity.SIZE / 2, 0), 0.6f, 1.7f);
+        WormholeSounds.open(level, at.add(0, WormholeEntity.SIZE / 2, 0), 0.6f, 1.7f);
         return wormhole;
     }
 
     private static int openingHeight(ServerLevel level, int x, int z, int groundY) {
-        int wanted = level.dimensionType().hasCeiling() ? groundY + FLOAT_CLEARANCE + EXIT_LIFT
-                : Mth.clamp(highestFloor(level, x, z, RETURN_CLEAR_HALF_WIDTH + 2, groundY) + FLOAT_CLEARANCE,
-                        groundY + EXIT_LIFT, groundY + MAX_FLOAT);
-        for (int y = wanted; y <= wanted + RETURN_MAX_CLIMB; y++) {
+        for (int y = groundY; y <= groundY + RETURN_MAX_CLIMB; y++) {
             if (isOpen(level, new BlockPos(x, y, z))) return y;
         }
-        for (int y = wanted - 1; y > groundY; y--) {
-            if (isOpen(level, new BlockPos(x, y, z))) return y;
-        }
-        return wanted;
+        return groundY;
     }
 }

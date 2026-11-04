@@ -1,0 +1,24 @@
+{
+  "parent": "hyperspace_wormholes:wormholes/ride_of_your_life",
+  "display": {
+    "icon": {
+      "id": "cobblemon:beast_ball"
+    },
+    "title": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.no_location_untouched.title"
+    },
+    "description": {
+      "translate": "advancements.hyperspace_wormholes.wormholes.no_location_untouched.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "criteria": {
+    "no_location_untouched": {
+      "trigger": "hyperspace_wormholes:wormholes",
+      "conditions": {
+        "event": "ultra_worlds"
+      }
+    }
+  }
+}

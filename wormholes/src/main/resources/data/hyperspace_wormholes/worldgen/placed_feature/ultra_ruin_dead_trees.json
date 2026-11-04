@@ -1,9 +1,0 @@
-{
-  "feature": "hyperspace_wormholes:dead_tree",
-  "placement": [
-    { "type": "minecraft:count", "count": { "type": "minecraft:uniform", "min_inclusive": 0, "max_inclusive": 3 } },
-    { "type": "minecraft:in_square" },
-    { "type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG" },
-    { "type": "minecraft:biome" }
-  ]
-}

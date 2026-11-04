@@ -108,6 +108,7 @@ public final class WaysHome {
 
     public static void tick(MinecraftServer server) {
         checkOpen(server);
+        if (PENDING.isEmpty()) return;
         Map<ServerPlayer, HomePoint> due = new LinkedHashMap<>();
         for (Iterator<Map.Entry<UUID, Pending>> it = PENDING.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<UUID, Pending> e = it.next();

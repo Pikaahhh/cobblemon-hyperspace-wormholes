@@ -3,27 +3,36 @@
   "temperature": 2.0,
   "downfall": 0.0,
   "effects": {
-    "fog_color": 14545654,
-    "sky_color": 8835056,
+    "fog_color": 8909823,
+    "sky_color": 1676778,
     "water_color": 4445920,
     "water_fog_color": 2797504,
-    "grass_color": 12436608,
-    "foliage_color": 12436608,
+    "grass_color": 11599772,
+    "foliage_color": 11599772,
     "music": {
-      "max_delay": 24000,
-      "min_delay": 12000,
-      "replace_current_music": false,
-      "sound": "minecraft:music.overworld.desert"
+      "max_delay": 200,
+      "min_delay": 20,
+      "replace_current_music": true,
+      "sound": "hyperspace_wormholes:music.ultra_desert"
     }
   },
   "spawners": {},
   "spawn_costs": {},
   "carvers": {},
   "features": [
-    [], [],
-    ["hyperspace_wormholes:ultra_desert_sands"],
-    [], [], [], [], [], [],
-    ["hyperspace_wormholes:ultra_desert_formations", "hyperspace_wormholes:ultra_desert_extras"],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "hyperspace_wormholes:zone_slot", "hyperspace_wormholes:ultra_desert_formations",
+      "hyperspace_wormholes:ultra_desert_sands"
+    ],
     []
   ]
 }

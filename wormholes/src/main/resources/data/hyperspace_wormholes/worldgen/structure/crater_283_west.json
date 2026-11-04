@@ -1,0 +1,15 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/crater_283",
+  "step": "underground_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "crater_283",
+  "processors": "hyperspace_wormholes:crater_283",
+  "tiles": [
+    0,
+    0,
+    2,
+    4
+  ]
+}

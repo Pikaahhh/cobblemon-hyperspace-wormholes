@@ -3,17 +3,17 @@
   "temperature": 0.8,
   "downfall": 1.0,
   "effects": {
-    "fog_color": 2894892,
-    "sky_color": 3355443,
+    "fog_color": 4500223,
+    "sky_color": 1520211,
     "water_color": 4159204,
     "water_fog_color": 329011,
     "grass_color": 5263440,
-    "foliage_color": 5263440,
+    "foliage_color": 2048105,
     "music": {
-      "max_delay": 24000,
-      "min_delay": 12000,
-      "replace_current_music": false,
-      "sound": "minecraft:music.nether.basalt_deltas"
+      "max_delay": 200,
+      "min_delay": 20,
+      "replace_current_music": true,
+      "sound": "hyperspace_wormholes:music.ultra_plant"
     }
   },
   "spawners": {},
@@ -21,7 +21,7 @@
   "carvers": {},
   "features": [
     [], [], [], [], [], [], [], [], [],
-    ["hyperspace_wormholes:ultra_plant_monoliths"],
+    ["hyperspace_wormholes:zone_slot", "hyperspace_wormholes:ultra_plant_towers", "hyperspace_wormholes:ultra_plant_canopy"],
     []
   ]
 }

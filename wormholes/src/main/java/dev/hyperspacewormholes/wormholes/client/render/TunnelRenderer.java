@@ -34,6 +34,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -44,6 +45,10 @@ public final class TunnelRenderer {
     private static final float Z_NEAR = -50f;
     private static final float MAX_LENGTH = 440f;
     private static final int SIDES = 36;
+    private static final float[] SIDE_COS = new float[SIDES + 1];
+    private static final float[] SIDE_SIN = new float[SIDES + 1];
+    private static final float[] RING_NEAR = new float[(SIDES + 1) * 3];
+    private static final float[] RING_FAR = new float[(SIDES + 1) * 3];
     private static final float SEGMENT = 12f;
     private static final float SKY_RADIUS = 90f;
 
@@ -86,8 +91,15 @@ public final class TunnelRenderer {
     };
     private static final float DEBRIS_SPACING = 16f;
     private static final float DEBRIS_RANGE = 240f;
+    private static final Vector3f AXIS_X = new Vector3f(1, 0, 0), AXIS_Y = new Vector3f(0, 1, 0);
+    private static final Vector3f SCRATCH_A = new Vector3f(), SCRATCH_B = new Vector3f();
 
     static {
+        for (int s = 0; s <= SIDES; s++) {
+            float t = s * Mth.TWO_PI / SIDES;
+            SIDE_COS[s] = Mth.cos(t);
+            SIDE_SIN[s] = Mth.sin(t);
+        }
         Random random = new Random(1791);
         for (int i = 0; i < STARS; i++) {
             STAR_DIR[i] = randomDirection(random);
@@ -193,9 +205,9 @@ public final class TunnelRenderer {
 
     private static void billboard(BufferBuilder bb, Matrix4f pose, Vector3f dir, float distance, float size,
                                   float u0, float v0, float u1, float v1, float r, float g, float b, float a) {
-        Vector3f up = Math.abs(dir.y) > 0.95f ? new Vector3f(1, 0, 0) : new Vector3f(0, 1, 0);
-        Vector3f right = new Vector3f(dir).cross(up).normalize().mul(size / 2);
-        Vector3f upv = new Vector3f(right).cross(dir).normalize().mul(size / 2);
+        Vector3f up = Math.abs(dir.y) > 0.95f ? AXIS_X : AXIS_Y;
+        Vector3f right = SCRATCH_A.set(dir).cross(up).normalize().mul(size / 2);
+        Vector3f upv = SCRATCH_B.set(right).cross(dir).normalize().mul(size / 2);
         float cx = dir.x * distance, cy = dir.y * distance, cz = dir.z * distance;
         bb.addVertex(pose, cx - right.x - upv.x, cy - right.y - upv.y, cz - right.z - upv.z).setUv(u0, v1).setColor(r, g, b, a);
         bb.addVertex(pose, cx + right.x - upv.x, cy + right.y - upv.y, cz + right.z - upv.z).setUv(u1, v1).setColor(r, g, b, a);
@@ -252,7 +264,8 @@ public final class TunnelRenderer {
     private static void cylinder(BufferBuilder bb, Matrix4f pose, float radius, float uRepeat, float vScale,
                                  float scroll, float twist, float spin, float time, float progress, float offX,
                                  float offY, float length, float[][] colors, float alpha) {
-        float[] c0 = new float[3], c1 = new float[3];
+        float[] near = RING_NEAR, far = RING_FAR;
+        float nearZ = Float.NaN;
         float turn = (float) (time * (double) spin - Math.floor(time * (double) spin));
         float spun = turn * uRepeat;
         float turnAngle = turn * Mth.TWO_PI;
@@ -265,31 +278,36 @@ public final class TunnelRenderer {
             float cx1 = WarpTunnel.bendX(z1, time) - offX, cy1 = WarpTunnel.bendY(z1, time) - offY;
             float v0 = z0 / vScale + scrolled, v1 = z1 / vScale + scrolled;
             float u0Base = spun + z0 * twist, u1Base = spun + z1 * twist;
+            if (nearZ != z0) ringColors(colors, turnAngle, z0, time, near);
+            ringColors(colors, turnAngle, z1, time, far);
             for (int s = 0; s < SIDES; s++) {
-                float t0 = s * Mth.TWO_PI / SIDES, t1 = (s + 1) * Mth.TWO_PI / SIDES;
+                int i0 = s * 3, i1 = i0 + 3;
                 float f0 = (float) s / SIDES, f1 = (float) (s + 1) / SIDES;
-                cloudColor(colors, t0 + turnAngle, z0, time, c0);
-                cloudColor(colors, t1 + turnAngle, z0, time, c1);
-                bb.addVertex(pose, cx0 + Mth.cos(t0) * radius, cy0 + Mth.sin(t0) * radius, z0)
-                        .setUv(f0 * uRepeat + u0Base, v0).setColor(c0[0], c0[1], c0[2], a0);
-                bb.addVertex(pose, cx0 + Mth.cos(t1) * radius, cy0 + Mth.sin(t1) * radius, z0)
-                        .setUv(f1 * uRepeat + u0Base, v0).setColor(c1[0], c1[1], c1[2], a0);
-                cloudColor(colors, t1 + turnAngle, z1, time, c1);
-                cloudColor(colors, t0 + turnAngle, z1, time, c0);
-                bb.addVertex(pose, cx1 + Mth.cos(t1) * radius, cy1 + Mth.sin(t1) * radius, z1)
-                        .setUv(f1 * uRepeat + u1Base, v1).setColor(c1[0], c1[1], c1[2], a1);
-                bb.addVertex(pose, cx1 + Mth.cos(t0) * radius, cy1 + Mth.sin(t0) * radius, z1)
-                        .setUv(f0 * uRepeat + u1Base, v1).setColor(c0[0], c0[1], c0[2], a1);
+                bb.addVertex(pose, cx0 + SIDE_COS[s] * radius, cy0 + SIDE_SIN[s] * radius, z0)
+                        .setUv(f0 * uRepeat + u0Base, v0).setColor(near[i0], near[i0 + 1], near[i0 + 2], a0);
+                bb.addVertex(pose, cx0 + SIDE_COS[s + 1] * radius, cy0 + SIDE_SIN[s + 1] * radius, z0)
+                        .setUv(f1 * uRepeat + u0Base, v0).setColor(near[i1], near[i1 + 1], near[i1 + 2], a0);
+                bb.addVertex(pose, cx1 + SIDE_COS[s + 1] * radius, cy1 + SIDE_SIN[s + 1] * radius, z1)
+                        .setUv(f1 * uRepeat + u1Base, v1).setColor(far[i1], far[i1 + 1], far[i1 + 2], a1);
+                bb.addVertex(pose, cx1 + SIDE_COS[s] * radius, cy1 + SIDE_SIN[s] * radius, z1)
+                        .setUv(f0 * uRepeat + u1Base, v1).setColor(far[i0], far[i0 + 1], far[i0 + 2], a1);
             }
+            float[] swap = near;
+            near = far;
+            far = swap;
+            nearZ = z1;
         }
     }
 
-    private static void cloudColor(float[][] colors, float theta, float z, float time, float[] out) {
+    private static void ringColors(float[][] colors, float turnAngle, float z, float time, float[] out) {
         if (colors == null) {
-            out[0] = out[1] = out[2] = 1f;
+            Arrays.fill(out, 1f);
             return;
         }
-        palette(colors, 0.5f + 0.5f * Mth.sin(theta * 2 + z * 0.012f + time * 0.01f), out);
+        for (int s = 0; s <= SIDES; s++) {
+            float t = s * Mth.TWO_PI / SIDES;
+            palette(colors, 0.5f + 0.5f * Mth.sin((t + turnAngle) * 2 + z * 0.012f + time * 0.01f), out, s * 3);
+        }
     }
 
     public static void renderWorld(WorldRenderContext context) {
@@ -365,6 +383,7 @@ public final class TunnelRenderer {
     }
 
     private static void drawName(MultiBufferSource buffers, PoseStack poseStack, Quaternionf cameraRotation,
+
                                  String name, float above, float alpha) {
         Font font = Minecraft.getInstance().font;
         poseStack.pushPose();
@@ -465,8 +484,8 @@ public final class TunnelRenderer {
             float f0 = (float) k / (n - 1), f1 = (float) (k + 1) / (n - 1);
             trailSide(points, k, toCamera, (1.4f - f0) * 1.3f, side0);
             trailSide(points, k + 1, toCamera, (1.4f - f1) * 1.3f, side1);
-            palette(colors, f0, c0);
-            palette(colors, f1, c1);
+            palette(colors, f0, c0, 0);
+            palette(colors, f1, c1, 0);
             float a0 = 0.9f * (1 - f0), a1 = 0.9f * (1 - f1);
             Vector3f p0 = points[k], p1 = points[k + 1];
             vc.addVertex(pose, p0.x - side0.x, p0.y - side0.y, p0.z - side0.z).setUv(0, 0.5f).setColor(c0[0], c0[1], c0[2], a0);
@@ -478,18 +497,18 @@ public final class TunnelRenderer {
 
     private static void trailSide(Vector3f[] points, int k, Vector3f toCamera, float halfWidth, Vector3f out) {
         Vector3f a = points[Math.max(0, k - 1)], b = points[Math.min(points.length - 1, k + 1)];
-        Vector3f dir = new Vector3f(b).sub(a);
+        Vector3f dir = SCRATCH_A.set(b).sub(a);
         if (dir.lengthSquared() < 1e-6f) dir.set(0, 0, -1);
-        Vector3f view = new Vector3f(toCamera).sub(points[k]);
+        Vector3f view = SCRATCH_B.set(toCamera).sub(points[k]);
         dir.cross(view, out);
         if (out.lengthSquared() < 1e-6f) out.set(1, 0, 0);
         out.normalize().mul(halfWidth);
     }
 
-    private static void palette(float[][] colors, float f, float[] out) {
+    private static void palette(float[][] colors, float f, float[] out, int at) {
         float t = f * (colors.length - 1);
         int i = Math.min((int) t, colors.length - 2);
         float g = t - i;
-        for (int k = 0; k < 3; k++) out[k] = Mth.lerp(g, colors[i][k], colors[i + 1][k]);
+        for (int k = 0; k < 3; k++) out[at + k] = Mth.lerp(g, colors[i][k], colors[i + 1][k]);
     }
 }

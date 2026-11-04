@@ -1,0 +1,27 @@
+slab minecraft:coarse_dirt
+slab minecraft:dripstone_block
+slab minecraft:orange_terracotta
+slab minecraft:yellow_terracotta
+slab minecraft:dark_oak_wood
+stairs minecraft:dark_oak_wood
+slab minecraft:jungle_wood
+stairs minecraft:jungle_wood
+slab minecraft:mangrove_wood
+stairs minecraft:mangrove_wood
+slab minecraft:stripped_dark_oak_wood
+stairs minecraft:stripped_dark_oak_wood
+slab minecraft:stripped_spruce_wood
+stairs minecraft:stripped_spruce_wood
+stairs minecraft:deepslate
+slab minecraft:basalt
+stairs minecraft:basalt
+slab minecraft:deepslate
+slab minecraft:smooth_basalt
+stairs minecraft:smooth_basalt
+slab hyperspace_wormholes:luminescent_ice tinted silk
+stairs hyperspace_wormholes:luminescent_ice tinted silk
+slab minecraft:calcite
+stairs minecraft:calcite
+slab hyperspace_wormholes:megalo_light
+slab hyperspace_wormholes:megalo_tread
+fence minecraft:calcite

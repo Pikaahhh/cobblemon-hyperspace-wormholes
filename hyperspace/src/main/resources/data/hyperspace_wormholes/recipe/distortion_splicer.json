@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["  R", "PS ", "DK "],
+  "key": {
+    "R": {"item": "minecraft:end_rod"},
+    "P": {"item": "cobblemon:psychic_gem"},
+    "S": {"item": "minecraft:end_stone"},
+    "D": {"item": "minecraft:diamond"},
+    "K": {"item": "cobblemon:dark_gem"}
+  },
+  "result": {"id": "hyperspace_wormholes:distortion_splicer", "count": 1}
+}

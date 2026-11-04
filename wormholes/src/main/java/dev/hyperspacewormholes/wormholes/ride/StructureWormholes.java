@@ -29,10 +29,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Where purple wormholes go: into the sky near a structure. More rings means rarer structures, up to Legendary
- * Monuments shrines at 3 rings.
- */
+/** Where purple wormholes go: the sky near a structure, rarer with more rings (Legendary Monuments shrines at 3). */
 public final class StructureWormholes {
     private static final int SEARCH_CHUNKS = 100;
     private static final int ATTEMPTS = 4;
@@ -90,8 +87,8 @@ public final class StructureWormholes {
     private static int tierOf(ResourceLocation id) {
         String namespace = id.getNamespace(), path = id.getPath();
         if (path.contains("well")) return -1;
-        if (path.contains("village") || (namespace.equals(DUNGEONS_AND_TAVERNS) && path.equals("witch_villa"))) return 0;
-        if (namespace.equals("cobblemon")) return 0;
+        if (path.contains("village") || namespace.equals("cobblemon")
+                || (namespace.equals(DUNGEONS_AND_TAVERNS) && path.equals("witch_villa"))) return 0;
         if (namespace.equals("minecraft")) return 1;
         if (namespace.equals(DUNGEONS_AND_TAVERNS)) {
             if (path.startsWith("tavern")) return 1;
@@ -182,15 +179,10 @@ public final class StructureWormholes {
 
     static WormholeEntity openWayHome(ServerLevel level, SkySpot spot, HomePoint home, ServerPlayer owner) {
         int lifetime = WormholeDestinations.RETURN_WORMHOLE_TICKS + RiderArrival.TICKS;
-        WormholeEntity wormhole = Wormholes.WORMHOLE.create(level);
-        wormhole.setWormholeType(WormholeType.PURPLE);
-        wormhole.setLifetime(lifetime);
+        WormholeEntity wormhole = WormholeDestinations.open(level, spot.wormholeBase(), spot.yaw(), 0f, 1f,
+                WormholeType.PURPLE, lifetime, false);
         wormhole.setReturnTo(home);
-        Vec3 base = spot.wormholeBase();
-        wormhole.moveTo(base.x, base.y, base.z, spot.yaw(), 0f);
-        level.addFreshEntity(wormhole);
         WaysHome.track(wormhole, lifetime, owner.getUUID());
-        WormholeSounds.open(level, base.add(0, WormholeEntity.SIZE / 2, 0), 0.6f, 1.7f);
         return wormhole;
     }
 }

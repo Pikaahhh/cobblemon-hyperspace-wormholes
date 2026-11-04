@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_passho_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_passho_berry",
+  "flavours": {
+    "DRY": 60,
+    "BITTER": 40
+  }
+}

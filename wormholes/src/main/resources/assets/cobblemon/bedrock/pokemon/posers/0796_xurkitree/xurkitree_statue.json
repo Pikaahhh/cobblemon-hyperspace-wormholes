@@ -1,0 +1,35 @@
+{
+  "portraitScale": 1.7,
+  "portraitTranslation": [
+    -0.8,
+    6,
+    0
+  ],
+  "profileScale": 0.3,
+  "profileTranslation": [
+    0,
+    1.4,
+    -1.8
+  ],
+  "animations": {},
+  "poses": {
+    "statue": {
+      "poseTypes": [
+        "STAND",
+        "WALK",
+        "SLEEP",
+        "HOVER",
+        "FLY",
+        "FLOAT",
+        "SWIM",
+        "GLIDE",
+        "PROFILE",
+        "PORTRAIT",
+        "NONE"
+      ],
+      "animations": [
+        "q.bedrock('xurkitree_statue', 'statue')"
+      ]
+    }
+  }
+}

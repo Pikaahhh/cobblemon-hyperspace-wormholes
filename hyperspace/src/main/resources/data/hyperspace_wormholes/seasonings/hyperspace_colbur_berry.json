@@ -1,1 +1,8 @@
-{"colour":"white","ingredient":"hyperspace_wormholes:hyperspace_colbur_berry"}
+{
+  "colour": "white",
+  "ingredient": "hyperspace_wormholes:hyperspace_colbur_berry",
+  "flavours": {
+    "BITTER": 40,
+    "SOUR": 80
+  }
+}

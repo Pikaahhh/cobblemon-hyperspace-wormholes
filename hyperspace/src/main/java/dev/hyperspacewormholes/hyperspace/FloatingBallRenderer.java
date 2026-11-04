@@ -29,7 +29,7 @@ import org.joml.Quaternionf;
  */
 public class FloatingBallRenderer extends EntityRenderer<FloatingBall> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/poke_balls/poke_ball.png");
-    private static final ResourceLocation GOLDEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "textures/entity/golden_poke_ball.png");
+    private static final ResourceLocation GOLDEN_TEXTURE = Hyperspace.id("textures/entity/golden_poke_ball.png");
     private static final float MODEL_SIZE = 0.5f;
     private static final float TILT = -20f;
     private static final float RADIUS = 0.95f;
@@ -156,15 +156,22 @@ public class FloatingBallRenderer extends EntityRenderer<FloatingBall> {
     }
 
     private static void glow(Matrix4f m, VertexConsumer vc, float time, boolean golden) {
+        float a1 = 0;
+        int c1 = glowColour(a1, time, golden);
         for (int s = 0; s < GLOW_STEPS; s++) {
-            float a0 = s * Mth.TWO_PI / GLOW_STEPS, a1 = (s + 1) * Mth.TWO_PI / GLOW_STEPS;
-            int c0 = golden ? Mth.hsvToRgb(0.12f + Mth.sin(a0 * 2 + time * 0.05f) * 0.03f, 0.55f, 1f) : Mth.hsvToRgb((a0 / Mth.TWO_PI + time * 0.01f) % 1f, 0.35f, 1f);
-            int c1 = golden ? Mth.hsvToRgb(0.12f + Mth.sin(a1 * 2 + time * 0.05f) * 0.03f, 0.55f, 1f) : Mth.hsvToRgb((a1 / Mth.TWO_PI + time * 0.01f) % 1f, 0.35f, 1f);
+            float a0 = a1;
+            int c0 = c1;
+            a1 = (s + 1) * Mth.TWO_PI / GLOW_STEPS;
+            c1 = glowColour(a1, time, golden);
             glowVertex(m, vc, a0, GLOW_INNER, c0, GLOW_ALPHA);
             glowVertex(m, vc, a0, GLOW_OUTER, c0, 0);
             glowVertex(m, vc, a1, GLOW_OUTER, c1, 0);
             glowVertex(m, vc, a1, GLOW_INNER, c1, GLOW_ALPHA);
         }
+    }
+
+    private static int glowColour(float angle, float time, boolean golden) {
+        return golden ? Mth.hsvToRgb(0.12f + Mth.sin(angle * 2 + time * 0.05f) * 0.03f, 0.55f, 1f) : Mth.hsvToRgb((angle / Mth.TWO_PI + time * 0.01f) % 1f, 0.35f, 1f);
     }
 
     private static void glowVertex(Matrix4f m, VertexConsumer vc, float angle, float r, int rgb, int alpha) {

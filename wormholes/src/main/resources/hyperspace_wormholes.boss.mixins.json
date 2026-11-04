@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.hyperspacewormholes.wormholes.boss.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BossMaxHealthMixin",
+    "BossJoinMixin",
+    "BossBallMixin",
+    "BossFaintSkipMixin",
+    "BossSendOutMixin",
+    "BossLogMixin",
+    "BossPrizeTrackingMixin",
+    "BossPrizeHitMixin",
+    "WaveSlotsMixin"
+  ],
+  "client": [
+    "BossWaitHintMixin",
+    "BossMusicKeepMixin",
+    "BossMusicLoopMixin",
+    "WaveTargetsMixin",
+    "WaveTileNameMixin",
+    "OneTargetMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+}

@@ -1,0 +1,35 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.5,
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 329231,
+    "sky_color": 329231,
+    "water_color": 4159204,
+    "water_fog_color": 329011,
+    "music": {
+      "max_delay": 200,
+      "min_delay": 20,
+      "replace_current_music": true,
+      "sound": "hyperspace_wormholes:music.ultra_megalopolis"
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [],
+    [],
+    [
+      
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ]
+}

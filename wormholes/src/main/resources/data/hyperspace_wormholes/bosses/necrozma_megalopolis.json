@@ -1,0 +1,48 @@
+{
+  "name": "Necrozma",
+  "properties": "level=72",
+  "spawn_species": "necrozma",
+  "hp_per_trainer": 10,
+  "scaling": [10, 20, 30, 40],
+  "max_trainers": 4,
+  "scale": 1.0,
+  "ai_skill": 5,
+  "boosts": {"highest": 1},
+  "music": "hyperspace_wormholes:music.necrozma_fused_battle",
+  "variants": {
+    "dusk": {
+      "name": "Dusk Mane Necrozma",
+      "properties": "prism_fusion=dusk moves=sunsteelstrike,photongeyser,earthquake,dragondance",
+      "moves": ["sunsteelstrike", "photongeyser", "earthquake", "dragondance", "stoneedge", "knockoff"]
+    },
+    "dawn": {
+      "name": "Dawn Wings Necrozma",
+      "properties": "prism_fusion=dawn moves=moongeistbeam,photongeyser,powergem,calmmind",
+      "moves": ["moongeistbeam", "photongeyser", "powergem", "calmmind", "earthpower", "heatwave"]
+    }
+  },
+  "forms": [
+    {
+      "hp_below": 0.5,
+      "name": "Ultra Necrozma",
+      "properties": "prism_fusion=ultra level=100 moves=photongeyser,dragonpulse,powergem,earthquake ability=megaloneuroforce",
+      "species": "Necrozma-Ultra",
+      "level": 100,
+      "ability": "megaloneuroforce",
+      "z_item": "ultranecroziumz",
+      "held_item": "mega_showdown:ultranecrozium_z",
+      "moves": ["photongeyser", "dragonpulse", "powergem", "earthquake", "heatwave", "knockoff"],
+      "boosts": {"highest": 1},
+      "music": "hyperspace_wormholes:music.ultra_necrozma_battle",
+      "ultimate": {"move": "photongeyser", "zmove": true, "hp_below": 0.33, "hard_again_below": 0.11}
+    }
+  ],
+  "defeated_properties": "prism_fusion=none level=70 moves=photongeyser,powergem,irondefense,nightslash ability=prismarmor",
+  "power_up_ticks": 274,
+  "defeat_ticks": 275,
+  "defeat_form_ticks": 198,
+  "defeat_effect": {"id": "hyperspace_wormholes:necrozma_power_down", "at": 108, "aspects": ["prism_fusion=none"]},
+  "opening_transition_seconds": 5.115,
+  "banned_moves": ["fissure", "sheercold", "guillotine", "horndrill", "endeavor", "painsplit", "finalgambit", "superfang",
+    "naturesmadness", "ruination", "guardianofalola", "destinybond", "perishsong"]
+}

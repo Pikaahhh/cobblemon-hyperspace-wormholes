@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 /**
  * Puts the third-person camera behind and a bit above the legend during the ride, steady against its flying animation.
  * Dusk Mane and Dawn Wings Necrozma get it a bit higher and further back (4 up and 13 back instead of 2.2 and 11).
@@ -37,8 +39,7 @@ public abstract class CameraZoomMixin {
     private void hyperspace_wormholes$necrozmaView(BlockGetter level, Entity entity, boolean detached, boolean mirrored,
                                                float partialTick, CallbackInfo ci) {
         if (detached || entity == null || !(entity.getVehicle() instanceof PokemonEntity mount)) return;
-        if (!mount.getPokemon().getSpecies().getResourceIdentifier().getPath().equals("necrozma")) return;
-        if (mount.getPokemon().getAspects().contains("dusk-fusion") || mount.getPokemon().getAspects().contains("dawn-fusion")) return;
+        if (!mount.getPokemon().getSpecies().getResourceIdentifier().getPath().equals("necrozma") || hyperspace_wormholes$fused(mount)) return;
         float yaw = Mth.rotLerp(partialTick, mount.yBodyRotO, mount.yBodyRot) * Mth.DEG_TO_RAD;
         double ahead = mount.getBbWidth() / 2 + 0.6;
         setPosition(mount.getEyePosition(partialTick).add(-Mth.sin(yaw) * ahead, 0, Mth.cos(yaw) * ahead));
@@ -58,10 +59,9 @@ public abstract class CameraZoomMixin {
                                               float partialTick, CallbackInfo ci) {
         if (!detached || !RideClient.isActive() || entity == null) return;
         setRotation(0f, 0f);
-        Entity body = entity.getVehicle() != null ? entity.getVehicle() : entity;
+        Entity body = Objects.requireNonNullElse(entity.getVehicle(), entity);
         Vec3 pivot = body.getPosition(partialTick).add(0, body.getBbHeight() * 0.6, 0);
-        boolean fusion = body instanceof PokemonEntity mount
-                && (mount.getPokemon().getAspects().contains("dusk-fusion") || mount.getPokemon().getAspects().contains("dawn-fusion"));
+        boolean fusion = body instanceof PokemonEntity mount && hyperspace_wormholes$fused(mount);
         float distance = fusion ? 13f : 11f;
         float lift = fusion ? 4f : 2.2f;
         Vector3f look = getLookVector();
@@ -70,5 +70,9 @@ public abstract class CameraZoomMixin {
                 -look.x * distance + up.x * lift,
                 -look.y * distance + up.y * lift,
                 -look.z * distance + up.z * lift));
+    }
+
+    private static boolean hyperspace_wormholes$fused(PokemonEntity mount) {
+        return mount.getPokemon().getAspects().contains("dusk-fusion") || mount.getPokemon().getAspects().contains("dawn-fusion");
     }
 }

@@ -17,10 +17,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 import java.util.List;
 
-/**
- * Loot condition hyperspace_wormholes:hoopa_stars. Passes when your current ring's stars are between a min and max
- * (counts as 5 if you're not on a trip).
- */
+/** Loot condition hyperspace_wormholes:hoopa_stars: your current ring's stars are between min and max (5 off a trip). */
 public record HoopaStars(int min, int max) implements LootItemCondition {
     public static final int MAX = 5;
     public static final MapCodec<HoopaStars> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -30,8 +27,7 @@ public record HoopaStars(int min, int max) implements LootItemCondition {
     private static LootItemConditionType type;
 
     public static void register() {
-        type = Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE,
-                ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "hoopa_stars"), new LootItemConditionType(CODEC));
+        type = Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, Hyperspace.id("hoopa_stars"), new LootItemConditionType(CODEC));
     }
 
     public static int of(ServerPlayer player) {
