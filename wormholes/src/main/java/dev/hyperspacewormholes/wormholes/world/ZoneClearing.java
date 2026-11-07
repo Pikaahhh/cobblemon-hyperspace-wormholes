@@ -3,7 +3,6 @@ package dev.hyperspacewormholes.wormholes.world;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -17,9 +16,7 @@ public record ZoneClearing(String zone, double inner, double outer) implements D
 
     @Override
     public double compute(FunctionContext context) {
-        Zone home = Zone.get(zone);
-        BlockPos centre = home.near(context.blockX(), context.blockZ()).centre();
-        double d = Math.hypot(context.blockX() - centre.getX(), context.blockZ() - centre.getZ());
+        double d = Zone.get(zone).fromCentre(context.blockX(), context.blockZ());
         double t = Mth.clamp((outer - d) / (outer - inner), 0, 1);
         return t * t * (3 - 2 * t);
     }

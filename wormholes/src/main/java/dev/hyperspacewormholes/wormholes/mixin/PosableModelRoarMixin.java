@@ -33,7 +33,7 @@ public abstract class PosableModelRoarMixin {
     @Inject(method = "applyAnimations", at = @At("TAIL"))
     private void hyperspace_wormholes$roar(Entity entity, PosableState state, float limbSwing, float limbSwingAmount,
                                         float ageInTicks, float headYaw, float headPitch, CallbackInfo ci) {
-        if (entity == null) return;
+        if (entity == null || !RoarClient.anyRoaring() && BurnsSkyClient.runs().isEmpty()) return;
         PosableModel model = (PosableModel) (Object) this;
         float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
         float roar = RoarClient.roarAmount(entity, partialTick);

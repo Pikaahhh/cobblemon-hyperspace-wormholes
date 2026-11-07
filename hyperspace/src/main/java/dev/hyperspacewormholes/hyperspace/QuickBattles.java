@@ -25,6 +25,7 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.net.messages.client.animation.PlayPosableAnimationPacket;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonParser;
+import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -48,6 +49,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.player.Player;
@@ -111,6 +113,7 @@ public class QuickBattles {
     private static class Attack {
         final UUID owner;
         final Entity target;
+        final BlockPos monitor;
         final Move move;
         final boolean physical, runs;
         final ActionEffectTimeline timeline;
@@ -121,9 +124,10 @@ public class QuickBattles {
         BlockPos goal;
         final Set<BlockPos> avoid = new HashSet<>();
 
-        Attack(UUID owner, Entity target, Move move, boolean physical, int contact, boolean runs) {
+        Attack(UUID owner, Entity target, BlockPos monitor, Move move, boolean physical, int contact, boolean runs) {
             this.owner = owner;
             this.target = target;
+            this.monitor = monitor;
             this.move = move;
             this.physical = physical;
             this.runs = runs;
@@ -144,6 +148,16 @@ public class QuickBattles {
                 StreamCodec.composite(ByteBufCodecs.VAR_INT, Payload::ball, ByteBufCodecs.VAR_INT, Payload::slot, ByteBufCodecs.VAR_INT, Payload::contact,
                         ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), Payload::pokemon, ByteBufCodecs.BOOL, Payload::runs, Payload::new);
 
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+    public record Strike(BlockPos monitor, int slot, int contact, Optional<UUID> pokemon, boolean runs) implements CustomPacketPayload {
+        public static final Type<Strike> TYPE = new Type<>(Hyperspace.id("monitor_attack"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Strike> CODEC =
+                StreamCodec.composite(BlockPos.STREAM_CODEC, Strike::monitor, ByteBufCodecs.VAR_INT, Strike::slot, ByteBufCodecs.VAR_INT, Strike::contact,
+                        ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), Strike::pokemon, ByteBufCodecs.BOOL, Strike::runs, Strike::new);
         @Override
         public Type<? extends CustomPacketPayload> type() {
             return TYPE;
@@ -180,12 +194,15 @@ public class QuickBattles {
 
     public static void register() {
         PayloadTypeRegistry.playC2S().register(Payload.TYPE, Payload.CODEC);
+        PayloadTypeRegistry.playC2S().register(Strike.TYPE, Strike.CODEC);
         PayloadTypeRegistry.playC2S().register(Aim.TYPE, Aim.CODEC);
         PayloadTypeRegistry.playS2C().register(Moves.TYPE, Moves.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(Payload.TYPE, (payload, context) -> order(context.player(), payload));
+        ServerPlayNetworking.registerGlobalReceiver(Strike.TYPE, (payload, context) -> strike(context.player(), payload));
         ServerPlayNetworking.registerGlobalReceiver(Aim.TYPE, (payload, context) -> sendMoves(context.player(), payload.pokemon()));
         ServerTickEvents.END_SERVER_TICK.register(QuickBattles::tick);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            attacks.values().forEach(QuickBattles::clearMark);
             attacks.clear();
             cooldowns.clear();
         });
@@ -224,16 +241,41 @@ public class QuickBattles {
         PokemonEntity pokemon = sentOut(player, order.pokemon());
         if (pokemon == null || attacks.containsKey(pokemon)) return;
         if (!(target instanceof FloatingBall ball && ball.belongsTo(player) || wild(target))) return;
+        Move move = chosen(player, pokemon, order.slot());
+        if (move == null) return;
+        begin(player, pokemon, move, target, null, order.contact(), order.runs(), order.pokemon());
+    }
+    private static void strike(ServerPlayer player, Strike order) {
+        if (BattleRegistry.getBattleByParticipatingPlayer(player) != null) return;
+        ServerLevel level = player.serverLevel();
+        BlockPos at = order.monitor();
+        Vec3 centre = Vec3.atCenterOf(at);
+        if (!ItemAnalyser.isMonitor(level.getBlockState(at)) || !ItemAnalyser.canBreak(level, at) || centre.distanceTo(player.getEyePosition()) > TARGET_RANGE) return;
+        PokemonEntity pokemon = sentOut(player, order.pokemon());
+        if (pokemon == null || attacks.containsKey(pokemon)) return;
+        Move move = chosen(player, pokemon, order.slot());
+        if (move == null) return;
+        Entity mark = EntityType.ITEM_DISPLAY.create(level);
+        mark.setPos(centre);
+        level.addFreshEntity(mark);
+        begin(player, pokemon, move, mark, at, order.contact(), order.runs(), order.pokemon());
+    }
+    private static Move chosen(ServerPlayer player, PokemonEntity pokemon, int slot) {
         List<Move> moves = pokemon.getPokemon().getMoveSet().getMoves();
-        if (order.slot() < 0 || order.slot() >= moves.size()) return;
-        Move move = moves.get(order.slot());
-        if (!quickUsable(move.getTemplate()) || move.getCurrentPp() <= 0 || cooldown(player.server, pokemon, move) > 0) return;
+        if (slot < 0 || slot >= moves.size()) return null;
+        Move move = moves.get(slot);
+        return quickUsable(move.getTemplate()) && move.getCurrentPp() > 0 && cooldown(player.server, pokemon, move) <= 0 ? move : null;
+    }
+    private static void begin(ServerPlayer player, PokemonEntity pokemon, Move move, Entity target, BlockPos monitor, int contact, boolean runs, Optional<UUID> selected) {
         move.setCurrentPp(move.getCurrentPp() - 1);
         cooldowns.computeIfAbsent(pokemon.getPokemon().getUuid(), u -> new HashMap<>())
                 .put(move.getName(), (long) player.server.getTickCount() + cooldown(move.getTemplate()));
         boolean physical = move.getTemplate().getDamageCategory() == DamageCategories.INSTANCE.getPHYSICAL();
-        attacks.put(pokemon, new Attack(player.getUUID(), target, move, physical, order.contact(), order.runs()));
-        sendMoves(player, order.pokemon());
+        attacks.put(pokemon, new Attack(player.getUUID(), target, monitor, move, physical, contact, runs));
+        sendMoves(player, selected);
+    }
+    private static void clearMark(Attack attack) {
+        if (attack.monitor != null) attack.target.discard();
     }
 
     private static void tick(MinecraftServer server) {
@@ -248,7 +290,7 @@ public class QuickBattles {
     private static boolean step(MinecraftServer server, PokemonEntity pokemon, Attack attack) {
         Entity target = attack.target;
         if (!pokemon.isAlive() || pokemon.isRemoved() || !target.isAlive() || pokemon.level() != target.level()
-                || !(target instanceof FloatingBall || wild(target))) return true;
+                || !(target instanceof FloatingBall || wild(target) || attack.monitor != null && ItemAnalyser.isMonitor(target.level().getBlockState(attack.monitor)))) return true;
         attack.age++;
         pokemon.getLookControl().setLookAt(target);
         if (pokemon.isVehicle() || attack.started < 0 && attack.age > GIVE_UP) {
@@ -291,6 +333,7 @@ public class QuickBattles {
         pokemon.getNavigation().resetMaxVisitedNodesMultiplier();
         pokemon.setSprinting(false);
         pokemon.removeTag(FIT_PATH);
+        clearMark(attack);
         ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);
         if (owner != null) sendMoves(owner, Optional.of(pokemon.getPokemon().getUuid()));
     }
@@ -391,7 +434,9 @@ public class QuickBattles {
         String sound = "move." + attack.move.getName().toLowerCase(Locale.ROOT) + ".target";
         if (!has(sound)) sound = "impact." + attack.move.getType().getName().toLowerCase(Locale.ROOT);
         if (!attack.ran || !(attack.target instanceof PokemonEntity)) play(level, centre, sound);
-        if (attack.target instanceof FloatingBall ball) {
+        if (attack.monitor != null) {
+            ItemAnalyser.struck(level, attack.monitor, attack.move.getType().getName().equalsIgnoreCase("electric"), attack.move.getTemplate().getPower());
+        } else if (attack.target instanceof FloatingBall ball) {
             ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);
             if (owner != null) {
                 Tasks.progress(owner, Tasks.Kind.BALLS);

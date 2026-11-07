@@ -10,13 +10,10 @@ import com.cobblemon.mod.common.client.battle.ClientBattlePokemon;
 import com.cobblemon.mod.common.client.battle.ClientBattleSide;
 import com.cobblemon.mod.common.client.battle.animations.MoveTileOffscreenAnimation;
 import com.cobblemon.mod.common.client.gui.battle.subscreen.BattleTargetSelection;
-import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.boss.BossBanPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossLinkPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossSlotsPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossWaitPayload;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -24,15 +21,10 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,10 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class BossClient {
     private static final Map<UUID, Integer> LINKS = new ConcurrentHashMap<>();
     private static volatile int waiting;
-    private static final Map<Integer, String> SEEN = new HashMap<>();
-    private static final int WATCH_EVERY = 20, WATCH_REACH = 48;
-    private static final double BODY_REACH = 0.95;
-    private static int ticks;
 
     private BossClient() {}
 
@@ -56,47 +44,16 @@ public final class BossClient {
         ClientPlayNetworking.registerGlobalReceiver(BossLinkPayload.TYPE, (payload, context) -> {
             if (payload.entityId() < 0) LINKS.remove(payload.pokemon());
             else LINKS.put(payload.pokemon(), payload.entityId());
-            Wormholes.LOGGER.info("[boss] client link {} -> {}", payload.pokemon(), payload.entityId());
         });
         ClientPlayNetworking.registerGlobalReceiver(BossWaitPayload.TYPE, (payload, context) -> {
             waiting = payload.state();
-            Wormholes.LOGGER.info("[boss] client waiting state {}", payload.state());
         });
         ClientPlayNetworking.registerGlobalReceiver(BossSlotsPayload.TYPE, (payload, context) -> wildSlots(payload.count()));
         // nothing on the client reads the bans, but the receiver stays registered so the server still sees the channel open
         ClientPlayNetworking.registerGlobalReceiver(BossBanPayload.TYPE, (payload, context) -> {});
-        ClientTickEvents.END_CLIENT_TICK.register(BossClient::watch);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            SEEN.clear();
             LINKS.clear();
             waiting = BossWaitPayload.NONE;
-        });
-    }
-
-    private static void watch(Minecraft mc) {
-        if (mc.level == null || mc.player == null || LINKS.isEmpty() || CobblemonClient.INSTANCE.getBattle() == null) {
-            SEEN.clear();
-            return;
-        }
-        if (++ticks % WATCH_EVERY != 0) return;
-        Vec3 eye = mc.player.getEyePosition();
-        Set<Integer> now = new HashSet<>();
-        for (Entity e : mc.level.entitiesForRendering()) {
-            if (!(e instanceof PokemonEntity pokemon) || pokemon.getOwnerUUID() == null || !pokemon.isBattling()
-                    || e.distanceToSqr(mc.player) > WATCH_REACH * WATCH_REACH) continue;
-            now.add(e.getId());
-            AABB box = e.getBoundingBox();
-            double dx = eye.x - e.getX(), dz = eye.z - e.getZ();
-            String line = String.format("%s at (%.1f, %.1f, %.1f), hitbox %.1f by %.1f, invisible %s, beam %d, my eyes in its hitbox %s, "
-                            + "within its body's reach %s", e.getName().getString(), Math.round(e.getX() * 2) / 2.0,
-                    Math.round(e.getY() * 2) / 2.0, Math.round(e.getZ() * 2) / 2.0, e.getBbWidth(), e.getBbHeight(), e.isInvisible(),
-                    pokemon.getBeamMode(), box.contains(eye), Math.sqrt(dx * dx + dz * dz) < e.getBbWidth() * BODY_REACH);
-            if (!line.equals(SEEN.put(e.getId(), line))) Wormholes.LOGGER.info("[boss] client sees #{} {}", e.getId(), line);
-        }
-        SEEN.keySet().removeIf(id -> {
-            if (now.contains(id)) return false;
-            Wormholes.LOGGER.info("[boss] client no longer sees #{}", id);
-            return true;
         });
     }
 

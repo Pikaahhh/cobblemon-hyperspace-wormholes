@@ -1,10 +1,10 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.CobblemonSounds;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.block.MonitorBlock;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import dev.hyperspacewormholes.wormholes.BigBattery;
 import dev.hyperspacewormholes.wormholes.CosmicJar;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.WormholesAdvancements;
@@ -55,6 +55,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -63,9 +64,10 @@ import java.util.Map;
 
 /**
  * The Item Analyser. Cobblemon's Fossil Analyzer with a Data Monitor on top. Load it with a type gem and Blaze Powder
- * (or a full Cosmic Jar and a golden apple), power it with lightning or a Big Battery, and it pulls a Pokemon through a wormhole. Handles its
+ * (or a full Cosmic Jar and a golden apple), power it with lightning or a charge from an Electric move, and it pulls a Pokemon through a wormhole. Handles its
  * screens, sounds, overheating and burnt-out monitors.
  */
+import java.util.Set;
 public final class ItemAnalyser {
     private static final ResourceLocation ANALYZER = ResourceLocation.fromNamespaceAndPath("cobblemon", "fossil_analyzer");
     private static final ResourceLocation MONITOR = ResourceLocation.fromNamespaceAndPath("cobblemon", "monitor");
@@ -75,9 +77,12 @@ public final class ItemAnalyser {
     private static final TagKey<Item> TYPE_GEMS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("cobblemon", "type_gems"));
     private static final MonitorBlock.MonitorScreen READY_SCREEN = MonitorBlock.MonitorScreen.BLUE_PROGRESS_9;
 
+    private static final MonitorBlock.MonitorScreen CHARGED_SCREEN = MonitorBlock.MonitorScreen.TM_ELECTRIC;
     private static final int DISTANCE = 5;
     private static final int MAX_RISE = 4;
     private static final double LIGHTNING_BREAK_CHANCE = 0.90;
+    private static final double SURE_BREAK_POWER = 150;
+    private static final double VARIABLE_POWER = 60;
     private static final long OVERHEAT_TICKS = 5 * 60 * 20;
     private static final long ERROR_TICKS = 5 * 20;
     private static final double BLAZE_CHANCE = 0.05;
@@ -119,8 +124,12 @@ public final class ItemAnalyser {
             Store store = Store.of(server);
             Loaded loaded = store.devices.get(analyser.asLong());
             if (loaded == null || loaded.recipe() == null) return InteractionResult.PASS;
-            if (ready(server, analyser, store) && batteryPowered(server, analyser)) {
+            if (ready(server, analyser, store) && store.charged.contains(pos.asLong())) {
                 activate(server, analyser, loaded, store, player, 0);
+                if (isRunning(server, pos)) {
+                    store.charged.remove(pos.asLong());
+                    store.setDirty();
+                }
                 return InteractionResult.CONSUME;
             }
             if (overheated(server, analyser, store)) {
@@ -179,8 +188,28 @@ public final class ItemAnalyser {
         level.playSound(null, pos, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.6f, 1.2f);
     }
 
-    private static boolean batteryPowered(ServerLevel level, BlockPos pos) {
-        return level.getBlockState(pos.below()).is(BigBattery.BLOCK);
+    public static boolean isMonitor(BlockState state) {
+        return is(state, MONITOR);
+    }
+    public static void struck(ServerLevel level, BlockPos pos, boolean electric, double power) {
+        BlockState monitor = level.getBlockState(pos);
+        if (!is(monitor, MONITOR) || isRunning(level, pos)) return;
+        GameplayConfig config = GameplayConfig.get();
+        if (electric ? config.monitorBreaksFromElectricMoves && level.getRandom().nextDouble() < breakChance(power) : config.monitorBreaksFromOtherMoves) {
+            smash(level, pos, monitor);
+            return;
+        }
+        if (!electric) return;
+        Store store = Store.of(level);
+        store.charged.add(pos.asLong());
+        store.setDirty();
+        Vec3 c = Vec3.atCenterOf(pos);
+        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, c.x, c.y, c.z, 20, 0.3, 0.3, 0.3, 0.1);
+        level.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1f, 1.4f);
+        refreshScreen(level, pos.below());
+    }
+    private static double breakChance(double power) {
+        return Math.min(LIGHTNING_BREAK_CHANCE, (power > 0 ? power : VARIABLE_POWER) / SURE_BREAK_POWER);
     }
 
     public static void onLightning(Entity entity, ServerLevel level) {
@@ -195,7 +224,7 @@ public final class ItemAnalyser {
             if (loaded == null || !ready(level, analyser, store)) return;
             Player cause = bolt.getCause() != null ? bolt.getCause()
                     : level.getNearestPlayer(analyser.getX() + 0.5, analyser.getY(), analyser.getZ() + 0.5, 64, false);
-            activate(level, analyser, loaded, store, cause, LIGHTNING_BREAK_CHANCE);
+            activate(level, analyser, loaded, store, cause, GameplayConfig.get().monitorBreaksFromLightning ? LIGHTNING_BREAK_CHANCE : 0);
             return;
         }
     }
@@ -212,9 +241,11 @@ public final class ItemAnalyser {
         if (!is(monitor, MONITOR) || !monitor.hasProperty(MonitorBlock.Companion.getSCREEN())) return;
         if (isRunning(level, monitorPos)) return;
         MonitorBlock.MonitorScreen current = monitor.getValue(MonitorBlock.Companion.getSCREEN());
-        if (ready(level, pos, Store.of(level))) {
-            if (current != READY_SCREEN) level.setBlockAndUpdate(monitorPos, withScreen(monitor, READY_SCREEN));
-        } else if (current == READY_SCREEN) {
+        Store store = Store.of(level);
+        MonitorBlock.MonitorScreen wanted = store.charged.contains(monitorPos.asLong()) ? CHARGED_SCREEN : ready(level, pos, store) ? READY_SCREEN : null;
+        if (wanted != null) {
+            if (current != wanted) level.setBlockAndUpdate(monitorPos, withScreen(monitor, wanted));
+        } else if (current == READY_SCREEN || current == CHARGED_SCREEN) {
             level.setBlockAndUpdate(monitorPos, withScreen(monitor, MonitorBlock.MonitorScreen.OFF));
         }
     }
@@ -327,6 +358,16 @@ public final class ItemAnalyser {
 
     public static boolean canBreak(Level level, BlockPos pos) {
         return !isRunning(level, pos) && !isRunning(level, pos.above());
+    }
+    private static void smash(ServerLevel level, BlockPos pos, BlockState monitor) {
+        BlockState broken = BuiltInRegistries.BLOCK.get(DAMAGED_MONITOR).defaultBlockState();
+        if (broken.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            broken = broken.setValue(BlockStateProperties.HORIZONTAL_FACING, monitor.getValue(BlockStateProperties.HORIZONTAL_FACING));
+        }
+        level.setBlockAndUpdate(pos, broken);
+        Store store = Store.of(level);
+        if (store.charged.remove(pos.asLong())) store.setDirty();
+        burnOut(level, pos);
     }
 
     private static void burnOut(ServerLevel level, BlockPos monitor) {
@@ -483,12 +524,7 @@ public final class ItemAnalyser {
             BlockState monitor = level.getBlockState(r.monitor());
             if (!is(monitor, MONITOR)) continue;
             if (level.getRandom().nextDouble() < r.breakChance()) {
-                BlockState broken = BuiltInRegistries.BLOCK.get(DAMAGED_MONITOR).defaultBlockState();
-                if (broken.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                    broken = broken.setValue(BlockStateProperties.HORIZONTAL_FACING, monitor.getValue(BlockStateProperties.HORIZONTAL_FACING));
-                }
-                level.setBlockAndUpdate(r.monitor(), broken);
-                burnOut(level, r.monitor());
+                smash(level, r.monitor(), monitor);
             } else {
                 level.setBlockAndUpdate(r.monitor(), withScreen(monitor, MonitorBlock.MonitorScreen.OFF));
                 level.playSound(null, r.monitor(), SoundEvent.createVariableRangeEvent(PC_OFF), SoundSource.BLOCKS, 1.5f, 0.5f);
@@ -526,8 +562,10 @@ public final class ItemAnalyser {
     }
 
     public static void onBroken(Level level, BlockPos pos, BlockState state) {
-        if (!(level instanceof ServerLevel server) || !is(state, ANALYZER)) return;
+        if (!(level instanceof ServerLevel server)) return;
         Store store = Store.of(server);
+        if (is(state, MONITOR) && store.charged.remove(pos.asLong())) store.setDirty();
+        if (!is(state, ANALYZER)) return;
         Loaded loaded = store.devices.remove(pos.asLong());
         if (loaded == null) return;
         store.setDirty();
@@ -561,6 +599,7 @@ public final class ItemAnalyser {
         final Map<Long, Long> overheated = new HashMap<>();
         final Map<Long, Long> errorUntil = new HashMap<>();
 
+        final Set<Long> charged = new HashSet<>();
         static Store of(ServerLevel level) {
             return level.getDataStorage().computeIfAbsent(FACTORY, "hyperspace_wormholes_cloning");
         }
@@ -583,6 +622,7 @@ public final class ItemAnalyser {
                 CompoundTag hot = (CompoundTag) t;
                 store.overheated.put(hot.getLong("Pos"), hot.getLong("Until"));
             }
+            for (long pos : tag.getLongArray("Charged")) store.charged.add(pos);
             return store;
         }
 
@@ -607,6 +647,7 @@ public final class ItemAnalyser {
                 hot.add(device);
             });
             tag.put("Overheated", hot);
+            tag.putLongArray("Charged", new ArrayList<>(charged));
             return tag;
         }
     }

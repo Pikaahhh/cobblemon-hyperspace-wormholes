@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.CobblemonEntities;
 import com.cobblemon.mod.common.api.drop.DropTable;
@@ -106,7 +107,9 @@ public final class HoopaEvent {
     private static final double TRAINER_OUT = 21, POKEMON_OUT = 15, POKEMON_SPREAD = 1.25;
     private static final double[][] SEATS = {{0}, {-3, 3}, {-5.4, 0, 5.4}, {-7.5, -2.5, 2.5, 7.5}};
     private static final float FACE_STEP = 12;
-    private static final int JOIN_EVERY = 40, FAIL_TICKS = 200, CATCH_LIMIT = 20 * 180, SPARKLE_EVERY = 4;
+    private static final int JOIN_EVERY = 40, FAIL_TICKS = 200, WAIT_TICKS = 20 * 120, CATCH_LIMIT = 20 * 180, SPARKLE_EVERY = 4;
+    private static final float FOE_STEP = 12;
+    private static final double PULL_START = 0.02, PULL_RAMP = 0.005, SHAKE_RAMP = 0.06, SHAKE_MOST = 0.6, PULL_FASTEST = 0.8, PULL_AIM = 1.2, PULL_LIFT = 0.25;
     /** When the Prison Bottle effect starts after the battles have ended, how long after that the copies replace Hoopa, and the longest the battles get to end. */
     private static final int BOTTLE_AT = 20, FORM_AT = 40, SETTLE_LIMIT = 100;
     /** Owns the hidden Hoopa as a prize, so nobody sees it and balls pass through it to the copies on its spot. */
@@ -160,7 +163,7 @@ public final class HoopaEvent {
         @Nullable PokemonEntity hoopa;
         @Nullable Display.ItemDisplay ring;
         Vec3 ringAt;
-        boolean returning, boostDue, hidden, beaten, unseen;
+        boolean returning, boostDue, hidden, beaten, unseen, spliced;
         float landYaw;
         long joinAt = -1, callAt = -1, holdAt = -1, landAt = -1, catchAt = -1, ascendAt = -1;
         Vec3 away;
@@ -223,12 +226,39 @@ public final class HoopaEvent {
 
     public static void enter(ServerPlayer player, int island) {
         Event already = events.get(island);
-        if (already != null && (already.stage != Stage.ARRIVE || already.ticks >= NORMAL) && already.stage != Stage.OPEN) {
+        if (already != null && (already.stage != Stage.ARRIVE || already.ticks >= NORMAL) && (already.stage != Stage.OPEN || already.beaten || already.spliced)) {
             ServerPlayNetworking.send(player, new Glitch(1));
         }
         if (already != null) return;
         events.put(island, new Event(player.serverLevel(), island, player.getUUID()));
-        Hyperspace.LOGGER.info("[hoopa] {} started the Hoopa Unbound event on island {}", player.getName().getString(), island);
+    }
+    static boolean splice(ServerPlayer player) {
+        WorldData.Trip trip = WorldData.get(player.level().getServer()).trips.get(player.getUUID());
+        Event e = trip == null ? null : events.get(trip.island);
+        if (e == null || e.spliced || e.stage == Stage.CATCH || e.stage == Stage.OPEN) return false;
+        e.spliced = true;
+        open(e);
+        return true;
+    }
+    private static void pull(Event e) {
+        Zones.Zone zone = Zones.get(e.island);
+        Vec3 mouth = new Vec3(zone.rx, zone.ry + PULL_AIM, zone.rz);
+        float seconds = e.ticks / 20f;
+        double pull = Math.min(PULL_FASTEST, PULL_START + PULL_RAMP * seconds * seconds), shake = Math.min(SHAKE_MOST, SHAKE_RAMP * seconds);
+        for (ServerPlayer player : present(e)) {
+            Vec3 way = mouth.subtract(player.position());
+            if (way.lengthSqr() < 0.01) continue;
+            var random = player.getRandom();
+            Vec3 speed = way.normalize().scale(pull)
+                    .add((random.nextDouble() - 0.5) * shake, (random.nextDouble() - 0.5) * shake, (random.nextDouble() - 0.5) * shake);
+            player.setDeltaMovement(player.horizontalCollision ? speed.add(0, PULL_LIFT, 0) : speed);
+            player.hurtMarked = true;
+            player.resetFallDistance();
+            e.level.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 2 + (int) seconds, 0.4, 0.6, 0.4, 0.05);
+        }
+        if (e.ticks % 20 == 0) {
+            e.level.playSound(null, mouth.x, mouth.y, mouth.z, SoundEvents.PORTAL_TRIGGER, SoundSource.AMBIENT, Math.min(2f, 0.5f + seconds * 0.1f), Math.min(1.6f, 0.6f + seconds * 0.06f));
+        }
     }
 
     /** True while the event holds the island: return portal small and unusable, and past the opening the timer frozen. */
@@ -289,7 +319,6 @@ public final class HoopaEvent {
     private static void enter(Event e, Stage stage) {
         e.stage = stage;
         e.ticks = 0;
-        Hyperspace.LOGGER.info("[hoopa] island {}: {}", e.island, stage);
     }
 
     private static void step(Event e) {
@@ -314,6 +343,7 @@ public final class HoopaEvent {
             case CALL, WAVE -> wave(e);
             case CATCH -> catching(e);
             case OPEN -> {
+                if (e.spliced) pull(e);
             }
         }
     }
@@ -363,7 +393,7 @@ public final class HoopaEvent {
         Boss boss = Bosses.of(hoopa);
         ServerPlayer trigger = e.level.getServer().getPlayerList().getPlayer(e.trigger);
         // hard mode when whoever triggered it has beaten it before
-        if (boss != null && trigger != null && trigger.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false)) Bosses.harden(boss);
+        if (boss != null && (GameplayConfig.get().bossHardModeAlwaysOn || trigger != null && trigger.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false))) Bosses.harden(boss);
         return true;
     }
 
@@ -492,7 +522,7 @@ public final class HoopaEvent {
         List<ServerPlayer> able = here.stream().filter(HoopaEvent::canBattle).toList();
         e.ready.removeIf(id -> able.stream().noneMatch(p -> p.getUUID().equals(id)));
         if (able.isEmpty()) {
-            if (++e.failing >= FAIL_TICKS) fail(e, "Nobody left can battle.");
+            if (++e.failing >= WAIT_TICKS) fail(e, "Nobody left can battle.");
             return;
         }
         e.failing = 0;
@@ -500,18 +530,8 @@ public final class HoopaEvent {
             e.seated.clear();
             e.seated.addAll(e.ready);
             transition(e, opening(def()), def().music);
-            Hyperspace.LOGGER.info("[hoopa] island {}: opening for {} trainers", e.island, e.seated.size());
             enter(e, Stage.FIGHT);
         }
-    }
-
-    /** Marks this player ready for the Hoopa waiting on their island, wherever they stand (used by a command). */
-    static boolean ready(ServerPlayer player) {
-        WorldData.Trip trip = WorldData.get(player.server).trips.get(player.getUUID());
-        Event e = trip == null ? null : events.get(trip.island);
-        if (e == null || e.stage != Stage.WAITING) return false;
-        ready(e, player);
-        return true;
     }
 
     private static void ready(Event e, ServerPlayer player) {
@@ -582,11 +602,37 @@ public final class HoopaEvent {
         ServerPlayer near = e.joinAt >= 0 ? nearest(e) : null;
         if (near != null) turn(e.hoopa, near.position(), FACE_STEP);
         else turn(e.hoopa, aim != null ? aim.position() : e.toward, 6);
+        faceFoes(e, boss);
         if (e.joinAt < 0 && boss.battles().isEmpty() && present(e).stream().noneMatch(HoopaEvent::canBattle)) {
             if (++e.failing >= FAIL_TICKS) fail(e, "Nobody left can battle.");
         } else {
             e.failing = 0;
         }
+    }
+    private static void faceFoes(Event e, Boss boss) {
+        List<PokemonEntity> ours = new ArrayList<>();
+        for (Boss.Facing each : boss.facing()) {
+            PokemonEntity pokemon = each.pokemon();
+            ours.add(pokemon);
+            PokemonEntity foe = e.legends.isEmpty() ? e.hoopa : targeted(e.legends, each, pokemon);
+            turn(pokemon, foe.position(), FOE_STEP);
+            pokemon.getLookControl().setLookAt(foe);
+        }
+        for (PokemonEntity legend : e.legends) {
+            if (ours.isEmpty()) break;
+            turn(legend, closest(ours, legend).position(), FOE_STEP);
+        }
+    }
+    private static PokemonEntity targeted(List<PokemonEntity> legends, Boss.Facing each, PokemonEntity from) {
+        for (PokemonEntity legend : legends) {
+            if (each.target() != null && each.target().getSpecies() == legend.getPokemon().getSpecies()) return legend;
+        }
+        return closest(legends, from);
+    }
+    private static PokemonEntity closest(List<PokemonEntity> from, Entity to) {
+        PokemonEntity best = from.get(0);
+        for (PokemonEntity each : from) if (each.distanceToSqr(to) < best.distanceToSqr(to)) best = each;
+        return best;
     }
 
     private static void joinAll(Event e, Boss boss) {
@@ -623,6 +669,7 @@ public final class HoopaEvent {
         }
         LegendWave fight = e.fight;
         fight.tick();
+        faceFoes(e, boss);
         if (fight.cleared()) {
             if (!e.legends.isEmpty() && fight.settled()) {
                 fight.finish();
@@ -809,7 +856,6 @@ public final class HoopaEvent {
             if (found == null) throw new IllegalStateException("no effect " + BOTTLE_EFFECT);
             type.getMethod("revertEffects", Pokemon.class, List.class, Optional.class, PokemonEntity.class)
                     .invoke(found, hoopa.getPokemon(), List.of("djinn_state=confined"), Optional.empty(), null);
-            Hyperspace.LOGGER.info("[hoopa] Prison Bottle effect, on its entity {}: {}", hoopa.getPokemon().getEntity() == hoopa, hoopa.getPokemon().getAspects());
         } catch (ReflectiveOperationException | LinkageError | RuntimeException ex) {
             Hyperspace.LOGGER.warn("[hoopa] couldn't play the Prison Bottle effect", ex);
         }
@@ -837,7 +883,6 @@ public final class HoopaEvent {
                 NecrozmaFight.prize(copy, player.getUUID());
                 e.prizes.put(copy, player.getUUID());
                 e.level.addFreshEntity(copy);
-                Hyperspace.LOGGER.info("[hoopa] little Hoopa for {}: {}", player.getName().getString(), copy.getUUID());
             } catch (RuntimeException ex) {
                 Hyperspace.LOGGER.error("[hoopa] couldn't make the Hoopa of {}", player.getName().getString(), ex);
             }
@@ -858,7 +903,6 @@ public final class HoopaEvent {
 
     private static void fail(Event e, @Nullable String why) {
         if (e.stage == Stage.OPEN) return;
-        Hyperspace.LOGGER.info("[hoopa] island {}: the event fails ({})", e.island, why);
         open(e);
     }
 
@@ -881,7 +925,7 @@ public final class HoopaEvent {
             e.ring = null;
             later(e.level, RING_CLOSE, () -> remove(ring));
         }
-        for (ServerPlayer player : present(e)) ServerPlayNetworking.send(player, new Glitch(0));
+        if (!e.beaten && !e.spliced) for (ServerPlayer player : present(e)) ServerPlayNetworking.send(player, new Glitch(0));
         enter(e, Stage.OPEN);
     }
 
@@ -908,7 +952,6 @@ public final class HoopaEvent {
             item.setGlowingTag(true);
             e.level.addFreshEntity(item);
             e.bottles.put(player.getUUID(), item);
-            Hyperspace.LOGGER.info("[hoopa] a Prison Bottle for {}", player.getName().getString());
         }
     }
 
@@ -922,7 +965,6 @@ public final class HoopaEvent {
                 ServerPlayer player = e.level.getServer().getPlayerList().getPlayer(entry.getKey());
                 if (player != null && player.getInventory().hasAnyMatching(stack -> stack.is(bottle))) {
                     player.setAttached(Wormholes.PRISON_BOTTLE_TAKEN, true);
-                    Hyperspace.LOGGER.info("[hoopa] {} took their Prison Bottle", player.getName().getString());
                 }
                 it.remove();
                 continue;

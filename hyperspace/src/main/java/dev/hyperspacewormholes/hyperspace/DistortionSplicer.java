@@ -1,9 +1,8 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -16,7 +15,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -27,7 +25,7 @@ import java.util.List;
  * distortion's rank and types, with none of a donut's powers. The trip lasts a hidden MIN_SECONDS to MAX_SECONDS, shown as
  * "???"; being pulled out when it runs out (collapse) costs HEALTH_LOST of your health and ARMOUR_LOST of every worn armour
  * piece's durability, and walking out is safe. A splice has a HOOPA_CHANCE to be the Hoopa Unbound event (HoopaEvent),
- * guaranteed after HOOPA_PITY splices in a row without it unless the player has beaten Hoopa. It breaks after USES splices.
+ * guaranteed after GameplayConfig.hoopaPity splices in a row without it unless the player has beaten Hoopa. It breaks after USES splices.
  */
 public class DistortionSplicer extends Item {
     public static final int MIN_SECONDS = 90;
@@ -36,38 +34,20 @@ public class DistortionSplicer extends Item {
     public static final float ARMOUR_LOST = 0.35f;
     public static final float HOOPA_CHANCE = 0.05f;
     public static final int USES = 4;
-    public static final int HOOPA_PITY = 12;
     private static final List<EquipmentSlot> ARMOUR = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-    private static final String FORCED = "hoopa";
 
     public DistortionSplicer(Properties properties) {
         super(properties.durability(USES).rarity(Rarity.EPIC));
-    }
-
-    public static ItemStack hoopaTest() {
-        ItemStack stack = new ItemStack(ModItems.DISTORTION_SPLICER);
-        CompoundTag mark = new CompoundTag();
-        mark.putBoolean(FORCED, true);
-        CompoundTag tag = new CompoundTag();
-        tag.put(Hyperspace.MOD_ID, mark);
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-        return stack;
-    }
-
-    private static boolean forced(ItemStack stack) {
-        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && data.copyTag().getCompound(Hyperspace.MOD_ID).getBoolean(FORCED);
-    }
-
-    @Override
-    public boolean isFoil(ItemStack stack) {
-        return forced(stack) || super.isFoil(stack);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.dimension().equals(Hyperspace.HYPERSPACE)) {
+            if (player instanceof ServerPlayer serverPlayer && HoopaEvent.splice(serverPlayer)) {
+                stack.hurtAndBreak(1, serverPlayer, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                return InteractionResultHolder.success(stack);
+            }
             if (!level.isClientSide()) {
                 player.sendSystemMessage(Component.literal("You cant go to Hyperspace Hyperspace, that isn't a thing!").withStyle(ChatFormatting.RED));
             }
@@ -82,7 +62,7 @@ public class DistortionSplicer extends Item {
             Distortions.noneNearby(serverPlayer);
             return InteractionResultHolder.fail(stack);
         }
-        if (!Distortions.splice(serverPlayer, here, forced(stack))) return InteractionResultHolder.fail(stack);
+        if (!Distortions.splice(serverPlayer, here, false)) return InteractionResultHolder.fail(stack);
         stack.hurtAndBreak(1, serverPlayer, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
         return InteractionResultHolder.success(stack);
     }
@@ -91,7 +71,6 @@ public class DistortionSplicer extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.splicer").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.splicer.unstable").withStyle(ChatFormatting.RED));
-        if (forced(stack)) tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.splicer.hoopa").withStyle(ChatFormatting.LIGHT_PURPLE));
     }
 
     static int seconds(RandomSource random) {
@@ -100,8 +79,9 @@ public class DistortionSplicer extends Item {
 
     static boolean rollHoopa(ServerPlayer player, boolean forced) {
         if (forced) return true;
-        boolean pity = !player.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false)
-                && player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0) >= HOOPA_PITY;
+        int needed = GameplayConfig.get().hoopaPity;
+        boolean pity = needed > 0 && !player.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false)
+                && player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0) >= needed;
         return pity || player.getRandom().nextFloat() < HOOPA_CHANCE;
     }
 

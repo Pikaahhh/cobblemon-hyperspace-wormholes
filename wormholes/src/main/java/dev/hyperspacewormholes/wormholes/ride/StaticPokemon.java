@@ -15,8 +15,8 @@ public final class StaticPokemon {
     private StaticPokemon() {}
 
     public static boolean is(Entity entity) {
-        return entity instanceof PokemonEntity pokemon && pokemon.getOwnerUUID() == null
-                && UltraDimensions.isUltra(pokemon.level())
+        return entity instanceof PokemonEntity pokemon && UltraDimensions.isUltra(pokemon.level())
+                && pokemon.getOwnerUUID() == null
                 && (pokemon.isNoAi() || pokemon.getEntityData().get(PokemonEntity.getASPECTS()).contains(PlantXurkitrees.STATUE));
     }
 

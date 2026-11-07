@@ -16,11 +16,13 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
  * as wide and sunk SINK of their height into the floor. Leaves go into air only, so the domes wrap round the towers' feet
  * and the Xurkitrees' legs; each chunk builds its own part of every dome that reaches it.
  */
+import java.util.Map;
 public class UltraPlantCanopyFeature extends CellFeature {
     private static final int SPACING = 7;
     private static final double RADIUS_MIN = 2.5, RADIUS_MAX = 4.2, FLAT = 1.0, SINK = 0.12, ROUGH = 0.1;
     private static final BlockState LEAVES = Blocks.DARK_OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
 
+    private static final Map<Long, Integer> HEIGHTS = cache(4096);
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos origin) {
         Ground ground = Ground.of(level, chunkGenerator);
@@ -35,7 +37,7 @@ public class UltraPlantCanopyFeature extends CellFeature {
                 int x0 = Math.max(chunk.getMinBlockX(), Mth.floor(cx - r)), x1 = Math.min(chunk.getMaxBlockX(), Mth.ceil(cx + r));
                 int z0 = Math.max(chunk.getMinBlockZ(), Mth.floor(cz - r)), z1 = Math.min(chunk.getMaxBlockZ(), Mth.ceil(cz + r));
                 if (x0 > x1 || z0 > z1) continue;
-                double cy = ground.at(Mth.floor(cx), Mth.floor(cz)) - rv * SINK;
+                double cy = height(ground, Mth.floor(cx), Mth.floor(cz)) - rv * SINK;
                 for (int x = x0; x <= x1; x++) {
                     for (int z = z0; z <= z1; z++) {
                         for (int y = Mth.floor(cy - rv); y <= Mth.ceil(cy + rv); y++) {
@@ -50,5 +52,18 @@ public class UltraPlantCanopyFeature extends CellFeature {
             }
         }
         return true;
+    }
+    private static int height(Ground ground, int x, int z) {
+        long key = ground.seed() ^ ChunkPos.asLong(x, z);
+        synchronized (HEIGHTS) {
+            Integer known = HEIGHTS.get(key);
+            if (known != null) return known;
+}
+
+        int height = ground.at(x, z);
+        synchronized (HEIGHTS) {
+            HEIGHTS.put(key, height);
+        }
+        return height;
     }
 }

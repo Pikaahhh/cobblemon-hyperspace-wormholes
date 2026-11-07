@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.CobblemonItemComponents;
 import com.cobblemon.mod.common.api.berry.Berries;
 import com.cobblemon.mod.common.api.cooking.Flavour;
@@ -187,18 +188,6 @@ public class DonutBoosts {
         return BERRY_TYPES.containsKey(base) ? base : null;
     }
 
-    public static ItemStack commandDonut(int stars, int seconds, String type, String legendary, String mega, int shiny, int alpha) {
-        CompoundTag boosts = new CompoundTag();
-        boosts.putInt("stars", stars);
-        boosts.putInt("calories", seconds);
-        if (type != null) boosts.putString("type", type);
-        if (legendary != null) boosts.putString("legendary", legendary);
-        if (mega != null) boosts.putString("mega", mega);
-        if (shiny > 1) boosts.putInt("shiny", shiny);
-        if (alpha > 1) boosts.putInt("alpha", alpha);
-        return save(new ItemStack(ModItems.DONUT), boosts);
-    }
-
     private static CompoundTag custom(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data == null ? new CompoundTag() : data.copyTag().getCompound(Hyperspace.MOD_ID);
@@ -287,8 +276,10 @@ public class DonutBoosts {
     }
 
     public static int sparklingPower(List<String> ids) {
-        int sweet = flavours(ids)[0], level = 0;
-        for (int needed : SPARKLING_SCORES) if (sweet >= needed) level++;
+        int[] total = flavours(ids);
+        for (int value : total) if (value > total[0]) return 0;
+        int level = 0;
+        for (int needed : SPARKLING_SCORES) if (total[0] >= needed) level++;
         return level;
     }
 
@@ -437,11 +428,9 @@ public class DonutBoosts {
         if (alphaPower(ids) > 0) powers.add("Alpha Power Lv. " + alphaPower(ids));
         DonutPowers.of(ids).describe(powers);
         if (!powers.isEmpty()) {
-            tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.donut.powers").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(String.join(", ", powers)).withStyle(ChatFormatting.LIGHT_PURPLE)));
+            tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.donut.powers").withStyle(ChatFormatting.GRAY));
+            for (String power : powers) tooltip.add(Component.literal(" • " + power).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
-        int stars = Math.max(1, stars(stack));
-        tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.ring.levels", minLevel(stars), maxLevel(stars)).withStyle(ChatFormatting.GRAY));
         List<String> modifiers = new ArrayList<>();
         NumberFormat format = NumberFormat.getIntegerInstance(Locale.US);
         int shiny = shinyRolls(stack);
@@ -484,7 +473,7 @@ public class DonutBoosts {
         List<String> ids = ids(stack);
         CompoundTag custom = custom(stack);
         int alpha = custom.contains("alpha") ? custom.getInt("alpha") : 1;
-        float boosted = ALPHA_CHANCE * alpha * ALPHA_POWER[alphaPower(ids)];
+        float boosted = ALPHA_CHANCE * alpha * (1 + (ALPHA_POWER[alphaPower(ids)] - 1) * (float) GameplayConfig.get().alphaPowerMultiplier);
         return Math.min(1f, boosted + MINT_ALPHA_CHANCE * mints(ids));
     }
 
@@ -494,8 +483,7 @@ public class DonutBoosts {
 
     /**
      * The chance that a portal holds a legendary: a flat {@link #LEGENDARY_CHANCE} on a 5 star trip, else none. Rolled
-     * once when the portal opens and shared by everyone who enters; {@code legendary=} on /hyperspace portal forces
-     * one.
+     * once when the portal opens and shared by everyone who enters.
      */
     public static float legendaryChance(int stars) {
         return stars >= LEGENDARY_STARS ? LEGENDARY_CHANCE : 0f;
@@ -507,7 +495,7 @@ public class DonutBoosts {
 
     /**
      * The chance that a trip gets a Mega boss: a flat {@link #MEGA_CHANCE} on exactly 4 stars, else none. Rolled once
-     * per player on entry; {@code mega=} on /hyperspace portal forces one.
+     * per player on entry.
      */
     public static float megaChance(int stars) {
         return stars == MEGA_STARS ? MEGA_CHANCE : 0f;
@@ -517,6 +505,6 @@ public class DonutBoosts {
         CompoundTag custom = custom(stack);
         List<String> ids = ids(stack);
         int base = custom.contains("shiny") ? custom.getInt("shiny") : 1;
-        return base + 3 * rarity(ids) + APPLE_SHINY_ROLLS * Collections.frequency(ids, APPLE) + sparklingPower(ids);
+        return base + 3 * rarity(ids) + APPLE_SHINY_ROLLS * Collections.frequency(ids, APPLE) + (int) Math.round(sparklingPower(ids) * GameplayConfig.get().sparklingPowerMultiplier);
     }
 }

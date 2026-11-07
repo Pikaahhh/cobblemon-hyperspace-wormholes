@@ -1,13 +1,13 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.api.types.ElementalType;
 import com.cobblemon.mod.common.pokemon.Species;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.hyperspacewormholes.wormholes.Wormholes;
@@ -16,19 +16,16 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -39,12 +36,9 @@ import java.util.concurrent.CompletableFuture;
  * /hyperspace for ops: createDistortion puts a spatial distortion on the wall in front of you with the given types and
  * stars, a set Legendary or Mega behind it, or the Hoopa Unbound event with boss=hoopa_unbound; clearDistortions removes
  * those within a radius, locateDistortion points to the nearest like /locate, and pity set and clear change your splices
- * without Hoopa. The rest (portal, splicer and a few trip tools) needs -Dhorizons.autotest=true (testCommands).
+ * without Hoopa.
  */
 public class HyperspaceCommand {
-    private static final String[] BERRIES = {"occa", "passho", "wacan", "rindo", "yache", "chople", "kebia", "shuca",
-            "coba", "payapa", "tanga", "charti", "kasib", "haban", "colbur", "babiri", "chilan", "roseli"};
-    private static final String[] OPTIONS = {"star=", "cal=", "type=", "legendary=", "mega=", "shiny=", "alpha="};
     private static final String[] DISTORTION_OPTIONS = {"type=", "star=", "legendary=", "megaPokemon=", "boss="};
     private static final String HOOPA_BOSS = "hoopa_unbound";
     private static final String PLAYERS_ONLY = "This command can only be run by a player.";
@@ -52,7 +46,7 @@ public class HyperspaceCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, env) -> {
-            LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("hyperspace")
+            dispatcher.register(Commands.literal("hyperspace")
                     .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                     .then(Commands.literal("createDistortion")
                             .executes(ctx -> createDistortion(ctx.getSource(), ""))
@@ -64,94 +58,19 @@ public class HyperspaceCommand {
                             .then(Commands.argument("radius", IntegerArgumentType.integer())
                                     .executes(ctx -> clearDistortions(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "radius")))))
                     .then(Commands.literal("locateDistortion").executes(ctx -> locateDistortion(ctx.getSource())))
+                    .then(Commands.literal("bossCleared")
+                            .then(Commands.argument("cleared", BoolArgumentType.bool())
+                                    .executes(ctx -> bossCleared(ctx.getSource(), BoolArgumentType.getBool(ctx, "cleared"), null))
+                                    .then(Commands.argument("targets", EntityArgument.players())
+                                            .executes(ctx -> bossCleared(ctx.getSource(), BoolArgumentType.getBool(ctx, "cleared"), EntityArgument.getPlayers(ctx, "targets"))))))
                     .then(Commands.literal("pity")
+                            .executes(ctx -> showPity(ctx.getSource()))
                             .then(Commands.literal("set")
                                     .executes(ctx -> fail(ctx.getSource(), "A pity amount is required."))
                                     .then(Commands.argument("amount", IntegerArgumentType.integer())
                                             .executes(ctx -> setPity(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "amount")))))
-                            .then(Commands.literal("clear").executes(ctx -> clearPity(ctx.getSource()))));
-            if (Wormholes.TEST_COMMANDS) testCommands(root);
-            dispatcher.register(root);
+                            .then(Commands.literal("clear").executes(ctx -> clearPity(ctx.getSource())))));
         });
-    }
-
-    /** Only registered when -Dhorizons.autotest=true. */
-    private static void testCommands(LiteralArgumentBuilder<CommandSourceStack> root) {
-        root
-                        .then(Commands.literal("portal")
-                                .executes(ctx -> portal(ctx.getSource(), ""))
-                                .then(Commands.argument("options", StringArgumentType.greedyString())
-                                        .suggests(HyperspaceCommand::suggest)
-                                        .executes(ctx -> portal(ctx.getSource(), StringArgumentType.getString(ctx, "options")))))
-                        .then(Commands.literal("splicer")
-                                .executes(ctx -> {
-                                    Tasks.give(ctx.getSource().getPlayerOrException(), new ItemStack(ModItems.DISTORTION_SPLICER));
-                                    return 1;
-                                })
-                                .then(Commands.literal("hoopa").executes(ctx -> {
-                                    Tasks.give(ctx.getSource().getPlayerOrException(), DistortionSplicer.hoopaTest());
-                                    return 1;
-                                }))
-                                // forces a Hoopa splice at the nearest natural distortion, however far, and steps straight into it
-                                .then(Commands.literal("open").executes(ctx -> {
-                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                                    if (!player.level().dimension().equals(Level.OVERWORLD)) return 0;
-                                    Distortions.Distortion here = Distortions.nearest(player);
-                                    if (here == null || !Distortions.splice(player, here, true)) return 0;
-                                    Vec3 base = here.base();
-                                    player.teleportTo(base.x, base.y, base.z);
-                                    return 1;
-                                }))
-                                .then(Commands.literal("ready").executes(ctx -> HoopaEvent.ready(ctx.getSource().getPlayerOrException()) ? 1 : 0)))
-                        .then(Commands.literal("summon")
-                                .then(Commands.argument("pokemon", StringArgumentType.greedyString())
-                                        .executes(ctx -> summon(ctx.getSource(), StringArgumentType.getString(ctx, "pokemon")))))
-                        .then(Commands.literal("donuts").executes(ctx -> {
-                            ServerPlayer player = ctx.getSource().getPlayerOrException();
-                            for (String berry : BERRIES) {
-                                ResourceLocation id = ResourceLocation.fromNamespaceAndPath("cobblemon", berry + "_berry");
-                                Tasks.give(player, DonutItem.withBerry(BuiltInRegistries.ITEM.get(id), 1));
-                            }
-                            return 1;
-                        }))
-                        // rebuilds the island you're on as the Hoopa arena and shows it from above, the seats or the way home's side
-                        .then(Commands.literal("arena")
-                                .executes(ctx -> arena(ctx.getSource(), 104, 66.5, 180, 33))
-                                .then(Commands.literal("seat")
-                                        .executes(ctx -> arena(ctx.getSource(), 67, 22.5, 180, 3)))
-                                .then(Commands.literal("home")
-                                        .executes(ctx -> arena(ctx.getSource(), 68, 12.5, 0, 3))));
-    }
-
-    /** Hoopa rings a Pokemon in (HoopaSummon); "dist=<blocks>" anywhere in the text sets how far ahead (default 6). */
-    private static int summon(CommandSourceStack source, String text) throws CommandSyntaxException {
-        ServerPlayer player = source.getPlayerOrException();
-        double distance = 6;
-        StringBuilder properties = new StringBuilder();
-        for (String part : text.trim().split("\\s+")) {
-            if (part.startsWith("dist=")) {
-                try {
-                    distance = Math.max(3, Math.min(20, Double.parseDouble(part.substring(5))));
-                } catch (NumberFormatException e) {
-                    return fail(source, "Bad dist: " + part);
-                }
-            } else {
-                properties.append(properties.isEmpty() ? "" : " ").append(part);
-            }
-        }
-        String why = HoopaSummon.start(player, properties.toString(), distance);
-        if (why != null) return fail(source, why);
-        return 1;
-    }
-
-    private static int arena(CommandSourceStack source, double y, double z, float yaw, float pitch) throws CommandSyntaxException {
-        ServerPlayer player = source.getPlayerOrException();
-        WorldData.Trip trip = WorldData.get(source.getServer()).trips.get(player.getUUID());
-        if (trip == null || !Zones.isZone(trip.island)) return fail(source, "Go to Hyperspace first");
-        Zones.arena(player.serverLevel(), trip.island);
-        BlockPos centre = Zones.centre(trip.island - Zones.BASE);
-        player.teleportTo(player.serverLevel(), centre.getX() + 0.5, y, centre.getZ() + z, Set.of(), yaw, pitch);
-        return 1;
     }
 
     private static int createDistortion(CommandSourceStack source, String options) {
@@ -265,12 +184,27 @@ public class HyperspaceCommand {
         ServerPlayer player = source.getPlayer();
         if (player == null) return fail(source, PLAYERS_ONLY);
         if (amount < 0) return fail(source, "Cannot set pity to a negative number.");
-        if (amount > DistortionSplicer.HOOPA_PITY) return fail(source, "Cannot set pity above " + DistortionSplicer.HOOPA_PITY + ".");
+        int most = GameplayConfig.get().hoopaPity;
+        if (amount > most) return fail(source, "Cannot set pity above " + most + ".");
         player.setAttached(Wormholes.SPLICES_WITHOUT_HOOPA, amount);
-        source.sendSuccess(() -> Component.literal("Set your pity to " + amount + " (the next splice is sure to be Hoopa from "
-                + DistortionSplicer.HOOPA_PITY + ")" + (player.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false)
-                ? ", but you've beaten Hoopa so there's no pity." : ".")), false);
+        source.sendSuccess(() -> Component.literal("Set your pity to " + amount + "."), false);
         return amount;
+    }
+    private static int showPity(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) return fail(source, PLAYERS_ONLY);
+        int pity = player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0);
+        source.sendSuccess(() -> Component.literal("Your pity is " + pity + "."), false);
+        return pity;
+    }
+    private static int bossCleared(CommandSourceStack source, boolean cleared, Collection<ServerPlayer> targets) {
+        ServerPlayer self = source.getPlayer();
+        if (targets == null && self == null) return fail(source, PLAYERS_ONLY);
+        Collection<ServerPlayer> players = targets == null ? List.of(self) : targets;
+        for (ServerPlayer player : players) player.setAttached(Wormholes.HOOPA_BEATEN, cleared);
+        String who = players.size() == 1 ? players.iterator().next().getScoreboardName() : players.size() + " players";
+        source.sendSuccess(() -> Component.literal("Set boss cleared to " + cleared + " for " + who + "."), true);
+        return players.size();
     }
 
     private static int clearPity(CommandSourceStack source) {
@@ -313,69 +247,6 @@ public class HyperspaceCommand {
         return here.buildFuture();
     }
 
-    private static int portal(CommandSourceStack source, String options) throws CommandSyntaxException {
-        ServerPlayer player = source.getPlayerOrException();
-        int stars = 0, seconds = -1, shiny = 1, alpha = 1;
-        String type = null, legendary = null, mega = null;
-        for (String option : options.trim().split("\\s+")) {
-            if (option.isEmpty()) continue;
-            int eq = option.indexOf('=');
-            String key = eq < 0 ? option : option.substring(0, eq);
-            String value = eq < 0 ? "" : option.substring(eq + 1);
-            switch (key) {
-                case "star", "stars" -> {
-                    stars = number(value);
-                    if (stars < 0 || stars > 5) return fail(source, "star must be 0 to 5");
-                }
-                case "cal", "calories" -> {
-                    seconds = number(value);
-                    if (seconds < 1) return fail(source, "cal must be a whole number of seconds, 1 or more");
-                }
-                case "shiny" -> {
-                    shiny = number(value);
-                    if (shiny < 1) return fail(source, "shiny must be a whole number, 1 or more (it multiplies the shiny chance)");
-                }
-                case "alpha" -> {
-                    alpha = number(value);
-                    if (alpha < 1) return fail(source, "alpha must be a whole number, 1 or more (it multiplies the alpha chance)");
-                }
-                case "legendary" -> {
-                    String name = value.toLowerCase(Locale.ROOT);
-                    if (name.equals("no")) legendary = null;
-                    else if (name.equals("yes") || name.equals(DonutBoosts.RANDOM)) legendary = DonutBoosts.RANDOM;
-                    else if (PokemonSpecies.getByName(name) != null) legendary = name;
-                    else return fail(source, "Unknown Pokemon: " + value + " (use a Pokemon name or random)");
-                }
-                case "mega" -> {
-                    String name = value.toLowerCase(Locale.ROOT);
-                    if (name.equals("no")) mega = null;
-                    else if (name.equals("yes") || name.equals(DonutBoosts.RANDOM)) mega = DonutBoosts.RANDOM;
-                    else if (!Spawns.megaForms(name).isEmpty()) mega = name;
-                    else return fail(source, "No Mega for: " + value + " (use e.g. charizard, charizard_x or random)");
-                }
-                case "type" -> {
-                    if (!DonutBoosts.TYPES.contains(value)) return fail(source, "Unknown type: " + value);
-                    type = value;
-                }
-                default -> {
-                    return fail(source, "Unknown option: " + key + " (use star=, cal=, type=, legendary=, mega=, shiny=, alpha=)");
-                }
-            }
-        }
-
-        if (seconds < 1) seconds = Math.round(DonutBoosts.BASE_ENERGY * (1 + 0.1f * stars));
-        if (player.level().dimension().equals(Hyperspace.HYPERSPACE)) {
-            return fail(source, "You cant go to Hyperspace Hyperspace, that isn't a thing!");
-        }
-        if (!Trips.ready(source.getServer())) return fail(source, "Hyperspace isn't ready yet, try again soon!");
-        if (!Portals.grounded(player)) return fail(source, "The portal needs solid ground to open on!");
-        if (!Portals.fits(player)) return fail(source, "The portal needs more space to open!");
-        if (!Portals.open(player, DonutBoosts.commandDonut(stars, seconds, type, legendary, mega, shiny, alpha))) {
-            return fail(source, "Hyperspace is full right now, try again soon!");
-        }
-        return 1;
-    }
-
     private static int number(String value) {
         try {
             return Integer.parseInt(value);
@@ -387,30 +258,6 @@ public class HyperspaceCommand {
     private static int fail(CommandSourceStack source, String message) {
         source.sendFailure(Component.literal(message));
         return 0;
-    }
-
-    private static CompletableFuture<Suggestions> suggest(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
-        String input = builder.getRemaining();
-        int start = input.lastIndexOf(' ') + 1;
-        String last = input.substring(start);
-        SuggestionsBuilder here = builder.createOffset(builder.getStart() + start);
-
-        if (last.startsWith("type=")) {
-            offer(here, "type=", last.substring(5), DonutBoosts.TYPES);
-        } else if (last.startsWith("legendary=")) {
-            List<String> names = new ArrayList<>(List.of(DonutBoosts.RANDOM, "no"));
-            for (Species species : Spawns.legendPool()) names.add(species.getResourceIdentifier().getPath());
-            offer(here, "legendary=", last.substring(10).toLowerCase(Locale.ROOT), names);
-        } else if (last.startsWith("mega=")) {
-            Set<String> names = new LinkedHashSet<>(List.of(DonutBoosts.RANDOM, "no"));
-            names.addAll(megaNames());
-            offer(here, "mega=", last.substring(5).toLowerCase(Locale.ROOT), names);
-        } else if (last.startsWith("star=")) {
-            for (int i = 0; i <= 5; i++) here.suggest("star=" + i);
-        } else {
-            for (String option : OPTIONS) if (option.startsWith(last) && !input.contains(option)) here.suggest(option);
-        }
-        return here.buildFuture();
     }
 
     private static Set<String> megaNames() {

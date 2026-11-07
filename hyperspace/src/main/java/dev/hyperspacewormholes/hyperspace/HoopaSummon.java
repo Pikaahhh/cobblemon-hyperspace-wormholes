@@ -1,6 +1,5 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.math.Transformation;
 import dev.hyperspacewormholes.hyperspace.mixin.DisplayAccessor;
@@ -46,7 +45,7 @@ import java.util.function.DoubleFunction;
  * Hoopa throws a ring that opens into a portal, and a Pokemon steps out of it, as in Hoopa and the Clash of Ages.
  * The ring grows from a hoop into a square copy of Hoopa's waist ring (item hoopa_portal_closed) filled with the pink
  * swirl (hoopa_portal), then shrinks and flies back. Clients clip the Pokemon at the ring's plane (HoopaClip) so it
- * seems to come out of the swirl. /hyperspace summon starts it.
+ * seems to come out of the swirl.
  */
 public class HoopaSummon {
     private static final String TAG = "hyperspace_wormholes_hoopa_summon";
@@ -61,22 +60,16 @@ public class HoopaSummon {
 
     private static final Thrower CONFINED = new Thrower("summon", null, null, 83, 99, HoopaFeed.RING_FROM, HoopaFeed.RING_FROM,
             HoopaFeed.RING_PX, 0, 0);
-    // Unbound throws its upper right wrist ring, split out of the elbow cube in hoopa_unbound_split.geo so it can be
-    // hidden alone. The points come from posing the model offline at the throw (3.0 s) and catch (0.5 s into the clip).
-    private static final Thrower UNBOUND = new Thrower("hoopa_unbound_hyperspace/summon", "hoopa_unbound_hyperspace/hold",
-            "hoopa_unbound_hyperspace/catch", 60, 90, new double[]{-15.45, 71.93, 49.17}, new double[]{-22.33, 79.85, 40.46},
-            8, 10, 36);
 
     private static final int CHARGE = 4, HOLD_EARLY = 3;
     private static final int GROW = 8, SETTLE = 4, FILL = 13, OUT_AT = 22, CRY_AFTER = 2, CLOSE_AFTER = 16, SHRINK = 12;
     private static final int LAND_AFTER = 4, LAND = 30, MIN_EMERGE = 30, CLIP_OFF_AFTER = 3;
-    private static final double HOOPA_REACH = 24, MIN_INSIDE = 1.8, ROOM = 1.4, PAD = 0.8, GROUND_GAP = 0.3;
-    // blocks per tick through the ring; how far past it walkers end and fliers stop
-    private static final double SPEED = 0.075, LEAP = 0.3, OUT_PAST = 0.9, FLY_PAST = 1.4, START_BEHIND = 0.3, DEPTH = 0.7;
+    private static final double MIN_INSIDE = 1.8, ROOM = 1.4, PAD = 0.8;
+    private static final double LEAP = 0.3, START_BEHIND = 0.3;
     private static final double DROP_SPEED = 0.2, ABOVE_HEAD = 3, ABOVE_HEIGHT = 0.6;
     private static final double HOVER_DRIFT = 0.5, BOB = 0.1;
-    // ring model at scale 1, in blocks: inner width, bar thickness, centre to the middle of a bar
-    private static final float INSIDE = 36.4f / 16f, BAR = 5.2f / 16f, RIM = 20.8f / 16f;
+    // ring model at scale 1, in blocks: inner width, centre to the middle of a bar
+    private static final float INSIDE = 36.4f / 16f, RIM = 20.8f / 16f;
     // outer width at scale 1; HOOP is the 0.45 block hoop shown when no Hoopa is around
     private static final float WIDTH = 46.8f / 16f, HOOP = 0.45f / WIDTH;
     // how far past its size a ring overshoots opening and swells closing
@@ -151,7 +144,6 @@ public class HoopaSummon {
 
     private static class Run {
         ServerLevel level;
-        ServerPlayer player;
         PokemonEntity hoopa, summoned;
         Thrower thrower = CONFINED;
         Vec3 centre, normal, hoopaSpot, ringFrom, bend, out, in, hovered, landFrom, landTo, backFrom, backTo;
@@ -256,58 +248,6 @@ public class HoopaSummon {
         });
     }
 
-    public static String start(ServerPlayer player, String properties, double distance) {
-        ServerLevel level = player.serverLevel();
-        PokemonEntity summoned;
-        try {
-            summoned = PokemonProperties.Companion.parse(properties).createEntity(level, null);
-        } catch (RuntimeException e) {
-            return "Couldn't make that Pokemon: " + e.getMessage();
-        }
-        Vec3 look = player.getLookAngle();
-        Vec3 ahead = new Vec3(look.x, 0, look.z);
-        ahead = ahead.lengthSqr() < 1.0E-4 ? Vec3.directionFromRotation(0, player.getYRot()) : ahead.normalize();
-        Vec3 spot = player.position().add(ahead.scale(distance));
-        Vec3 ground = ground(level, spot);
-        if (ground == null) ground = new Vec3(spot.x, player.getY(), spot.z);
-
-        Run run = new Run();
-        run.level = level;
-        run.player = player;
-        run.summoned = summoned;
-        run.flier = summoned.getBehaviour().getMoving().getFly().getCanFly();
-        double inside = Math.max(MIN_INSIDE, Math.max(summoned.getBbHeight(), summoned.getBbWidth()) * ROOM + PAD);
-        run.scale = (float) (inside / INSIDE);
-        run.normal = ahead.scale(-1);
-        run.facing = HoopaFeed.yawTo(Vec3.ZERO, run.normal);
-        run.centre = ground.add(0, inside / 2 + run.scale * BAR + GROUND_GAP, 0);
-        // models often reach past their hitbox, so start further back and come out further than half of it
-        double depth = Math.max(summoned.getBbWidth(), summoned.getBbHeight()) * DEPTH;
-        double feet = run.centre.y - summoned.getBbHeight() / 2;
-        run.in = new Vec3(run.centre.x, feet, run.centre.z).subtract(run.normal.scale(depth + START_BEHIND));
-        run.out = run.flier ? new Vec3(run.centre.x, feet, run.centre.z).add(run.normal.scale(depth + FLY_PAST))
-                : new Vec3(run.centre.x, ground.y, run.centre.z).add(run.normal.scale(depth + OUT_PAST));
-        run.hoopa = nearestHoopa(player);
-        if (run.hoopa != null) {
-            run.thrower = run.hoopa.getAspects().contains("unbound") ? UNBOUND : CONFINED;
-            run.hoopaSpot = run.hoopa.position();
-            run.hoopaYaw = HoopaFeed.yawTo(run.hoopaSpot, run.centre);
-            run.ringSize = (float) (run.thrower.ringPx * hoopaScale(run.hoopa));
-            run.hoop = hoopFor(run.ringSize);
-            run.ringFrom = hand(run, run.hoopaSpot, run.hoopaYaw, run.thrower.ringFrom);
-            int flight = Mth.clamp((int) Math.round(run.ringFrom.distanceTo(run.centre) / HoopaFeed.RING_SPEED), 5, 30);
-            run.arrive = run.thrower.throwAt + flight;
-        } else {
-            run.arrive = 5;
-        }
-        int emergeTicks = Math.max(MIN_EMERGE, (int) Math.round(run.in.distanceTo(run.out) / SPEED));
-        run.emerge = run.arrive + GROW + SETTLE + OUT_AT;
-        run.done = run.emerge + emergeTicks;
-        run.closeAt = run.done + CLOSE_AFTER;
-        runs.add(run);
-        return null;
-    }
-
     static float hoopFor(float ringSize) {
         return ringSize / WIDTH;
     }
@@ -337,26 +277,6 @@ public class HoopaSummon {
 
     private static int backTicks(Run run, Vec3 to) {
         return Mth.clamp((int) Math.round(run.centre.distanceTo(to) / BACK_SPEED), BACK_MIN, BACK_MAX);
-    }
-
-    private static PokemonEntity nearestHoopa(ServerPlayer player) {
-        PokemonEntity best = null;
-        double bestScore = Double.MAX_VALUE;
-        for (PokemonEntity p : player.level().getEntitiesOfClass(PokemonEntity.class, player.getBoundingBox().inflate(HOOPA_REACH),
-                e -> e.getPokemon().getSpecies().getResourceIdentifier().getPath().equals("hoopa"))) {
-            if (busy(p)) continue;
-            double score = p.distanceToSqr(player) - (player.getUUID().equals(p.getOwnerUUID()) ? 1.0E6 : 0);
-            if (score < bestScore) {
-                best = p;
-                bestScore = score;
-            }
-        }
-        return best;
-    }
-
-    private static boolean busy(PokemonEntity hoopa) {
-        for (Run run : runs) if (run.hoopa == hoopa) return true;
-        return false;
     }
 
     static Vec3 ground(ServerLevel level, Vec3 at) {

@@ -17,6 +17,7 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
 import org.joml.Matrix4fStack;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -30,6 +31,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import dev.hyperspacewormholes.hyperspace.mixin.MinecraftAccessor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -38,6 +40,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
@@ -70,9 +73,11 @@ public class QuickBattleTargeting {
     private static final double CONTACT_AT = 0.5;
     private static final double TARGET_RANGE = 8;
     private static final double CONE = Math.cos(Math.toRadians(20));
+    private static final float MONITOR_MARKER = 0.8f;
     private static final int MONEY_CLEARANCE = 24;
 
     public static int target = -1;
+    public static BlockPos monitor;
     private static Optional<UUID> lastSelected = Optional.empty();
     private static boolean aiming, holding, busy;
     private static Method moneyPosition;
@@ -109,13 +114,14 @@ public class QuickBattleTargeting {
                 && CobblemonClient.INSTANCE.getBattle() == null && commander(mc) != null;
         if (presses > 0) {
             boolean onBlock = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK;
-            holding = ready && (!onBlock || pick(mc) >= 0);
+            holding = ready && (!onBlock || pick(mc) >= 0 || aimedMonitor(mc) != null);
             if (shared && !holding) ((MinecraftAccessor) mc).hyperspace_wormholes$pickBlock();
         }
         if (!held) holding = false;
         aiming = ready && held && holding;
         if (!aiming) {
             target = -1;
+            monitor = null;
             moves = List.of();
             return;
         }
@@ -125,11 +131,13 @@ public class QuickBattleTargeting {
             aimTicks = 0;
             if (ClientPlayNetworking.canSend(QuickBattles.Aim.TYPE)) ClientPlayNetworking.send(new QuickBattles.Aim(chosen));
         }
-        target = pick(mc);
+        monitor = aimedMonitor(mc);
+        target = monitor != null ? -1 : pick(mc);
         for (int slot = 0; slot < 4; slot++) {
             while (mc.options.keyHotbarSlots[slot].consumeClick()) {
-                if (target >= 0 && usable(slot) && ClientPlayNetworking.canSend(QuickBattles.Payload.TYPE)) {
-                    ClientPlayNetworking.send(new QuickBattles.Payload(target, slot, contact(mc, slot), chosen, runs(mc)));
+                if ((target >= 0 || monitor != null) && usable(slot) && ClientPlayNetworking.canSend(QuickBattles.Payload.TYPE)) {
+                    ClientPlayNetworking.send(monitor != null ? new QuickBattles.Strike(monitor, slot, contact(mc, slot), chosen, runs(mc))
+                            : new QuickBattles.Payload(target, slot, contact(mc, slot), chosen, runs(mc)));
                     cooldowns[slot] = QuickBattles.cooldown(Moves.getByName(moves.get(slot).name()));
                     busy = true;
                 }
@@ -172,7 +180,7 @@ public class QuickBattleTargeting {
     }
 
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
-        if (!aiming || target < 0 || moves.isEmpty()) return;
+        if (!aiming || target < 0 && monitor == null || moves.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
         int left = graphics.guiWidth() - MARGIN - 2 * TILE_WIDTH - GAP;
         int top = graphics.guiHeight() - MARGIN - 2 * TILE_HEIGHT - ROW_GAP - (moneyBottomRight() ? MONEY_CLEARANCE : 0);
@@ -212,10 +220,11 @@ public class QuickBattleTargeting {
 
     private static void renderTarget(WorldRenderContext context) {
         Minecraft mc = Minecraft.getInstance();
-        if (target < 0 || mc.level == null || !(mc.level.getEntity(target) instanceof PokemonEntity pokemon)) return;
+        Entity aimed = target < 0 || mc.level == null ? null : mc.level.getEntity(target);
+        if (monitor == null && !(aimed instanceof PokemonEntity)) return;
         float partial = context.tickCounter().getGameTimeDeltaPartialTick(false);
         Vec3 cam = context.camera().getPosition();
-        Vec3 at = pokemon.getPosition(partial).add(0, pokemon.getBbHeight() / 2, 0);
+        Vec3 at = monitor != null ? Vec3.atCenterOf(monitor) : aimed.getPosition(partial).add(0, aimed.getBbHeight() / 2, 0);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();
@@ -223,7 +232,7 @@ public class QuickBattleTargeting {
         RenderSystem.applyModelViewMatrix();
         PoseStack pose = new PoseStack();
         pose.translate(at.x - cam.x, at.y - cam.y, at.z - cam.z);
-        float radius = Math.max(pokemon.getBbWidth(), pokemon.getBbHeight()) * 0.6f + 0.2f;
+        float radius = monitor != null ? MONITOR_MARKER : Math.max(aimed.getBbWidth(), aimed.getBbHeight()) * 0.6f + 0.2f;
         FloatingBallRenderer.target(pose, buffers, mc.getEntityRenderDispatcher().cameraOrientation(), (float) at.distanceTo(cam), radius,
                 mc.level.getGameTime() + partial);
         buffers.endBatch(RenderType.debugQuads());
@@ -263,6 +272,12 @@ public class QuickBattleTargeting {
         return QuickBattles.sentOut(mc.player, selected());
     }
 
+    private static BlockPos aimedMonitor(Minecraft mc) {
+        Vec3 eye = mc.player.getEyePosition();
+        Vec3 end = eye.add(mc.player.getViewVector(1f).scale(TARGET_RANGE));
+        BlockHitResult hit = mc.level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mc.player));
+        return hit.getType() == HitResult.Type.BLOCK && ItemAnalyser.isMonitor(mc.level.getBlockState(hit.getBlockPos())) ? hit.getBlockPos() : null;
+    }
     private static int pick(Minecraft mc) {
         Vec3 eye = mc.player.getEyePosition();
         Vec3 look = mc.player.getViewVector(1f);

@@ -253,13 +253,6 @@ public class Zones {
                 + 1.9 * Math.sin(5 * angle + slot * 2.3);
     }
 
-    /** The island's blocks swapped for the Hoopa arena where it stands, with the way home on it (/hyperspace arena). */
-    public static void arena(ServerLevel hyperspace, int island) {
-        BlockPos centre = centre(island - BASE);
-        clear(hyperspace, centre);
-        HoopaArena.build(hyperspace, centre, island - BASE, get(island));
-    }
-
     public static int build(ServerPlayer player, ServerLevel hyperspace, ServerLevel from, Vec3 portalBase, Vec3 normal, Set<Integer> busy, boolean arena) {
         int slot = -1;
         for (int k = 1; k <= SLOTS; k++) {

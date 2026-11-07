@@ -180,10 +180,14 @@ public final class RiderArrivalClient {
     }
 
     private static @Nullable Emergence of(Entity entity) {
+        if (ACTIVE.isEmpty()) return null;
         for (Emergence e : ACTIVE.values()) {
             if (e.held.contains(entity)) return e;
         }
         return null;
+    }
+    public static boolean anyEmerging() {
+        return !ACTIVE.isEmpty();
     }
 
     public static boolean isEmerging(Entity entity) {

@@ -1,6 +1,5 @@
 package dev.hyperspacewormholes.hyperspace.mixin;
 
-import dev.hyperspacewormholes.hyperspace.MapIcons;
 import dev.hyperspacewormholes.hyperspace.WorldMapIcons;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceKey;
@@ -29,7 +28,6 @@ public abstract class XaeroWorldMapMixin {
 
     @Inject(method = {"method_25394", "render"}, at = @At("TAIL"), require = 0)
     private void hyperspace_wormholes$icons(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        MapIcons.hooked("Xaero's World Map render");
         WorldMapIcons.render(graphics, mouseX, mouseY, cameraX, cameraZ, scale, screenScale, lastViewedDimensionId);
     }
 }

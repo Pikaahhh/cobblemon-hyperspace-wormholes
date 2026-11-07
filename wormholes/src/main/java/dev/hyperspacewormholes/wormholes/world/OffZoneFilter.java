@@ -25,7 +25,7 @@ public class OffZoneFilter extends PlacementFilter {
 
     @Override
     protected boolean shouldPlace(PlacementContext context, RandomSource random, BlockPos pos) {
-        return !Zone.get(zone).near(pos.getX(), pos.getZ()).holdsAtOrBelow(pos.getX(), pos.getY(), pos.getZ());
+        return !Zone.get(zone).nearHoldsAtOrBelow(pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override

@@ -41,6 +41,9 @@ public final class RoarClient {
         if (mc.level != null) ROARING_SINCE.put(entityId, mc.level.getGameTime());
     }
 
+    public static boolean anyRoaring() {
+        return !ROARING_SINCE.isEmpty();
+    }
     public static float roarAmount(Entity entity, float partialTick) {
         Long since = ROARING_SINCE.get(entity.getId());
         if (since == null) return 0f;

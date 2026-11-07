@@ -2,23 +2,21 @@ package dev.hyperspacewormholes.wormholes.boss;
 
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.battles.interpreter.BattleContext;
-import com.cobblemon.mod.common.api.battles.model.BattleEndResult;
 import com.cobblemon.mod.common.api.battles.model.PokemonBattle;
 import com.cobblemon.mod.common.api.battles.model.actor.BattleActor;
 import com.cobblemon.mod.common.api.battles.model.ai.BattleAI;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.api.pokemon.stats.Stat;
 import com.cobblemon.mod.common.api.pokemon.stats.Stats;
+import com.cobblemon.mod.common.api.battles.interpreter.BattleMessage;
 import com.cobblemon.mod.common.battles.ActiveBattlePokemon;
 import com.cobblemon.mod.common.battles.BattleFormat;
 import com.cobblemon.mod.common.battles.BattleRegistry;
 import com.cobblemon.mod.common.battles.BattleSide;
 import com.cobblemon.mod.common.battles.BattleStartResult;
-import com.cobblemon.mod.common.battles.DefaultActionResponse;
 import com.cobblemon.mod.common.battles.ErroredBattleStart;
 import com.cobblemon.mod.common.battles.MoveActionResponse;
 import com.cobblemon.mod.common.battles.PassActionResponse;
-import com.cobblemon.mod.common.battles.ShowdownActionRequest;
 import com.cobblemon.mod.common.battles.ShowdownActionResponse;
 import com.cobblemon.mod.common.battles.SuccessfulBattleStart;
 import com.cobblemon.mod.common.battles.actor.PlayerBattleActor;
@@ -47,7 +45,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,13 +70,9 @@ import java.util.UUID;
 public final class Boss {
     public static final String TAG = "hyperspace_wormholes.boss";
     public static final String DATA = "hyperspace_wormholes_boss";
-    private static final int STRUCK_TICKS = 40, SETTLE_TICKS = 8, AUTOPLAY_TICKS = 30, ECHO_TICKS = 30;
-    private static final double BODY_REACH = 0.95, WATCH_MOVE = 0.5;
-    private static final int WATCH_SETTLED = 40;
+    private static final int STRUCK_TICKS = 40, SETTLE_TICKS = 8, ECHO_TICKS = 30;
     private static final double STATUS_SCORE = 0.3;
     private static final Stats[] BATTLE_STATS = {Stats.ATTACK, Stats.DEFENCE, Stats.SPECIAL_ATTACK, Stats.SPECIAL_DEFENCE, Stats.SPEED};
-    public static boolean autoplay;
-    public static @Nullable UUID autoplayExcept;
 
     public enum Phase { FIGHT, CATCH }
 
@@ -150,9 +143,7 @@ public final class Boss {
         final PlayerBattleActor side;
         @Nullable PokemonBattle battle;
         @Nullable Hud shown;
-        @Nullable Entity watched;
-        @Nullable Vec3 watchedAt;
-        int shownHp = -1, waitShown, watchedTicks;
+        int shownHp = -1, waitShown;
         boolean playing;
 
         Trainer(ServerPlayer player, Pokemon copy, BossActor actor, PlayerBattleActor side) {
@@ -193,7 +184,6 @@ public final class Boss {
     private @Nullable LegendWave wave;
     /** Hard mode: every "highest" boost goes to all stats. */
     private boolean hard, ultimateAgainUsed;
-    private @Nullable Hud logged;
 
     Boss(PokemonEntity entity, BossDef def, @Nullable String variant, double perTrainer, Vec3 home, float yaw, double fraction,
          Phase phase, int form, @Nullable Rules rules) {
@@ -271,6 +261,22 @@ public final class Boss {
         if (t == null || !t.live()) t = trainers.stream().filter(Trainer::live).findFirst().orElse(null);
         return t == null ? null : active(t);
     }
+    public record Facing(PokemonEntity pokemon, @Nullable Pokemon target) {}
+    public List<Facing> facing() {
+        List<Facing> out = new ArrayList<>();
+        for (Trainer t : trainers) {
+            if (!t.live()) continue;
+            for (ActiveBattlePokemon active : t.side.getActivePokemon()) {
+                BattlePokemon pokemon = active.getBattlePokemon();
+                PokemonEntity entity = pokemon == null ? null : pokemon.getEntity();
+                if (entity == null || entity.isRemoved()) continue;
+                BattleMessage move = t.battle.getMajorBattleActions().get(pokemon.getUuid());
+                BattlePokemon target = move == null ? null : move.battlePokemon(2, t.battle);
+                out.add(new Facing(entity, target == null ? null : target.getEffectedPokemon()));
+            }
+        }
+        return out;
+    }
 
     public @Nullable Entity aimedAt() {
         Trainer t = aiming == null || phase != Phase.FIGHT || paused ? null : trainer(aiming);
@@ -319,56 +325,6 @@ public final class Boss {
             return seat == null ? null : seat.pokemon();
         }
         return null;
-    }
-
-    private static double flat(Vec3 a, Vec3 b) {
-        double dx = a.x - b.x, dz = a.z - b.z;
-        return Math.sqrt(dx * dx + dz * dz);
-    }
-
-    private void watch() {
-        for (Trainer t : trainers) {
-            Entity out = t.live() ? active(t) : null;
-            if (out != t.watched) {
-                t.watched = out;
-                t.watchedAt = out == null ? null : out.position();
-                t.watchedTicks = 0;
-                if (out != null) look(t, out, "sent out");
-                continue;
-            }
-            if (out == null || t.watchedAt == null) continue;
-            if (++t.watchedTicks == WATCH_SETTLED) look(t, out, "settled");
-            if (out.position().distanceTo(t.watchedAt) > WATCH_MOVE) {
-                look(t, out, "moved from " + fmt(t.watchedAt));
-                t.watchedAt = out.position();
-            }
-        }
-    }
-
-    private void look(Trainer t, Entity out, String what) {
-        AABB box = out.getBoundingBox();
-        double reach = out.getBbWidth() * BODY_REACH;
-        List<String> inside = new ArrayList<>();
-        for (ServerPlayer player : level.players()) {
-            Vec3 eye = player.getEyePosition();
-            if (box.contains(eye)) inside.add(player.getName().getString() + " (in its hitbox)");
-            else if (flat(eye, out.position()) < reach && eye.y < box.maxY + 1) inside.add(player.getName().getString() + " (within its body's reach)");
-        }
-        List<String> overlaps = new ArrayList<>();
-        if (box.intersects(entity.getBoundingBox())) overlaps.add("the boss");
-        for (Trainer o : trainers) {
-            Entity other = o == t || !o.live() ? null : active(o);
-            if (other != null && box.intersects(other.getBoundingBox())) overlaps.add(o.name + "'s " + other.getName().getString());
-        }
-        boolean blocks = !level.noBlockCollision(out, box);
-        String extra = out instanceof PokemonEntity pokemon ? ", beam " + pokemon.getBeamMode() + ", busy " + pokemon.isBusy() + ", no AI " + pokemon.isNoAi() : "";
-        Wormholes.LOGGER.info("[boss] {}'s {} #{} {} at {}: hitbox {} by {}, invisible {}{}, in blocks {}, overlaps {}, players near its body {}",
-                t.name, out.getName().getString(), out.getId(), what, fmt(out.position()), String.format("%.1f", out.getBbWidth()),
-                String.format("%.1f", out.getBbHeight()), out.isInvisible(), extra, blocks, overlaps, inside);
-    }
-
-    private static String fmt(Vec3 at) {
-        return String.format("(%.2f, %.2f, %.2f)", at.x, at.y, at.z);
     }
 
     @Nullable PokemonBattle battleOf(UUID player) {
@@ -507,8 +463,6 @@ public final class Boss {
         entity.setBattleId(null);
         int attached = ShowdownPool.attach(trainer.battle.getBattleId().toString());
         if (attached != 1) Wormholes.LOGGER.warn("[boss] {}'s battle has {} Pokemon on the shared HP (expected 1)", trainer.name, attached);
-        Wormholes.LOGGER.info("[boss] {} joined {} ({} trainers): {}/{} HP, battle {}", trainer.name, name().getString(), trainers.size(),
-                hp, max, trainer.battle.getBattleId());
         if (rules != null) rules.joined(this, player, trainer.battle);
         return result;
     }
@@ -522,11 +476,8 @@ public final class Boss {
     void rescale() {
         int newMax = target(alive());
         if (newMax != max) {
-            int before = max;
             hp = Mth.clamp((int) Math.round(hp * (double) newMax / max), 1, newMax);
             max = newMax;
-            Wormholes.LOGGER.info("[boss] {} rescaled for {} trainers: max {} -> {}, HP {}/{} ({}%)", name().getString(), alive(),
-                    before, max, hp, max, percent());
         }
         push();
     }
@@ -611,7 +562,6 @@ public final class Boss {
         }
         reveal();
         upkeep();
-        watch();
         echo();
         sendHealth();
         hud();
@@ -637,15 +587,12 @@ public final class Boss {
             ServerPlayer player = online(t);
             if (!t.battle.getEnded() && (player == null || player.isRemoved())) t.battle.stop();
             if (!t.battle.getEnded()) continue;
-            boolean caught = t.battle.getEndResult() == BattleEndResult.CAPTURE;
             trainers.remove(i--);
             ShowdownPool.leave(t.copy.getUuid().toString());
             Bosses.forget(t.copy);
             Bosses.unbind(t.battle);
             hideHud(t, player);
             changed = true;
-            Wormholes.LOGGER.info("[boss] {} {} {} ({} trainers left)", t.name, caught ? "caught" : "left the fight against",
-                    name().getString(), trainers.size());
         }
         if (changed && trainers.isEmpty()) push();
         else if (changed) rescale();
@@ -661,7 +608,6 @@ public final class Boss {
             if (t.live() && busy(t)) idle = false;
         }
         idleTicks = idle ? idleTicks + 1 : 0;
-        if (autoplay) autoplay();
         Map<String, String[]> states = ShowdownPool.status(id);
         boolean held = false, choosing = false, done = false;
         for (Trainer t : trainers) {
@@ -686,6 +632,12 @@ public final class Boss {
         if (phase == Phase.FIGHT) {
             BossDef.Form next = rules != null && rules.passesForms() && hp <= catchAt() ? null : nextForm();
             if (next != null) {
+                if (held) {
+                    ShowdownPool.cancel(id, false);
+                    aiming = aimOf(ShowdownPool.step(id));
+                    idleTicks = 0;
+                    return;
+                }
                 changeForm(next);
                 return;
             }
@@ -699,15 +651,13 @@ public final class Boss {
             String step = ShowdownPool.step(id);
             aiming = aimOf(step);
             idleTicks = 0;
-            Wormholes.LOGGER.info("[boss] {} step {} ({}/{} HP)", name().getString(), step, hp, max);
             return;
         }
         if (done) {
             arm();
             aiming = null;
-            int ended = ShowdownPool.finish(id);
+            ShowdownPool.finish(id);
             idleTicks = 0;
-            Wormholes.LOGGER.info("[boss] {} round over in {} battles ({}/{} HP, stages {})", name().getString(), ended, hp, max, stageMap());
             return;
         }
         if (!boosted && phase == Phase.FIGHT && ready()) {
@@ -723,7 +673,6 @@ public final class Boss {
                     ? BossWaitPayload.PICKS : BossWaitPayload.NONE;
             if (state == t.waitShown || !send(online(t), new BossWaitPayload(state))) continue;
             t.waitShown = state;
-            Wormholes.LOGGER.info("[boss] {}'s menu: {}", t.name, state == BossWaitPayload.NONE ? "no waiting line" : "waiting for the others to pick");
         }
     }
 
@@ -762,8 +711,6 @@ public final class Boss {
                 ShowdownPool.together(id, false);
                 for (Trainer t : live) t.actor.decide(uses.getOrDefault(t, PassActionResponse.INSTANCE));
                 strike(uses.keySet().iterator().next());
-                Wormholes.LOGGER.info("[boss] {} uses its ultimate {} on {} trainers ({}/{} HP)", name().getString(), ultimate.move(),
-                        uses.size(), hp, max);
                 return;
             }
             Wormholes.LOGGER.warn("[boss] {} can't use its ultimate {} in any battle", name().getString(), ultimate.move());
@@ -803,16 +750,12 @@ public final class Boss {
             for (Trainer t : live) t.actor.decide(uses.getOrDefault(t, PassActionResponse.INSTANCE));
             last = best.player;
             strike(best);
-            Wormholes.LOGGER.info("[boss] {} uses {} on every trainer ({} battles, turn {}; {})", name().getString(), move.getMoveName(),
-                    uses.size(), best.battle.getTurn(), scores.toString().trim());
             return;
         }
         for (Trainer t : live) t.actor.decide(t == best ? bestPlan : PassActionResponse.INSTANCE);
         if (best != null) {
             last = best.player;
             strike(best);
-            Wormholes.LOGGER.info("[boss] {} attacks {} with {} (turn {}; {})", name().getString(), best.name,
-                    bestPlan instanceof MoveActionResponse move ? move.getMoveName() : "pass", best.battle.getTurn(), scores.toString().trim());
         }
     }
 
@@ -859,9 +802,7 @@ public final class Boss {
     private void changeForm(BossDef.Form next) {
         form = def.forms.indexOf(next);
         save();
-        int skipped = ShowdownPool.cancel(id, true);
-        Wormholes.LOGGER.info("[boss] {} at {}/{} HP ({}%) changes form to {} ({} queued actions skipped on both sides)", name().getString(), hp, max,
-                percent(), next.name() != null ? next.name() : next.species(), skipped);
+        ShowdownPool.cancel(id, true);
         if (rules != null && rules.formChange(this, next)) {
             paused = true;
             return;
@@ -939,11 +880,10 @@ public final class Boss {
             spec.add("moves", moves);
         }
         ShowdownPool.pool(id, hp, max);
-        String result = ShowdownPool.transform(id, spec.toString());
+        ShowdownPool.transform(id, spec.toString());
         armed = false;
         for (Trainer t : trainers) t.shownHp = -1;
         push();
-        Wormholes.LOGGER.info("[boss] {} took its form {}: {}/{} HP (base {}), Showdown {}", name().getString(), spec, hp, max, base, result);
     }
 
     public void powerUp(Map<String, Integer> boosts) {
@@ -984,7 +924,6 @@ public final class Boss {
         if (now != null && !now.isEmpty()) ShowdownPool.stages(now, stages);
         broadcast(Component.translatableWithFallback("hyperspace_wormholes.boss.powering_up", "%s is powering up!", name())
                 .withStyle(ChatFormatting.GOLD));
-        Wormholes.LOGGER.info("[boss] {} powers up {}: stages {}", name().getString(), changes, stageMap());
     }
 
     public void broadcast(Component line) {
@@ -1024,35 +963,10 @@ public final class Boss {
         return false;
     }
 
-    private void autoplay() {
-        if (idleTicks < AUTOPLAY_TICKS) return;
-        for (Trainer t : trainers) {
-            if (!t.live() || !t.side.getMustChoose() || t.player.equals(autoplayExcept)) continue;
-            ShowdownActionRequest request = t.side.getRequest();
-            if (request == null) continue;
-            StrongBattleAI ai = new StrongBattleAI(3);
-            try {
-                List<ShowdownActionResponse> responses = request.iterate(t.side.getActivePokemon(),
-                        (active, moveset, forceSwitch) -> {
-                            ShowdownActionResponse response = ai.choose(active, t.battle, t.side.getSide(), moveset, forceSwitch);
-                            if (forceSwitch && response instanceof PassActionResponse) return new DefaultActionResponse();
-                            return response instanceof MoveActionResponse move && move.getGimmickID() != null
-                                    ? new MoveActionResponse(move.getMoveName(), move.getTargetPnx(), null) : response;
-                        });
-                t.side.setActionResponses(responses);
-                Wormholes.LOGGER.info("[boss] autoplay chose {} for {}", responses, t.name);
-            } catch (RuntimeException e) {
-                Wormholes.LOGGER.warn("[boss] autoplay couldn't choose for {}", t.name, e);
-            }
-        }
-    }
-
     private void defeat() {
-        int skipped = ShowdownPool.cancel(id, false);
+        ShowdownPool.cancel(id, false);
         phase = Phase.CATCH;
         phaseTicks = 0;
-        Wormholes.LOGGER.info("[boss] {} beaten at {}/{} with {} trainers ({} queued boss moves skipped)", name().getString(), hp, max,
-                trainers.size(), skipped);
         if (rules != null && rules.defeated(this)) {
             save();
             return;
@@ -1066,7 +980,6 @@ public final class Boss {
         for (Trainer t : new ArrayList<>(trainers)) {
             if (t.live()) t.battle.stop();
         }
-        Wormholes.LOGGER.info("[boss] {} catch phase over, removed", name().getString());
         entity.discard();
     }
 
@@ -1121,17 +1034,11 @@ public final class Boss {
             if (!t.live()) continue;
             if (now == null) {
                 now = hudNow();
-                if (!now.equals(logged)) {
-                    logged = now;
-                    Wormholes.LOGGER.info("[boss] HUD {} Lv.{} {}% stages {}", now.name(), now.level(), Math.round(now.hp() * 1000) / 10.0, now.stages());
-                }
             }
             Hud mine = new Hud(now.name(), now.level(), now.hp(), now.stages(), status(t));
             if (mine.equals(t.shown)) continue;
-            boolean newStatus = t.shown == null || !mine.status().equals(t.shown.status());
             if (!send(online(t), new BossHudPayload(entity.getId(), mine.name(), mine.level(), mine.hp(),
                     new HashMap<>(mine.stages()), true, mine.status()))) continue;
-            if (newStatus) Wormholes.LOGGER.info("[boss] HUD status for {}: '{}'", t.name, mine.status());
             t.shown = mine;
         }
     }

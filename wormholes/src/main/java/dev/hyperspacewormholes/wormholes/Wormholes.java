@@ -99,8 +99,6 @@ import java.util.stream.IntStream;
  */
 public class Wormholes implements ModInitializer {
     public static final String MOD_ID = "hyperspace_wormholes";
-    /** Debug subcommands of /boss and /hyperspace are only there when this is set. */
-    public static final boolean TEST_COMMANDS = Boolean.getBoolean("horizons.autotest");
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final ResourceKey<Level> ULTRA_WARP = dimension("ultra_warp");
@@ -184,6 +182,7 @@ public class Wormholes implements ModInitializer {
     @Override
     public void onInitialize() {
         WormholeConfig.load();
+        GameplayConfig.register();
         PokemonTags.register();
         FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(mod -> {
             ResourceManagerHelper.registerBuiltinResourcePack(id("full_mipmaps"), mod, Component.literal("Full Mipmaps"),

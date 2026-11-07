@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Whether this jar carries the real Ultra Sun move sounds: the git-excluded asset namespace {@value #NAMESPACE}
- * (sounds.json plus its oggs), which only a -PwithUsum build packs. Its sound event names are read once from the
- * jar's own sounds.json (looked up through the mod it ships in, MoveFx.MOD_ID); an empty set means a plain build, where the timelines' stand-in sounds play instead
+ * Whether this jar carries extra move sounds, the asset namespace {@value #NAMESPACE} (sounds.json plus its oggs).
+ * Its sound event names are read once from the
+ * jar's own sounds.json (looked up through the mod it ships in, MoveFx.MOD_ID); an empty set means there are none, and the timelines' stand-in sounds play instead
  * (UsumSoundKeyframe, StandInKeyframe).
  */
 public final class UsumSounds {
@@ -35,8 +35,6 @@ public final class UsumSounds {
                             LoggerFactory.getLogger(MoveFx.NAMESPACE).warn("[movefx] unreadable {} sounds.json", NAMESPACE, e);
                         }
                     });
-            LoggerFactory.getLogger(MoveFx.NAMESPACE).info("[movefx] Ultra Sun move sounds: {} events{}", found.size(),
-                    found.isEmpty() ? " (plain build, stand-in sounds)" : "");
             events = found;
         }
         return events;

@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.WormholeConfig;
@@ -33,13 +34,12 @@ import java.util.Random;
  * Where tunnel wormholes take you: a Pokemon wormhole in the game's colours leads to its Ultra Space Wilds world, the
  * older difficulty colours to the Overworld, the End or now and then a Wilds world. It finds and clears a landing and
  * opens a way home (at the zone's exit hole where it has one), and in an Ultra Beast's home the beast stands at the
- * zone's spot and never moves. After NECROZMA_PITY white wormholes in a row the next white one is Necrozma's.
+ * zone's spot and never moves. After GameplayConfig.necrozmaPity white wormholes in a row the next white one is Necrozma's.
  */
 public final class WormholeDestinations {
     private static final int MIN_DISTANCE = 64;
     private static final float EXIT_RADIUS = 3.82f;
     private static final double WILDS_CHANCE = 0.25;
-    private static final int NECROZMA_PITY = 12;
     private static final double NEAR_SPAWN = 64;
     private static final int SEARCH_RANGE = 128;
     private static final int SEARCH_STEP = 8;
@@ -179,7 +179,8 @@ public final class WormholeDestinations {
             int missed = player.getAttachedOrElse(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
             // no pity once this player has beaten Necrozma; its usual chance stays
             boolean beaten = player.getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false);
-            if (missed >= NECROZMA_PITY && !beaten) pokemon = WormholePokemon.ultraBeastNamed("necrozma", random);
+            int needed = GameplayConfig.get().necrozmaPity;
+            if (needed > 0 && missed >= needed && !beaten) pokemon = WormholePokemon.ultraBeastNamed("necrozma", random);
             if (pokemon == null) {
                 pokemon = gameColours ? WormholePokemon.ultraBeastWorld(wormhole.rings(), random)
                         : WormholePokemon.pick(WormholeType.WHITE, wormhole.rings(), random);

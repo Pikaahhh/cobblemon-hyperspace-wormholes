@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -80,7 +81,9 @@ public final class WarpTunnel {
 
     private static int rings(long h, int max, double warpDistance) {
         int rings = Math.min(max, (int) (warpDistance / FREE_RING_EVERY));
-        while (rings < max && unit(h = mix(h)) < (rings + 1 == SHINY_RINGS ? SHINY_RING_CHANCE : RING_CHANCE)) rings++;
+        GameplayConfig config = GameplayConfig.get();
+        double none = Math.max(config.ringWeight(0), 1.0E-6);
+        while (rings < max && unit(h = mix(h)) < (rings + 1 == SHINY_RINGS ? SHINY_RING_CHANCE : RING_CHANCE) * config.ringWeight(rings + 1) / none) rings++;
         return rings;
     }
 
@@ -88,9 +91,16 @@ public final class WarpTunnel {
         if (lightYears < FIRST_RINGS_AT) return 0;
         int row = Math.min(GAME_RING_ODDS.length - 1, (int) ((lightYears - FIRST_RINGS_AT) / LIGHT_YEAR_BAND));
         int[] odds = GAME_RING_ODDS[row];
-        double roll = unit(mix(h)) * 100, below = odds[0];
+        GameplayConfig config = GameplayConfig.get();
+        double total = 0;
+        for (int i = 0; i <= GAME_TOP_RINGS; i++) total += odds[i] * config.ringWeight(i);
+        if (total <= 0) return 0;
+        double roll = unit(mix(h)) * total, below = odds[0] * config.ringWeight(0);
         int rings = 0;
-        while (rings < GAME_TOP_RINGS && roll >= below) below += odds[++rings];
+        while (rings < GAME_TOP_RINGS && roll >= below) {
+            rings++;
+            below += odds[rings] * config.ringWeight(rings);
+        }
         return rings;
     }
 

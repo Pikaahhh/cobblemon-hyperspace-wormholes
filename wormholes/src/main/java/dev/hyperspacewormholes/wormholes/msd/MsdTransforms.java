@@ -107,6 +107,13 @@ public final class MsdTransforms {
                 set(root, set.getKey(), set.getValue());
             }
         }
+        if (spec.has("rename")) {
+            for (Map.Entry<String, JsonElement> rename : spec.getAsJsonObject("rename").entrySet()) {
+                String[] steps = steps(rename.getKey());
+                JsonElement moved = parent(root, steps).getAsJsonObject().remove(steps[steps.length - 1]);
+                set(root, rename.getValue().getAsString(), moved);
+            }
+        }
         if (spec.has("gradient")) {
             for (Map.Entry<String, JsonElement> stop : spec.getAsJsonObject("gradient").entrySet()) {
                 set(root, GRADIENT + stop.getKey(), stop.getValue());

@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Action effect keyframe {@value #TYPE}: plays its "keyframes" (a move's stand-in Cobblemon or vanilla sounds) in
- * order, but only in a plain build without the real Ultra Sun move sounds; with them (UsumSounds.available()) the
+ * order, but only when the jar has no extra move sounds; with them (UsumSounds.available()) the
  * move's horizons_movefx:usum_sound cues take over and this is skipped. Example: {"type": "horizons_movefx:stand_in",
  * "keyframes": [{"type": "entity_sound", "sound": "cobblemon:impact.flying"}]}.
  */

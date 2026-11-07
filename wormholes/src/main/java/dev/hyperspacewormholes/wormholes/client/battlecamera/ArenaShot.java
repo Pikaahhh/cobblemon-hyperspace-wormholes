@@ -11,8 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +34,6 @@ final class ArenaShot {
     private static final double WIDEN_TICKS = 10, EASE_OUT_TICKS = 20, EASE_BACK_TICKS = 30;
     private static final String ULTRA = "ultra-fusion", NECROZMA = "necrozma";
     private static final Vec3 UP = new Vec3(0, 1, 0);
-    private static final Logger LOG = LoggerFactory.getLogger("horizons_movefx camera");
 
     private static int still, sinceCheck, calm;
     private static final Set<Integer> IDS = new HashSet<>();
@@ -103,11 +100,6 @@ final class ArenaShot {
             base = fit(mc, List.of());
             to = base;
             from = null;
-            AABB drawn = drawn(boss, boss.position());
-            LOG.info("[battlecam] arena shot of {} (hitbox {} by {}, framed {} by {}, {} far) at {} looking {}", boss.getName().getString(),
-                    String.format("%.1f", boss.getBbWidth()), String.format("%.1f", boss.getBbHeight()),
-                    String.format("%.1f", Math.max(drawn.getXsize(), drawn.getZsize())), String.format("%.1f", drawn.getYsize()),
-                    far.size(), to.pos(), to.look());
             return;
         }
         BattleCamera.Pose shown = pose(now);
@@ -120,7 +112,6 @@ final class ArenaShot {
             WIDE.addAll(flightBoxes(boss));
             WIDE.addAll(bodies);
             ease(shown, fit(mc, WIDE), EASE_OUT_TICKS, now);
-            LOG.info("[battlecam] arena shot eased out for Light That Burns the Sky to {}", to.pos());
             return;
         }
         if (!burns) flight = false;
@@ -132,7 +123,6 @@ final class ArenaShot {
             calm = 0;
             WIDE.addAll(must);
             ease(shown, fit(mc, WIDE), WIDEN_TICKS, now);
-            LOG.info("[battlecam] arena shot widened to keep {} in view: {}", boss.getName().getString(), to.pos());
             return;
         }
         if (!WIDE.isEmpty() && !burns) {
@@ -141,7 +131,6 @@ final class ArenaShot {
                 WIDE.clear();
                 calm = 0;
                 ease(shown, base, EASE_BACK_TICKS, now);
-                LOG.info("[battlecam] arena shot back to {}", to.pos());
             }
             return;
         }
@@ -152,7 +141,6 @@ final class ArenaShot {
             KEEP.add(entity.getBoundingBox());
             base = fit(mc, List.of());
             ease(shown, base, EASE_BACK_TICKS, now);
-            LOG.info("[battlecam] arena shot widened for {} to {}", entity.getName().getString(), to.pos());
             return;
         }
     }

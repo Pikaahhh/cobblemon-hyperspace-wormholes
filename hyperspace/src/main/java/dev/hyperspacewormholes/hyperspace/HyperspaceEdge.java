@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
@@ -33,6 +34,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +55,7 @@ public class HyperspaceEdge {
     private static final float CREEP_SECONDS = 7f;
     private static final int GAP = 24;
     private static final int STEP = 2;
+    private static final int RUN = 32;
     private static final float[][] BANDS = {
             {0f, 1.1f, 0.2f, 0f, -1},
             {-0.34f, -0.08f, 0f, 0.65f, 1f, 0.4f, 0.9f}, {0.08f, 0.34f, 0.65f, 0f, 0.35f, 0.9f, 1f},
@@ -61,6 +64,8 @@ public class HyperspaceEdge {
 
     private static final Map<Integer, Edge> edges = new HashMap<>();
     private static Edge current, meshed;
+    private static long changes, missed = -1;
+    private static int missedSlot;
     private static DynamicTexture mask;
     private static float creep;
 
@@ -77,18 +82,22 @@ public class HyperspaceEdge {
         int[][] lowest = new int[SIZE][SIZE];
         float[][] snow = new float[SIZE][SIZE];
         int[][][] surfaces = new int[SIZE][SIZE][];
-        long built;
+        long built, seen;
         List<float[][]> loops = new ArrayList<>();
         List<Line> lines = new ArrayList<>();
     }
 
-    private record Line(float[][] points, boolean closed) {
+    private record Line(float[][] points, boolean closed, AABB[] runs) {
     }
 
     public static void register() {
         CoreShaderRegistrationCallback.EVENT.register(context -> context.register(
                 Hyperspace.id("edge_curtain"), DefaultVertexFormat.POSITION,
                 shader -> curtainShader = shader));
+        ClientChunkEvents.CHUNK_LOAD.register((level, chunk) -> changed());
+    }
+    public static void changed() {
+        changes++;
     }
 
     public static void prepare(WorldRenderContext context) {
@@ -96,6 +105,7 @@ public class HyperspaceEdge {
         if (level == null || !level.dimension().equals(Hyperspace.HYPERSPACE)) {
             edges.clear();
             current = null;
+            missed = -1;
             return;
         }
         Vec3 cam = context.camera().getPosition();
@@ -106,9 +116,18 @@ public class HyperspaceEdge {
         int slot = (int) Math.round(cam.x / Zones.SPACING);
         if (Math.abs(cam.z - Zones.ROW_Z) <= 160 && slot >= 0 && slot < Zones.SLOTS) {
             edge = edges.get(Zones.BASE + slot);
-            if (edge == null || level.getGameTime() - edge.built > 40) {
-                Edge fresh = build(level, Zones.centre(slot));
-                if (fresh != null) edges.put(Zones.BASE + slot, edge = fresh);
+            if (edge == null ? missed != changes || missedSlot != slot : level.getGameTime() - edge.built > 40) {
+                if (edge != null && edge.seen == changes) {
+                    edge.built = level.getGameTime();
+                } else {
+                    Edge fresh = build(level, Zones.centre(slot), edge);
+                    if (fresh != null) {
+                        edges.put(Zones.BASE + slot, edge = fresh);
+                    } else if (edge == null) {
+                        missed = changes;
+                        missedSlot = slot;
+                    }
+                }
             }
         }
         if (edge != null && edge != current) fillMask(edge);
@@ -293,7 +312,7 @@ public class HyperspaceEdge {
         buffer.addVertex(px, p[2] + bottom, pz);
     }
 
-    private static Edge build(ClientLevel level, BlockPos centre) {
+    private static Edge build(ClientLevel level, BlockPos centre, Edge last) {
         Edge edge = new Edge();
         edge.x0 = centre.getX() - HALF;
         edge.z0 = centre.getZ() - HALF;
@@ -313,10 +332,20 @@ public class HyperspaceEdge {
         }
         if (!any) return null;
 
+        if (last != null && same(edge, last)) {
+            edge = last;
+        } else {
         trace(edge);
         layers(edge);
+        }
         edge.built = level.getGameTime();
+        edge.seen = changes;
         return edge;
+    }
+    private static boolean same(Edge a, Edge b) {
+        return a.x0 == b.x0 && a.z0 == b.z0 && Arrays.deepEquals(a.solid, b.solid) && Arrays.deepEquals(a.height, b.height)
+                && Arrays.deepEquals(a.lowest, b.lowest) && Arrays.deepEquals(a.snow, b.snow)
+                && Arrays.deepEquals(a.surfaces, b.surfaces);
     }
 
     private static void scan(ClientLevel level, Edge edge, int x, int z, int floor, BlockPos.MutableBlockPos pos) {
@@ -431,7 +460,7 @@ public class HyperspaceEdge {
                 int cx = (int) (k >> 40), cz = (int) ((k >> 20) & 0xFFFFF), h = (int) (k & 0xFFFFF) - 4096;
                 points[i] = new float[]{edge.x0 + cx, edge.z0 + cz, h + snowAt(edge, cx, cz, h)};
             }
-            edge.lines.add(new Line(finish(edge, chaikin(chaikin(points, closed), closed), closed), closed));
+            edge.lines.add(line(finish(edge, chaikin(chaikin(points, closed), closed), closed), closed));
         }
     }
 
@@ -548,15 +577,31 @@ public class HyperspaceEdge {
         return out;
     }
 
+    private static Line line(float[][] points, boolean closed) {
+        int segments = closed ? points.length : points.length - 1;
+        AABB[] runs = new AABB[(segments + RUN - 1) / RUN];
+        for (int i = 0; i < segments; i++) {
+            AABB box = box(points[i], points[(i + 1) % points.length]);
+            runs[i / RUN] = i % RUN == 0 ? box : runs[i / RUN].minmax(box);
+        }
+        return new Line(points, closed, runs);
+    }
+    private static AABB box(float[] p, float[] q) {
+        return new AABB(Math.min(p[0], q[0]) - 0.5, Math.min(p[2], q[2]), Math.min(p[1], q[1]) - 0.5,
+                Math.max(p[0], q[0]) + 0.5, Math.max(p[2], q[2]) + 0.2, Math.max(p[1], q[1]) + 0.5);
+    }
     private static void ribbon(BufferBuilder buffer, Line line, Vec3 cam, float time) {
         float[][] loop = line.points();
         int n = loop.length;
         float[] from = FROM, to = TO;
         int ready = -1;
         for (int i = 0; i < (line.closed() ? n : n - 1); i++) {
+            if (culling != null && i % RUN == 0 && !culling.isVisible(line.runs()[i / RUN])) {
+                i += RUN - 1;
+                continue;
+            }
             float[] p = loop[i], q = loop[(i + 1) % n];
-            if (culling != null && !culling.isVisible(new AABB(Math.min(p[0], q[0]) - 0.5, Math.min(p[2], q[2]), Math.min(p[1], q[1]) - 0.5,
-                    Math.max(p[0], q[0]) + 0.5, Math.max(p[2], q[2]) + 0.2, Math.max(p[1], q[1]) + 0.5))) continue;
+            if (culling != null && !culling.isVisible(box(p, q))) continue;
             float sq = i + 1 == n ? p[5] + (float) Math.hypot(q[0] - p[0], q[1] - p[1]) : q[5];
             if (ready != i) corners(from, p, p[5], cam, time);
             corners(to, q, sq, cam, time);

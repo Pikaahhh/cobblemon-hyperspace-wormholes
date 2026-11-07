@@ -13,7 +13,7 @@ import java.util.List;
 public final class UltraSpaceTab {
     public static void register() {
         Item jar = CosmicJar.ITEM;
-        List<Item> after = List.of(BigBattery.ITEM, LuminescentIce.ITEM, ItemAnalyser.ERROR_SCREEN);
+        List<Item> after = List.of(LuminescentIce.ITEM, ItemAnalyser.ERROR_SCREEN);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Wormholes.id("ultra_space"), FabricItemGroup.builder()
                 .title(Component.translatable("itemGroup.hyperspace_wormholes.ultra_space"))
                 .icon(CosmicJar::full)

@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.ChatFormatting;
@@ -42,7 +43,7 @@ import java.util.UUID;
  */
 public class Distortions {
     public static final int REACH = 8;
-    private static final int FEWER = 1, MORE = 2, TAKES_TURNS = 8;
+    private static final int TAKES_TURNS = 8;
     private static final int MIN_DISTANCE = 64;
     private static final int MAX_DISTANCE = 160;
     private static final int AROUND = 192;
@@ -55,7 +56,6 @@ public class Distortions {
     private static final double WALL_GAP = 0.3;
     private static final long LIFETIME = 60 * 60 * 20;
     private static final int FADE = 100;
-    private static final int[] STAR_WEIGHTS = {35, 28, 20, 12, 5};
     private static final int[] TYPE_COUNT_WEIGHTS = {40, 40, 20};
     private static final double RIFT_HEIGHT = 1.5;
     private static final String TAG = "hyperspace_wormholes_distortion";
@@ -133,8 +133,8 @@ public class Distortions {
         ServerLevel level = server.overworld();
         WorldData data = WorldData.get(server);
         long now = level.getGameTime();
-        List<ServerPlayer> players = new ArrayList<>();
-        for (ServerPlayer player : level.players()) if (!player.isSpectator()) players.add(player);
+        boolean reshow = server.getTickCount() % 100 == 0, fill = server.getTickCount() % 20 == 0;
+        List<ServerPlayer> players = null;
 
         Iterator<Distortion> it = data.distortions.iterator();
         while (it.hasNext()) {
@@ -146,14 +146,23 @@ public class Distortions {
                 data.setDirty();
                 continue;
             }
+            boolean fades = left <= FADE && !distortion.fading;
+            if (!fades && !reshow) continue;
+            if (players == null) players = playing(level);
             if (!watched(distortion, players)) continue;
-            if (left <= FADE && !distortion.fading) fade(level, distortion);
-            if (server.getTickCount() % 100 == 0 && show(level, distortion)) data.setDirty();
+            if (fades) fade(level, distortion);
+            if (reshow && show(level, distortion)) data.setDirty();
         }
 
-        if (server.getTickCount() % 20 == 0) {
+        if (fill) {
+            if (players == null) players = playing(level);
             for (ServerPlayer player : players) refill(level, data, player, players);
         }
+    }
+    private static List<ServerPlayer> playing(ServerLevel level) {
+        List<ServerPlayer> players = new ArrayList<>();
+        for (ServerPlayer player : level.players()) if (!player.isSpectator()) players.add(player);
+        return players;
     }
 
     private static boolean watched(Distortion distortion, List<ServerPlayer> players) {
@@ -163,7 +172,8 @@ public class Distortions {
 
     /** How many distortions this player wants around: one or two, by a checkerboard of the map. */
     private static int wanted(ServerPlayer player) {
-        return ((player.getBlockX() >> TAKES_TURNS) + (player.getBlockZ() >> TAKES_TURNS) & 1) == 0 ? FEWER : MORE;
+        int most = GameplayConfig.get().maxDistortionsPerPlayer;
+        return ((player.getBlockX() >> TAKES_TURNS) + (player.getBlockZ() >> TAKES_TURNS) & 1) == 0 ? (most + 1) / 2 : most;
     }
 
     private static void refill(ServerLevel level, WorldData data, ServerPlayer player, List<ServerPlayer> players) {
@@ -236,7 +246,7 @@ public class Distortions {
     }
 
     private static int rollStars(RandomSource random) {
-        return pick(random, STAR_WEIGHTS) + 1;
+        return pick(random, GameplayConfig.get().distortionStarWeights) + 1;
     }
 
     private static List<String> rollTypes(ServerLevel level, BlockPos spot, RandomSource random) {

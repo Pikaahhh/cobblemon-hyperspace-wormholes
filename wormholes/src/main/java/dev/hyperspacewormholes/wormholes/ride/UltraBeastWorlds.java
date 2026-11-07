@@ -41,8 +41,8 @@ public final class UltraBeastWorlds {
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(UltraBeastWorlds::tick);
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            if (BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace().equals("rctmod")
-                    && UltraDimensions.isUltra(level)) {
+            if (UltraDimensions.isUltra(level)
+                    && BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace().equals("rctmod")) {
                 entity.discard();
             }
         });

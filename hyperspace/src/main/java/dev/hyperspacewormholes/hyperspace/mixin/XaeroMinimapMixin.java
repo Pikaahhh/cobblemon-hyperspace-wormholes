@@ -1,7 +1,6 @@
 package dev.hyperspacewormholes.hyperspace.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import dev.hyperspacewormholes.hyperspace.MapIcons;
 import dev.hyperspacewormholes.hyperspace.MinimapIcons;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceKey;
@@ -27,7 +26,6 @@ public class XaeroMinimapMixin {
             at = @At("RETURN"), require = 0)
     private void hyperspace_wormholes$icons(GuiGraphics graphics, Vec3 renderPos, float partialTick, RenderTarget framebuffer,
                                             double backgroundCoordinateScale, ResourceKey<Level> mapDimension, CallbackInfo ci) {
-        MapIcons.hooked("Xaero's Minimap render");
         MinimapIcons.render(this, graphics, renderPos, mapDimension);
     }
 }

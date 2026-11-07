@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Hyperspace portals: opening one at a spatial distortion (or in front of you from /hyperspace portal) if there's ground and room, drawn as Z-A's gate opening (Rift.OPENING ticks, and you can only go in once it's open), walking through to start a trip to a fresh island, and closing it.
+ * Hyperspace portals: opening one at a spatial distortion if there's ground and room, drawn as Z-A's gate opening (Rift.OPENING ticks, and you can only go in once it's open), walking through to start a trip to a fresh island, and closing it.
  * The way back inside Hyperspace is a Rift portal too, flat against a wall on the island (placed by IslandWall); it opens as you arrive and closes once nobody's left. Walking into either hands you to Trips (Trips.enter, Trips.exit), and you can't walk back into the exit before you've stepped out of it once (Trips.fresh).
  * A Distortion Splicer opens a splice: the same portal with its timer hidden and an unstable look, no donut powers, and maybe the Hoopa Unbound event (hoopa: no legendary or Mega on it); whoever opened it is let in first, and while HoopaEvent.locked holds for an island its way back sits small and does nothing.
  */
@@ -75,16 +75,6 @@ public class Portals {
         });
     }
 
-    private static Vec3 facing(ServerPlayer player) {
-        Vec3 look = player.getLookAngle();
-        Vec3 normal = new Vec3(look.x, 0, look.z);
-        return normal.lengthSqr() < 1.0E-4 ? Vec3.directionFromRotation(0, player.getYRot()) : normal.normalize();
-    }
-
-    public static boolean grounded(ServerPlayer player) {
-        return grounded(player.level(), player.position().add(facing(player).scale(2.5)));
-    }
-
     public static boolean grounded(Level level, Vec3 base) {
         AABB below = new AABB(base.x - 0.3, base.y - 1.0, base.z - 0.3, base.x + 0.3, base.y - 1.0E-3, base.z + 0.3);
         return !level.noCollision(below);
@@ -102,22 +92,11 @@ public class Portals {
         return false;
     }
 
-    public static boolean fits(ServerPlayer player) {
-        Vec3 normal = facing(player);
-        return fits(player.level(), player.position().add(normal.scale(2.5)), normal);
-    }
-
     public static boolean fits(Level level, Vec3 portalBase, Vec3 normal) {
         Vec3 base = portalBase.add(0, LIFT, 0);
         Vec3 side = new Vec3(-normal.z, 0, normal.x).scale(WIDTH / 2);
         AABB box = new AABB(base.add(side).add(normal.scale(0.2)), base.subtract(side).subtract(normal.scale(0.2)).add(0, HEIGHT, 0));
         return level.noCollision(box);
-    }
-
-    public static boolean open(ServerPlayer player, ItemStack stack) {
-        Vec3 normal = facing(player);
-        return open(player, stack, player.position().add(normal.scale(2.5)), normal, DonutBoosts.stars(stack),
-                DonutBoosts.types(stack), DonutBoosts.seconds(stack), null, null);
     }
 
     public static boolean open(ServerPlayer player, ItemStack stack, Vec3 base, Vec3 normal, int stars, List<String> types, int seconds,

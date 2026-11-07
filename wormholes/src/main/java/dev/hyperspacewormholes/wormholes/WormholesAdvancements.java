@@ -66,7 +66,7 @@ public class WormholesAdvancements extends SimpleCriterionTrigger<WormholesAdvan
         return Event.CODEC;
     }
 
-    /** Makeshift Teleportation: an Item Analyser with a recipe loaded, powered by lightning or a Big Battery. */
+    /** Makeshift Teleportation: an Item Analyser with a recipe loaded, powered by lightning or an Electric move. */
     public static void machine(ServerPlayer player) {
         fire(player, "machine");
     }

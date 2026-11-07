@@ -12,8 +12,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -25,7 +23,6 @@ import java.util.function.Function;
 public final class MapIcons {
     public static final ResourceLocation DISTORTION = Hyperspace.id("textures/map/distortion.png");
     private static volatile List<MapDistortions.Mark> marks = List.of();
-    private static final Set<String> HOOKED = ConcurrentHashMap.newKeySet();
 
     private MapIcons() {}
 
@@ -33,10 +30,6 @@ public final class MapIcons {
         ClientPlayNetworking.registerGlobalReceiver(MapDistortions.Marks.TYPE, (payload, context) -> marks = List.copyOf(payload.marks()));
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> marks = List.of());
         if (FabricLoader.getInstance().isModLoaded("journeymap")) ClientTickEvents.END_CLIENT_TICK.register(JourneyMapIcons::tick);
-    }
-
-    public static void hooked(String hook) {
-        if (HOOKED.add(hook)) Hyperspace.LOGGER.info("Map icons: {} hook is running", hook);
     }
 
     public static List<MapDistortions.Mark> marks(ResourceKey<Level> shown) {

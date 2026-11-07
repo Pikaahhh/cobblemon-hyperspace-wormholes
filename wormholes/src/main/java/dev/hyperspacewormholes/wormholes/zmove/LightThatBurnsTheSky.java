@@ -136,7 +136,6 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
             for (Run run : RUNS) {
                 if (run.user != entity || run.age >= 0) continue;
                 run.age = Math.min(run.age, -Z_ACTIVATION);
-                Wormholes.LOGGER.info("[burns-sky] Z-power for #{} while the move waits: {} more ticks", entity.getId(), -run.age);
             }
             return Unit.INSTANCE;
         });
@@ -178,13 +177,10 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(user) < VIEW_RANGE * VIEW_RANGE) viewers.add(player);
         }
-        String seen = zpowerSeen(pokemon);
         Run run = new Run(pokemon, targets.getFirst().getId(), centre, feet, level, dir, viewers,
                 clearWay(pokemon, level, dir, battles), activationLeft(pokemon));
         if (run.moving) pokemon.setNoGravity(true);
         pokemon.getBusyLocks().add(run);
-        Wormholes.LOGGER.info("[burns-sky] Light That Burns the Sky for #{} waits {} ticks for the Z-power activation ({})",
-                user.getId(), -run.age, seen);
         if (run.age == 0) start(run);
         RUNS.add(run);
         return run.future;
@@ -196,11 +192,6 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
         return since >= 0 && since < Z_ACTIVATION ? since : -1;
     }
 
-    private static String zpowerSeen(PokemonEntity user) {
-        long since = zpowerAge(user);
-        return since < 0 ? "its Z-power not seen yet" : "Z-power " + since + " ticks ago";
-    }
-
     private static int activationLeft(PokemonEntity user) {
         long since = zpowerAge(user);
         ZPOWER.remove(user.getUUID());
@@ -208,8 +199,6 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
     }
 
     private static void start(Run run) {
-        Wormholes.LOGGER.info("[burns-sky] Light That Burns the Sky for #{} starts after {} ticks", run.user.getId(),
-                run.level.getGameTime() - run.created);
         send(run, new BurnsSkyPayload(run.user.getId(), run.targetId, mouth(run.user, run.dir), run.dir, run.targetCentre,
                 run.targetFeet, BurnsSkyTimeline.HIT - BurnsSkyTimeline.THROW));
     }

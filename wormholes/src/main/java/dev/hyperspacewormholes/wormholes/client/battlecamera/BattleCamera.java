@@ -20,8 +20,6 @@ import net.minecraft.world.entity.vehicle.VehicleEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,10 +37,8 @@ import java.util.UUID;
 public final class BattleCamera {
     private static final double MAX_PITCH = 89, CULL_FOV = 70, CULL_GROW = 2.5, CULL_RADIUS = 3.5, CULL_KEEP = 4.0;
     private static final double BALL_OUTER = 1.08;
-    private static final Logger LOG = LoggerFactory.getLogger("horizons_movefx camera");
     private static final Map<UUID, Entity> ENTITIES = new HashMap<>();
     private static final Set<Integer> BATTLER_IDS = new HashSet<>();
-    private static final Set<UUID> LINKED = new HashSet<>();
     private static final List<Entity> ARENA = new ArrayList<>();
     private static final List<Vec3> SUBJECTS = new ArrayList<>();
     private static final List<UUID> near = new ArrayList<>(), far = new ArrayList<>();
@@ -99,7 +95,6 @@ public final class BattleCamera {
         far.clear();
         ENTITIES.clear();
         BATTLER_IDS.clear();
-        LINKED.clear();
         ARENA.clear();
         ArenaShot.clear();
     }
@@ -136,7 +131,6 @@ public final class BattleCamera {
             ENTITIES.put(id, boss);
             BATTLER_IDS.add(boss.getId());
             if (!ARENA.contains(boss)) ARENA.add(boss);
-            if (LINKED.add(id)) LOG.info("[battlecam] battler {} drawn by boss entity {} (Horizons' BossClient)", id, boss.getId());
         }
     }
 

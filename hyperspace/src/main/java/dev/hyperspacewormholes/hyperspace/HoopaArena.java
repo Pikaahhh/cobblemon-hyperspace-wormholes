@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * The island the Hoopa Unbound event is fought on: rolling plains hills on every side with copses on top (natural blocks
  * only), and a level floor in the valley out to FLOOR_REACH for Hoopa, the seats and the legendaries. The way home stands
- * HOME blocks out along +z on a rock face where the hill slips away. /hyperspace arena rebuilds it on the island you're on.
+ * HOME blocks out along +z on a rock face where the hill slips away.
  */
 public final class HoopaArena {
     private static final int GROUND = 64, FLOOR_REACH = 24, HOME = 30, REACH = 48, DEEP = 20, SCARP = 5, MELT = 13;
@@ -59,7 +59,6 @@ public final class HoopaArena {
         arena.cover(0.6, 0.08);
         arena.flowers();
         arena.wayHome(zone);
-        Hyperspace.LOGGER.info("[hoopa] built the arena on island slot {}", slot);
     }
 
     private double distance(int x, int z) {

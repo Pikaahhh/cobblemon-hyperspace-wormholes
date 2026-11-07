@@ -175,7 +175,7 @@ public class RiftRenderer extends EntityRenderer<Rift> {
     @Override
     public void render(Rift rift, float entityYaw, float partialTicks, PoseStack pose, MultiBufferSource buffers, int light) {
         float tick = rift.level().getGameTime() + partialTicks;
-        float time = tick - rift.since();
+        float time = rift.steady(tick - rift.since());
         float now = rift.level().getGameTime() % 24000 + partialTicks;
         float ended = rift.ends() == 0 ? -1 : tick - rift.ends();
         boolean stirred = rift.stirred() != 0 && tick - rift.stirred() < Rift.STIR;

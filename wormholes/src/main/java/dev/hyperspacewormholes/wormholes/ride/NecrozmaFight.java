@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.battles.model.PokemonBattle;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
@@ -174,7 +175,6 @@ public final class NecrozmaFight {
         f.boss = spawn(f, arrival);
         if (f.boss == null) return;
         FIGHTS.add(f);
-        Wormholes.LOGGER.info("[necrozma] {} Necrozma waits at {}", f.variant(), spot);
     }
 
     public static boolean isBoss(Entity entity) {
@@ -279,7 +279,6 @@ public final class NecrozmaFight {
                     cutscene(f, true);
                     sendNear(f, new NecrozmaScenePayload(NecrozmaScenePayload.DEFEAT, f.boss.getId(), def.defeatTicks,
                             ground(f, f.spot), stairsYaw(f)));
-                    Wormholes.LOGGER.info("[necrozma] defeat scene for {} ticks, base form at {}", def.defeatTicks, def.defeatFormTicks);
                     return false;
                 }
                 lost(f);
@@ -305,8 +304,6 @@ public final class NecrozmaFight {
                 unhide(f);
                 prizes(f);
                 enter(f, Stage.CATCH);
-                Wormholes.LOGGER.info("[necrozma] catch phase: {} Necrozma, one each for {}", f.prizes.size(),
-                        f.prizes.values().stream().map(id -> name(f, id)).toList());
             }
             case CATCH -> {
                 for (Iterator<Map.Entry<PokemonEntity, UUID>> it = f.prizes.entrySet().iterator(); it.hasNext(); ) {
@@ -319,9 +316,6 @@ public final class NecrozmaFight {
                     if (here) f.away.remove(owner);
                     if (!copy.isRemoved() && gone > OWNER_GONE_TICKS) {
                         copy.discard();
-                        Wormholes.LOGGER.info("[necrozma] {} left the summit, so their Necrozma is gone", name(f, owner));
-                    } else if (copy.isRemoved()) {
-                        Wormholes.LOGGER.info("[necrozma] the Necrozma of {} is caught or gone", name(f, owner));
                     }
                     if (copy.isRemoved()) {
                         it.remove();
@@ -332,7 +326,6 @@ public final class NecrozmaFight {
                     holdStill(copy);
                     faceStairs(f, copy);
                 }
-                if (f.prizes.isEmpty()) Wormholes.LOGGER.info("[necrozma] every Necrozma is caught or gone; the summit is back to normal");
                 return f.prizes.isEmpty();
             }
         }
@@ -400,11 +393,6 @@ public final class NecrozmaFight {
         f.away.clear();
     }
 
-    private static String name(Fight f, UUID id) {
-        ServerPlayer player = f.level.getServer().getPlayerList().getPlayer(id);
-        return player != null ? player.getName().getString() : id.toString();
-    }
-
     private static void enter(Fight f, Stage stage) {
         f.stage = stage;
         f.ticks = 0;
@@ -415,7 +403,6 @@ public final class NecrozmaFight {
         dropBoss(f);
         f.boss = spawn(f, lookAt(f));
         f.retryAt = f.level.getGameTime() + RETRY_TICKS;
-        Wormholes.LOGGER.info("[necrozma] the party lost; a fresh fused Necrozma waits");
         f.party.clear();
         enter(f, Stage.WAITING);
     }
@@ -467,7 +454,6 @@ public final class NecrozmaFight {
             if (music != null) new BattleMusicPacket(music, 1f, 1f, true).sendToPlayer(player);
             ServerPlayNetworking.send(player, f.opening);
         }
-        Wormholes.LOGGER.info("[necrozma] opening: {} with {} from its first tick", f.opening, music);
         enter(f, Stage.OPENING);
     }
 
@@ -521,7 +507,6 @@ public final class NecrozmaFight {
             spots.add(at);
         }
         hide(f);
-        Wormholes.LOGGER.info("[necrozma] cutscene layout: Necrozma at {}, {} trainers on the stage rim at {}", f.spot, players.size(), spots);
     }
 
     private static Vec3 ground(Fight f, Vec3 at) {
@@ -639,7 +624,7 @@ public final class NecrozmaFight {
         f.challenger = players.getFirst().getUUID();
         Boss boss = Bosses.adopt(f.boss, def(), f.variant(), new Rules(f));
         // hard mode when the challenger has beaten Necrozma before; whoever triggered it decides
-        if (!boss.hard() && players.getFirst().getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false)) Bosses.harden(boss);
+        if (!boss.hard() && (GameplayConfig.get().bossHardModeAlwaysOn || players.getFirst().getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false))) Bosses.harden(boss);
         f.boss.setNoGravity(false);
         int joined = 0;
         for (ServerPlayer player : players) {
@@ -655,7 +640,6 @@ public final class NecrozmaFight {
             enter(f, Stage.WAITING);
             return;
         }
-        Wormholes.LOGGER.info("[necrozma] fight started: {} ({}) against {} trainers", f.variant(), def().id, joined);
         enter(f, Stage.BATTLE);
     }
 
@@ -673,12 +657,10 @@ public final class NecrozmaFight {
                 new BattleMusicPacket(null, 1f, 1f, true).sendToPlayer(player);
                 ServerPlayNetworking.send(player, OUT.hidingUi(BACK_AT - OUT.length() + 2));
             }
-            Wormholes.LOGGER.info("[necrozma] transformation: music fading, transition out");
         } else if (t == OUT.black()) {
             cutscene(f, true);
         } else if (t == BURST_AT) {
             sendNear(f, new UltraBurstPayload(f.boss.getId(), ULTRA_BURST_TICKS));
-            Wormholes.LOGGER.info("[necrozma] Ultra Burst scene for {} ticks", ULTRA_BURST_TICKS);
         } else if (t == BURST_AT + ULTRA_FORM_TICKS) {
             boss.applyForm(f.form);
         } else if (t == BACK_AT) {
@@ -693,11 +675,9 @@ public final class NecrozmaFight {
             }
             boss.powerUp(f.form.boosts());
             sendNear(f, new NecrozmaScenePayload(NecrozmaScenePayload.POWER_UP, f.boss.getId(), def.powerUpTicks));
-            Wormholes.LOGGER.info("[necrozma] Ultra Necrozma's theme {} and power-up scene for {} ticks", music, def.powerUpTicks);
         } else if (t >= BACK_DONE + def.powerUpTicks) {
             boss.resume();
             enter(f, Stage.BATTLE);
-            Wormholes.LOGGER.info("[necrozma] the battles carry on");
         }
     }
 
@@ -743,7 +723,6 @@ public final class NecrozmaFight {
             if (found == null) throw new IllegalStateException("no effect " + effect.id());
             type.getMethod("applyEffects", Pokemon.class, List.class, Optional.class, PokemonEntity.class)
                     .invoke(found, f.boss.getPokemon(), effect.aspects(), Optional.empty(), null);
-            Wormholes.LOGGER.info("[necrozma] power-down effect {} started ({})", effect.id(), effect.aspects());
             return true;
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
             Wormholes.LOGGER.warn("[necrozma] couldn't start the power-down effect {}, so its form is set directly", effect.id(), e);
@@ -770,7 +749,6 @@ public final class NecrozmaFight {
         f.boss.setBattleId(null);
         f.boss.refreshDimensions();
         if (setForm && fused(f.boss)) Wormholes.LOGGER.warn("Necrozma didn't take its own form back (aspects {})", f.boss.getPokemon().getAspects());
-        Wormholes.LOGGER.info("[necrozma] weakened and catchable: {}", f.boss.getPokemon().getAspects());
     }
 
     private static void recallFor(Fight f) {

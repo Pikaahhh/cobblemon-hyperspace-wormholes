@@ -98,11 +98,9 @@ public final class LegendWave {
             wild.get(i).setActor(actor);
             place(t, slots.get(i), wild.get(i));
         }
-        String layout = ShowdownPool.callIn(battleId, BattleRegistry.INSTANCE.packTeam(wild));
+        ShowdownPool.callIn(battleId, BattleRegistry.INSTANCE.packTeam(wild));
         String error = ShowdownPool.error(battleId);
         if (!error.isEmpty()) Wormholes.LOGGER.error("[wave] Showdown couldn't bring the legendaries in: {}", error);
-        Wormholes.LOGGER.info("[wave] {} battles {} legendaries (slots {}v{}, Showdown {}), battle {}", t.name, wild.size(),
-                t.side.getActivePokemon().size(), slots.size(), layout, battleId);
     }
 
     private static void place(Boss.Trainer t, ActiveBattlePokemon slot, BattlePokemon pokemon) {
@@ -133,7 +131,7 @@ public final class LegendWave {
         }
     }
 
-    /** Sets every legendary still standing to this much of its HP (/boss hp, a test aid; 0 beats them). */
+    /** Sets every legendary still standing to this much of its HP (/boss setHP; 0 beats them). */
     void setHpFraction(double fraction) {
         for (String id : pools) {
             ShowdownPool.State state = ShowdownPool.read(id);

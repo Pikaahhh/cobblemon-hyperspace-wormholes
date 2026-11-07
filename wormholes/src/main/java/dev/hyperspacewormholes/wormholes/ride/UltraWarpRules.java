@@ -18,6 +18,7 @@ public final class UltraWarpRules {
     private static final ResourceLocation HYPERSPACE = ResourceLocation.fromNamespaceAndPath("hyperspace_wormholes", "hyperspace");
     private static final Set<Entity> HELD = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
 
+    private static volatile boolean anyHeld;
     private UltraWarpRules() {}
 
     public static boolean inWarp(Entity entity) {
@@ -41,15 +42,21 @@ public final class UltraWarpRules {
     }
 
     public static void hold(Entity entity) {
+        synchronized (HELD) {
         HELD.add(entity);
+            anyHeld = true;
+        }
     }
 
     public static void release(Entity entity) {
+        synchronized (HELD) {
         HELD.remove(entity);
+            anyHeld = !HELD.isEmpty();
+        }
     }
 
     public static boolean isPinned(Entity entity) {
-        return inWarp(entity) || HELD.contains(entity);
+        return inWarp(entity) || anyHeld && HELD.contains(entity);
     }
 
     public static boolean isViewLocked(Entity entity) {

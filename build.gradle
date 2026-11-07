@@ -29,6 +29,7 @@ dependencies {
     // Cobblemon and CobbleNav are only needed at compile time; we only compile against them.
     modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
     modCompileOnly("maven.modrinth:cobblemon-pokenav:BV5KiAcY") { transitive = false }  // CobbleNav 2.4.1
+    modCompileOnly("maven.modrinth:modmenu:11.0.3") { transitive = false }
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
 
     // Dev-only runtime so runServer/runClient boot with Cobblemon; never bundled.
@@ -36,19 +37,10 @@ dependencies {
     modLocalRuntime 'net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20'
 }
 
-// usum/'s textures/particle/usum/ and the horizons_movefx_usum namespace hold files taken from Ultra Sun (textures, move
-// sounds and the imported model motions), for local testing only. They go into the jar only with -PwithUsum, so a plain
-// build never carries them.
-def withUsum = project.hasProperty('withUsum')
 processResources {
     inputs.property 'version', project.version
-    inputs.property 'withUsum', withUsum
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
-    }
-    if (!withUsum) {
-        exclude 'assets/horizons_movefx/textures/particle/usum/**'
-        exclude 'assets/horizons_movefx_usum/**'
     }
 }
 

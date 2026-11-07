@@ -20,8 +20,8 @@ public abstract class FogRendererMixin {
     @Inject(method = "setupFog", at = @At("RETURN"), require = 0)
     private static void hyperspace_wormholes$noHyperspaceFog(Camera camera, FogRenderer.FogMode mode, float renderDistance, boolean foggy,
                                                  float partialTick, CallbackInfo ci) {
-        if (mode != FogRenderer.FogMode.FOG_TERRAIN || camera.getFluidInCamera() != FogType.NONE) return;
-        if (!camera.getEntity().level().dimension().equals(Hyperspace.HYPERSPACE)) return;
+        if (mode != FogRenderer.FogMode.FOG_TERRAIN || !camera.getEntity().level().dimension().equals(Hyperspace.HYPERSPACE)) return;
+        if (camera.getFluidInCamera() != FogType.NONE) return;
         if (camera.getEntity() instanceof LivingEntity living
                 && (living.hasEffect(MobEffects.BLINDNESS) || living.hasEffect(MobEffects.DARKNESS))) return;
         RenderSystem.setShaderFogStart(Float.MAX_VALUE);

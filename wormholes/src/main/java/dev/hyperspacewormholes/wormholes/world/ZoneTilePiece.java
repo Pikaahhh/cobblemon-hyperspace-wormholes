@@ -65,11 +65,9 @@ public class ZoneTilePiece extends StructurePiece {
     @Override
     public void postProcess(WorldGenLevel level, StructureManager structures, ChunkGenerator generator, RandomSource random,
                             BoundingBox box, ChunkPos chunk, BlockPos pivot) {
-        long began = System.nanoTime();
         place(level, level.getLevel().getStructureManager().getOrCreate(template),
                 level.registryAccess().registryOrThrow(Registries.PROCESSOR_LIST).getOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, processors)),
                 box, pivot, random);
-        ZoneCheck.placed(began);
     }
 
     void place(WorldGenLevel level, StructureTemplate tile, StructureProcessorList list, BoundingBox box, BlockPos pivot, RandomSource random) {

@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -118,10 +117,6 @@ public final class Bosses {
     public static @Nullable Boss of(Pokemon pokemon) {
         if (tracked == 0) return null;
         return POKEMON.get(pokemon);
-    }
-
-    public static List<Boss> all() {
-        return new ArrayList<>(BOSSES.values());
     }
 
     static void track(Pokemon pokemon, Boss boss) {
@@ -219,8 +214,6 @@ public final class Bosses {
             if (rules != null && rules.startsHidden()) entity.setInvisible(true);
             level.addFreshEntity(entity);
             entity.refreshDimensions();
-            Wormholes.LOGGER.info("[boss] spawned {} at {} with {}/{} HP (base {}, x{} per trainer)", boss.name().getString(), at,
-                    boss.hp, boss.max, boss.base, perTrainer);
             return entity;
         } catch (RuntimeException e) {
             Wormholes.LOGGER.error("Couldn't spawn boss '{}'", properties, e);
@@ -262,7 +255,6 @@ public final class Bosses {
         }
         boss.setHard(true);
         boss.refreshBase();
-        Wormholes.LOGGER.info("[boss] {} is in hard mode: level {}, holding {}", boss.name().getString(), pokemon.getLevel(), item);
     }
 
     public static void release(PokemonEntity entity) {
@@ -281,7 +273,6 @@ public final class Bosses {
         if (!(entity instanceof PokemonEntity pokemon) || !entity.getTags().contains(Boss.TAG) || BOSSES.containsKey(entity.getUUID())) return;
         CompoundTag data = pokemon.getPokemon().getPersistentData().getCompound(Boss.DATA);
         if (data.isEmpty() || data.getBoolean("catching")) {
-            Wormholes.LOGGER.info("[boss] removing {} that was being caught when the server stopped", pokemon.getPokemon().getSpecies().getName());
             entity.discard();
             return;
         }
@@ -296,7 +287,6 @@ public final class Bosses {
                 data.contains("form") ? data.getInt("form") : -1, null);
         boss.restored(data.getBoolean("ultimate"), data.getBoolean("ultimateAgain"), data.getBoolean("hard"));
         BOSSES.put(entity.getUUID(), boss);
-        Wormholes.LOGGER.info("[boss] took back {} after loading: {}/{} HP", boss.name().getString(), boss.hp, boss.max);
     }
 
     private static double number(CompoundTag data, String key, double fallback) {
@@ -312,8 +302,6 @@ public final class Bosses {
             PokemonProperties.Companion.parse("uncatchable=false").apply(stand);
             prize.heal();
             stand.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), 0f);
-            Wormholes.LOGGER.info("[boss] a catch of {}: the trainer gets a copy with {}/{} HP", boss.name().getString(),
-                    prize.getCurrentHealth(), prize.getMaxHealth());
             return stand;
         } catch (RuntimeException e) {
             Wormholes.LOGGER.error("Couldn't make the caught copy of a boss", e);

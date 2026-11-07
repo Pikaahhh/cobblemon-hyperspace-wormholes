@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.events.pokemon.ShinyChanceCalculationEvent;
@@ -237,7 +238,8 @@ public final class WormholePokemon {
             case 2 -> 2 * band - 1;
             default -> 4 * band - 4;
         };
-        return Math.max(1, percent) / 100;
+        GameplayConfig config = GameplayConfig.get();
+        return Math.min(1, (config.wormholeBaseShinyChance + (Math.max(1, percent) - 1) * config.wormholeShinyMultiplierPerRing) / 100);
     }
 
     private static Candidate favourUnowned(List<Candidate> legends, @Nullable ServerPlayer player, RandomSource random) {
@@ -262,7 +264,8 @@ public final class WormholePokemon {
 
     private static boolean ringShiny(int rings, RandomSource random) {
         float shinyRate = Math.max(1f, Cobblemon.config.getShinyRate());
-        return rings >= WarpTunnel.SHINY_RINGS || random.nextFloat() < (1 + SHINY_BOOST_PER_RING * rings) / shinyRate;
+        GameplayConfig config = GameplayConfig.get();
+        return rings >= WarpTunnel.SHINY_RINGS || random.nextFloat() < (config.wormholeBaseShinyChance + SHINY_BOOST_PER_RING * rings * config.wormholeShinyMultiplierPerRing) / shinyRate;
     }
 
     private static boolean partyHas(@Nullable ServerPlayer player, List<String> species) {

@@ -5,7 +5,9 @@ import com.cobblemon.mod.common.api.battles.model.actor.BattleActor;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon;
+import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
+import com.cobblemon.mod.common.pokemon.Species;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.CraterLayout;
@@ -39,7 +41,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * The Ultra Crater's Celesteela: scenery giants in the big craters (CraterLayout.giants, BIG_PIECES ones only), all holding
+ * The Ultra Crater's Celesteela, when a model pack has implemented it (none ships here): scenery giants in the big craters (CraterLayout.giants, BIG_PIECES ones only), all holding
  * still, plus the catchable one at the plateau crater's wild spot, which fitCrater scales up to CRATER_SCALE.
  * <p>
  * Every EVERY ticks, per player's zone copy, missing giants are made once their chunk is loaded (unhurtable, unbattleable,
@@ -232,7 +234,7 @@ public final class CraterGiants {
     private static void tick(MinecraftServer server) {
         drain(DROP, Entity::discard);
         drain(SETTLE, CraterGiants::settle);
-        if (server.getTickCount() % EVERY != 0) return;
+        if (server.getTickCount() % EVERY != 0 || !available()) return;
         ServerLevel level = server.getLevel(Wormholes.ULTRA_CRATER);
         if (level == null || level.players().isEmpty()) return;
         Set<Long> seen = new HashSet<>();
@@ -241,6 +243,11 @@ public final class CraterGiants {
             if (!seen.add(ChunkPos.asLong(zone.x(), zone.z()))) continue;
             for (CraterLayout.Spot crater : giants(level, zone)) stand(level, crater);
         }
+    }
+
+    private static boolean available() {
+        Species species = PokemonSpecies.getByName("celesteela");
+        return species != null && species.getImplemented();
     }
 
     private static void drain(List<PokemonEntity> queue, Consumer<PokemonEntity> action) {

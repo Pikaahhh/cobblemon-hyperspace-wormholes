@@ -32,6 +32,7 @@
     "BattleOverlayMixin",
     "ParticleEngineMixin",
     "FogRendererMixin",
+    "EdgeBlockChangeMixin",
     "MinecraftAccessor",
     "MoveTileMixin",
     "PokemonRendererClipMixin"

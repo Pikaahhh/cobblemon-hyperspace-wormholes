@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The in-memory pack on top of every resource manager, building Mega Showdown-derived assets at runtime from the
  * player's own files, with no copies shipped (MsdTransforms' results: burst models and glow, dimmed Ultra textures,
- * power-down particles, the Necrozma poser and Hoopa model, and the power-down effect as server data).
+ * power-down particles, the Necrozma poser and Hoopa model, the power-down effect as server data, and the Xurkitree
+ * statue pose from ATM x MSD's idle).
  * A missing or changed source skips its whole piece with one log line; a piece named by a shipped resolver also blanks
  * that resolver, since Cobblemon refuses to start on a resolver whose model doesn't load.
  */
@@ -76,7 +77,7 @@ public final class MsdDerivedPack implements PackResources {
             byte[] source = sources.containsKey(output.source()) ? sources.get(output.source()) : read(type, output.source());
             if (!MsdTransforms.intact(source, output.sha256())) {
                 if (LOGGED.add(piece.name())) {
-                    LOGGER.warn("Mega Showdown's {} {}, so H&W is skipping {}", output.source(), source == null ? "is missing" : "has changed", piece.name());
+                    LOGGER.warn("{} {}, so H&W is skipping {}", output.source(), source == null ? "is missing" : "has changed", piece.name());
                 }
                 if (piece.skipFile() != null) built.put(piece.skipFile(), bytes(MsdTransforms.skipBytes(piece)));
                 return;

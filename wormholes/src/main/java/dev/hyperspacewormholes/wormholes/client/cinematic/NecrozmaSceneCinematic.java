@@ -3,7 +3,6 @@ package dev.hyperspacewormholes.wormholes.client.cinematic;
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableState;
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimation;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.client.NecrozmaWeakened;
 import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -35,15 +34,12 @@ import java.util.Map;
 public final class NecrozmaSceneCinematic {
     public static final float FRAMES_PER_TICK = 1.5f;
     public static final int POWER_UP_END = 409, DEFEAT_END = 410, DEFEAT_FORM = 297, DEFEAT_WAIT = 120, MEGA_FROM = 162;
-    public static final int POWER_UP_TICKS = (int) Math.ceil(POWER_UP_END / FRAMES_PER_TICK) + 1;
-    public static final int DEFEAT_TICKS = (int) Math.ceil(DEFEAT_END / FRAMES_PER_TICK) + 1;
     public static final int DEFEAT_FORM_TICK = (int) (DEFEAT_FORM / FRAMES_PER_TICK), MEGA_FROM_TICK = (int) (MEGA_FROM / FRAMES_PER_TICK);
     private static final int FADE_BACK = 12, CHECK_STEP = 6, KEEP_SPREAD = 3, FALL_FROM = 56, FALL_TO = 146, FLOOR_SEARCH = 6;
     private static final int LAND_FROM = 84, LAND_TO = 100;
     private static final double CLOSE_UP = 14, MIN_KEEP = 0.15, BODY = 89 / 16.0, MAX_FOV = 100, REBASE = 0.5;
     private static final double SINK = 4.1, FALL_SINK = 2.4, BASE_SINK = 0;
     private static final float HOLD_SLACK = 0.1f;
-    private static long sinkLogged = Long.MIN_VALUE;
     private static @Nullable CinematicScene scene;
     private static int kind = -1, entityId = -1, fadeAge = -1, end;
     private static double clock, lastClock, waited;
@@ -104,12 +100,6 @@ public final class NecrozmaSceneCinematic {
         return true;
     }
 
-    static boolean seek(double frame) {
-        if (scene == null) return false;
-        clock = lastClock = Math.min(frame, end);
-        return true;
-    }
-
     public static boolean isPlaying() {
         return scene != null;
     }
@@ -151,6 +141,7 @@ public final class NecrozmaSceneCinematic {
     private record Sunk(double floor, double depth, boolean ultra, double amount) {}
 
     private static @Nullable Sunk sunk(Entity entity, float partialTick) {
+        if (scene == null && !NecrozmaWeakened.anyDown()) return null;
         boolean boss = scene != null && kind == NecrozmaScenePayload.DEFEAT && entity.getId() == entityId;
         Double held = NecrozmaWeakened.downFloor(entity.getId()), lying = NecrozmaWeakened.weakFloor(entity.getId());
         if (boss && ultraGone) return new Sunk(base.y, BASE_SINK, false, 1);
@@ -175,14 +166,6 @@ public final class NecrozmaSceneCinematic {
         double drawn = Mth.lerp(partialTick, entity.yOld, entity.getY());
         double offset = sunk.ultra ? (sunk.floor - sunk.depth * size - drawn) * sunk.amount
                 : Math.min(0, sunk.floor - sunk.depth * sunk.amount * size - drawn);
-        long second = entity.level().getGameTime() / 20;
-        if (second != sinkLogged) {
-            sinkLogged = second;
-            Wormholes.LOGGER.info("[necrozma] defeat sink ({}): entity drawn {} blocks over the floor, render offset {} "
-                    + "(to {} under)", sunk.ultra ? "ultra" : "base",
-                    String.format("%.2f", drawn - sunk.floor), String.format("%.2f", offset),
-                    String.format("%.2f", sunk.depth * sunk.amount * size));
-        }
         return offset;
     }
 
@@ -309,8 +292,6 @@ public final class NecrozmaSceneCinematic {
         }
         if (kind == NecrozmaScenePayload.DEFEAT) {
             DefeatEffects.stop();
-            Wormholes.LOGGER.info("[necrozma] defeat scene over on this client, camera handed back ({})",
-                    ultraGone ? "base form" : "still Ultra Necrozma, held down");
         }
         if (previousView != null) mc.options.setCameraType(previousView);
         previousView = null;

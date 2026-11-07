@@ -29,7 +29,7 @@ public abstract class UltraNoFogMixin {
     @Inject(method = "setupFog", at = @At("RETURN"), require = 0)
     private static void hyperspace_wormholes$noUltraFog(Camera camera, FogRenderer.FogMode mode, float renderDistance,
                                                      boolean foggy, float partialTick, CallbackInfo ci) {
-        if (mode != FogRenderer.FogMode.FOG_TERRAIN) return;
+        if (mode != FogRenderer.FogMode.FOG_TERRAIN || !UltraDimensions.isUltra(camera.getEntity().level())) return;
         if (camera.getEntity() instanceof LivingEntity living
                 && (living.hasEffect(MobEffects.BLINDNESS) || living.hasEffect(MobEffects.DARKNESS))) return;
         if (camera.getFluidInCamera() == FogType.WATER && camera.getEntity().level().dimension() == Wormholes.ULTRA_DEEP_SEA) {
@@ -48,7 +48,7 @@ public abstract class UltraNoFogMixin {
             RenderSystem.setShaderFogEnd(Math.max(renderDistance * HAZE_REACH, HAZE_START * 2));
             return;
         }
-        if (!UltraDimensions.isUltra(camera.getEntity().level()) || UltraZones.isZone(camera.getEntity().level())) return;
+        if (UltraZones.isZone(camera.getEntity().level())) return;
         RenderSystem.setShaderFogStart(Float.MAX_VALUE);
         RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
     }

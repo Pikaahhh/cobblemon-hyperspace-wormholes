@@ -8,14 +8,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * As each particle effect starts, gives it v.emitter_scale (HitCheck.prepare) and logs where a Horizons Move FX effect
- * starts and what it aims at (HitCheck.log, only with -Dhorizons_movefx.hitcheck=true). Optional (require 0).
+ * As each particle effect starts, gives it v.emitter_scale (HitCheck.prepare). Optional (require 0).
  */
 @Mixin(value = ParticleStorm.class, remap = false)
 public abstract class HitCheckMixin {
     @Inject(method = "spawn()V", at = @At("HEAD"), require = 0)
-    private void horizons_movefx$logHit(CallbackInfo ci) {
+    private void horizons_movefx$prepare(CallbackInfo ci) {
         HitCheck.prepare((ParticleStorm) (Object) this);
-        HitCheck.log((ParticleStorm) (Object) this);
     }
 }

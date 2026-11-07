@@ -418,10 +418,10 @@ public final class BurnsSkyClient {
     }
 
     private static void renderWorld(WorldRenderContext context) {
-        VIEW.set(context.positionMatrix());
-        PROJECTION.set(context.projectionMatrix());
         viewCamera = context.camera().getPosition();
         if (RUNS.isEmpty()) return;
+        VIEW.set(context.positionMatrix());
+        PROJECTION.set(context.projectionMatrix());
 
         Minecraft mc = Minecraft.getInstance();
         float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);

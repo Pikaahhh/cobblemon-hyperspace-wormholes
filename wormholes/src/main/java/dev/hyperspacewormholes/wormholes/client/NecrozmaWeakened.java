@@ -52,6 +52,9 @@ public final class NecrozmaWeakened {
     public static void keepDown(PokemonEntity necrozma, Vec3 at, float yaw, double floor) {
         DOWN.put(necrozma.getId(), new Down(at, yaw, floor));
     }
+    public static boolean anyDown() {
+        return !DOWN.isEmpty() || !LYING.isEmpty();
+    }
 
     public static @Nullable Double downFloor(int entityId) {
         Down down = DOWN.get(entityId);
@@ -110,8 +113,6 @@ public final class NecrozmaWeakened {
                     || fused(pokemon) || !(pokemon.getDelegate() instanceof PosableState state)) continue;
             LYING.computeIfAbsent(pokemon.getId(), id -> floorUnder(mc, pokemon));
             float yaw = FACING.computeIfAbsent(pokemon.getId(), id -> {
-                Wormholes.LOGGER.info("[necrozma] weakened facing for {}: yRot {} body {} head {}", id, pokemon.getYRot(),
-                        pokemon.yBodyRot, pokemon.getYHeadRot());
                 return pokemon.getYRot();
             });
             if (!Cinematics.isBoss(pokemon)) face(pokemon, yaw);

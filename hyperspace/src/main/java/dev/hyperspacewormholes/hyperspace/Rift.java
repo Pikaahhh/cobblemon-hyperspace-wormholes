@@ -45,6 +45,8 @@ public class Rift extends Entity {
     private static final EntityDataAccessor<Component> LABEL = SynchedEntityData.defineId(Rift.class, EntityDataSerializers.COMPONENT);
     float labelFade;
     double labelAt;
+    private float shownTime;
+    private long shownSince;
 
     public Rift(EntityType<? extends Rift> type, Level level) {
         super(type, level);
@@ -94,6 +96,16 @@ public class Rift extends Entity {
         builder.define(LOCKED, false);
         builder.define(LOCKED_AT, 0L);
         builder.define(LABEL, Component.empty());
+    }
+
+    /** The time drawn never runs backwards: a server stall lets the client's clock run ahead, then it gets pulled back. */
+    float steady(float time) {
+        if (since() != shownSince) {
+            shownSince = since();
+            shownTime = time;
+        }
+        shownTime = Math.max(shownTime, time);
+        return shownTime;
     }
 
     public boolean portal() {

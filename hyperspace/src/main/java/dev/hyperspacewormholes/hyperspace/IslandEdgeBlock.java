@@ -23,8 +23,8 @@ public class IslandEdgeBlock {
     public static Vec3 clamp(Entity mover, Player player, Vec3 move) {
         if (!mover.level().dimension().equals(Hyperspace.HYPERSPACE) || player.isSpectator()) return move;
         AABB box = mover.getBoundingBox();
-        int now = support(mover, box);
         double x = move.x, z = move.z;
+        int now = x != 0 || z != 0 ? support(mover, box) : 0;
         if (x != 0 && worse(mover, box.move(x, 0, 0), now)) x = 0;
         if (z != 0 && worse(mover, box.move(x, 0, z), now)) z = 0;
         if (x == move.x && z == move.z) {

@@ -39,24 +39,26 @@ public final class MinimapIcons {
             float scale = optionalScale.getFloat(handler) * ICON;
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            for (MapDistortions.Mark mark : MapIcons.marks(shown)) draw(handler, graphics, mark.pos(), renderPos, scale);
+            double[] partial = (double[]) partialTranslate.get(handler);
+            PoseStack stack = graphics.pose();
+            Object[] place = {stack, specW.getInt(handler), specH.getInt(handler), halfViewW.getInt(handler), halfViewH.getInt(handler),
+                    ps.getDouble(handler), pc.getDouble(handler), 0.0, 0.0, zoom.getDouble(handler), circle.getBoolean(handler), partial};
+            for (MapDistortions.Mark mark : MapIcons.marks(shown)) {
+                place[7] = mark.pos().getX() + 0.5 - renderPos.x;
+                place[8] = mark.pos().getZ() + 0.5 - renderPos.z;
+                draw(graphics, stack, place, partial, scale);
+            }
         } catch (ReflectiveOperationException | RuntimeException e) {
             failed = true;
             Hyperspace.LOGGER.warn("Couldn't draw map icons on Xaero's Minimap; leaving them off", e);
         }
     }
 
-    private static void draw(Object handler, GuiGraphics graphics, BlockPos pos, Vec3 renderPos, float scale)
+    private static void draw(GuiGraphics graphics, PoseStack stack, Object[] place, double[] partial, float scale)
             throws ReflectiveOperationException {
-        PoseStack stack = graphics.pose();
-        double[] partial = (double[]) partialTranslate.get(handler);
         stack.pushPose();
         try {
-            boolean outside = (Boolean) translate.invoke(null, stack, specW.getInt(handler), specH.getInt(handler),
-                    halfViewW.getInt(handler), halfViewH.getInt(handler), ps.getDouble(handler), pc.getDouble(handler),
-                    pos.getX() + 0.5 - renderPos.x, pos.getZ() + 0.5 - renderPos.z, zoom.getDouble(handler),
-                    circle.getBoolean(handler), partial);
-            if (outside) return;
+            if ((Boolean) translate.invoke(null, place)) return;
             stack.translate(partial[0], partial[1], 0);
             stack.scale(scale, scale, 1);
             graphics.blit(MapIcons.DISTORTION, -8, -8, 0, 0, 16, 16, 16, 16);

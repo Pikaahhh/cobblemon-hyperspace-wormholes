@@ -1,7 +1,5 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import com.cobblemon.mod.common.CobblemonItemComponents;
-import com.cobblemon.mod.common.item.components.IngredientComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -69,12 +67,6 @@ public class DonutItem extends Item {
     @Override
     public boolean isFoil(ItemStack stack) {
         return enchanted(stack) || super.isFoil(stack);
-    }
-
-    public static ItemStack withBerry(Item berry, int count) {
-        ItemStack stack = new ItemStack(ModItems.DONUT, count);
-        stack.set(CobblemonItemComponents.INGREDIENT, new IngredientComponent(List.of(BuiltInRegistries.ITEM.getKey(berry))));
-        return stack;
     }
 
     @Override

@@ -1,12 +1,9 @@
 package dev.hyperspacewormholes.wormholes.boss;
 
-import com.cobblemon.mod.common.battles.SuccessfulBattleStart;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -23,7 +20,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -32,14 +28,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * The op command for boss Pokemon: /boss spawn &lt;bossName&gt; puts a boss from BossDefs 4 blocks in front of you facing
  * you, /boss setHP &lt;selector&gt; &lt;percentage&gt; sets its shared HP and /boss despawn &lt;bossUUID&gt; removes it. A
- * selector takes the entity's UUID or name, or the boss you're looking at. The rest is for test games
- * (Wormholes.TEST_COMMANDS): spawnProperties, list, remove, join, reload, defs, hp and autoplay.
+ * selector takes the entity's UUID or name, or the boss you're looking at.
  */
 public final class BossCommand {
     private BossCommand() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("boss").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
+        dispatcher.register(Commands.literal("boss").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("spawn")
                         .executes(ctx -> fail(ctx, "A boss name is required."))
                         .then(Commands.argument("bossName", StringArgumentType.greedyString())
@@ -52,26 +47,7 @@ public final class BossCommand {
                         .executes(ctx -> fail(ctx, "A boss is required."))
                         .then(Commands.argument("selector", EntityArgument.entities())
                                 .executes(ctx -> fail(ctx, "A percentage is required."))
-                                .then(Commands.argument("percentage", DoubleArgumentType.doubleArg()).executes(BossCommand::setHp))));
-        if (Wormholes.TEST_COMMANDS) {
-            root.then(Commands.literal("spawnProperties").then(Commands.argument("properties", StringArgumentType.greedyString())
-                            .executes(BossCommand::spawn)))
-                    .then(Commands.literal("list").executes(BossCommand::list))
-                    .then(Commands.literal("remove").executes(ctx -> remove(ctx, false))
-                            .then(Commands.literal("all").executes(ctx -> remove(ctx, true))))
-                    .then(Commands.literal("join").executes(ctx -> join(ctx, List.of(ctx.getSource().getPlayerOrException())))
-                            .then(Commands.argument("players", EntityArgument.players())
-                                    .executes(ctx -> join(ctx, EntityArgument.getPlayers(ctx, "players")))))
-                    .then(Commands.literal("reload").executes(BossCommand::reload))
-                    .then(Commands.literal("defs").executes(BossCommand::defs))
-                    .then(Commands.literal("hp").then(Commands.argument("percent", DoubleArgumentType.doubleArg(0, 100))
-                            .executes(BossCommand::hp)))
-                    .then(Commands.literal("autoplay").then(Commands.argument("on", BoolArgumentType.bool())
-                            .executes(ctx -> autoplay(ctx, null))
-                            .then(Commands.argument("except", EntityArgument.player())
-                                    .executes(ctx -> autoplay(ctx, EntityArgument.getPlayer(ctx, "except"))))));
-        }
-        dispatcher.register(root);
+                                .then(Commands.argument("percentage", DoubleArgumentType.doubleArg()).executes(BossCommand::setHp)))));
     }
 
     private static int fail(CommandContext<CommandSourceStack> ctx, String message) {
@@ -126,22 +102,6 @@ public final class BossCommand {
         return 1;
     }
 
-    private static int spawn(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        List<String> words = new ArrayList<>(Arrays.asList(StringArgumentType.getString(ctx, "properties").trim().split("\\s+")));
-        List<Double> numbers = new ArrayList<>();
-        while (words.size() > 1 && numbers.size() < 2 && isNumber(words.getLast())) numbers.addFirst(Double.parseDouble(words.removeLast()));
-        BossDef def = words.size() == 1 ? BossDefs.find(words.getFirst()) : null;
-        String properties = def != null ? null : String.join(" ", words);
-        if (def == null) def = BossDef.empty(Wormholes.id("custom"));
-        double perTrainer = !numbers.isEmpty() ? numbers.getFirst() : def.hpPerTrainer > 0 ? def.hpPerTrainer : BossConfig.get().hpPerTrainer;
-        float scale = numbers.size() >= 2 ? numbers.get(1).floatValue() : def.scale > 0 ? def.scale : BossConfig.get().scale;
-        if (perTrainer <= 0 || scale <= 0) {
-            return fail(ctx, "The HP multiplier and scale must be above 0.");
-        }
-        return place(ctx, player, def, properties, perTrainer, scale);
-    }
-
     private static int place(CommandContext<CommandSourceStack> ctx, ServerPlayer player, BossDef def, @Nullable String properties,
                              double perTrainer, float scale) {
         Vec3 look = Vec3.directionFromRotation(0, player.getYRot());
@@ -154,94 +114,4 @@ public final class BossCommand {
         return 1;
     }
 
-    private static boolean isNumber(String word) {
-        try {
-            Double.parseDouble(word);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static int list(CommandContext<CommandSourceStack> ctx) {
-        List<Boss> bosses = Bosses.all();
-        if (bosses.isEmpty()) {
-            ctx.getSource().sendSuccess(() -> Component.literal("No bosses."), false);
-            return 0;
-        }
-        for (Boss boss : bosses) ctx.getSource().sendSuccess(() -> Component.literal("Boss " + boss.describe()), false);
-        return bosses.size();
-    }
-
-    private static int remove(CommandContext<CommandSourceStack> ctx, boolean all) {
-        int removed = 0;
-        Boss nearest = all ? null : nearest(ctx.getSource().getPosition(), 64);
-        for (Boss boss : Bosses.all()) {
-            if (!all && boss != nearest) continue;
-            boss.entity.discard();
-            removed++;
-        }
-        int count = removed;
-        ctx.getSource().sendSuccess(() -> Component.literal("Removed " + count + " boss" + (count == 1 ? "." : "es.")), true);
-        return removed;
-    }
-
-    private static int join(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> players) {
-        int joined = 0;
-        for (ServerPlayer player : players) {
-            Boss boss = nearest(player.position(), 128);
-            if (boss == null || boss.entity.level() != player.level()) {
-                ctx.getSource().sendFailure(Component.literal("No boss near " + player.getName().getString() + "."));
-                continue;
-            }
-            if (boss.join(player, null) instanceof SuccessfulBattleStart) joined++;
-        }
-        int count = joined;
-        ctx.getSource().sendSuccess(() -> Component.literal(count + " joined a boss fight."), false);
-        return joined;
-    }
-
-    private static int reload(CommandContext<CommandSourceStack> ctx) {
-        int count = BossDefs.reload(ctx.getSource().getServer());
-        ctx.getSource().sendSuccess(() -> Component.literal("Loaded " + count + " boss definitions."), true);
-        return count;
-    }
-
-    private static int defs(CommandContext<CommandSourceStack> ctx) {
-        List<String> ids = BossDefs.ids().stream().map(Object::toString).toList();
-        ctx.getSource().sendSuccess(() -> Component.literal(ids.isEmpty() ? "No boss definitions." : "Boss definitions: " + String.join(", ", ids)), false);
-        return ids.size();
-    }
-
-    private static int hp(CommandContext<CommandSourceStack> ctx) {
-        Boss boss = nearest(ctx.getSource().getPosition(), 128);
-        if (boss == null) {
-            ctx.getSource().sendFailure(Component.literal("No boss near."));
-            return 0;
-        }
-        boss.setHpFraction(DoubleArgumentType.getDouble(ctx, "percent") / 100.0);
-        ctx.getSource().sendSuccess(() -> Component.literal("Boss " + boss.describe()), true);
-        return 1;
-    }
-
-    private static int autoplay(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer except) {
-        Boss.autoplay = BoolArgumentType.getBool(ctx, "on");
-        Boss.autoplayExcept = except == null ? null : except.getUUID();
-        ctx.getSource().sendSuccess(() -> Component.literal("Boss autoplay " + (Boss.autoplay ? "on" : "off")
-                + (except != null ? " except for " + except.getName().getString() : "") + "."), true);
-        return 1;
-    }
-
-    private static @Nullable Boss nearest(Vec3 from, double range) {
-        Boss best = null;
-        double bestDistance = range * range;
-        for (Boss boss : Bosses.all()) {
-            double d = boss.entity.position().distanceToSqr(from);
-            if (d <= bestDistance) {
-                best = boss;
-                bestDistance = d;
-            }
-        }
-        return best;
-    }
 }

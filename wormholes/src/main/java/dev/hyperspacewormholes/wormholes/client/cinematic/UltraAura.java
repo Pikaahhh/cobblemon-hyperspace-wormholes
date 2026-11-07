@@ -75,7 +75,7 @@ public final class UltraAura {
     }
 
     static boolean shows(PokemonEntity pokemon) {
-        if (pokemon.getOwner() != null || !ultra(pokemon) || UltraBurstCinematic.isBoss(pokemon)) return false;
+        if (!ultra(pokemon) || pokemon.getOwner() != null || UltraBurstCinematic.isBoss(pokemon)) return false;
         if (NecrozmaSceneCinematic.isBoss(pokemon)) {
             return NecrozmaSceneCinematic.kind() != NecrozmaScenePayload.DEFEAT
                     && NecrozmaSceneCinematic.frame(0) >= PowerUpEffects.AURA_ON;

@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -81,11 +80,11 @@ public final class Zone {
     }
 
     public static Zone get(String name) {
-        return LOADED.computeIfAbsent(name, Zone::load);
+        Zone zone = LOADED.get(name);
+        return zone != null ? zone : LOADED.computeIfAbsent(name, Zone::load);
     }
 
     private static Zone load(String name) {
-        long began = System.nanoTime();
         try {
             CompoundTag data = TemplateTiles.data(FOLDER, name);
             TemplateTiles.Columns columns = TemplateTiles.columns(FOLDER, name, data);
@@ -101,7 +100,6 @@ public final class Zone {
             Zone zone = new Zone(corner[0], corner[1], corner[2], size[0], size[2], ceiling, name.startsWith(UNREPEATED) ? 0 : REPEAT,
                     arrival, data.getFloat("yaw"), spot, exit, palette, data.getByteArray("walk"), columns.start(), columns.runs(),
                     readGround(name));
-            ZoneCheck.log("zone", name, began, zone::write);
             return zone;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -142,31 +140,6 @@ public final class Zone {
         return new String(magic);
     }
 
-    private void write(DataOutputStream out) throws IOException {
-        for (int v : new int[]{x0, y0, z0, sx, sz, ceiling, repeat, arrival.getX(), arrival.getY(), arrival.getZ()}) out.writeInt(v);
-        out.writeFloat(yaw);
-        out.writeBoolean(spot != null);
-        if (spot != null) {
-            out.writeInt(spot.getX());
-            out.writeInt(spot.getY());
-            out.writeInt(spot.getZ());
-        }
-        out.writeBoolean(exit != null);
-        if (exit != null) {
-            out.writeDouble(exit.centre().x);
-            out.writeDouble(exit.centre().y);
-            out.writeDouble(exit.centre().z);
-            out.writeFloat(exit.yaw());
-            out.writeFloat(exit.pitch());
-            out.writeFloat(exit.radius());
-        }
-        out.writeInt(palette.length);
-        for (BlockState state : palette) out.writeUTF(BlockStateParser.serialize(state));
-        out.write(walk);
-        for (int v : start) out.writeInt(v);
-        for (short v : runs) out.writeShort(v);
-    }
-
     public static BlockState block(String id) {
         ResourceLocation location = ResourceLocation.parse(id);
         return BuiltInRegistries.BLOCK.containsKey(location) ? BuiltInRegistries.BLOCK.get(location).defaultBlockState()
@@ -187,6 +160,12 @@ public final class Zone {
         Exit moved = exit == null ? null : new Exit(exit.centre().add(dx, 0, dz), exit.yaw(), exit.pitch(), exit.radius());
         return new Zone(x0 + dx, y0, z0 + dz, sx, sz, ceiling, repeat, arrival.offset(dx, 0, dz), yaw,
                 spot == null ? null : spot.offset(dx, 0, dz), moved, palette, walk, start, runs, ground);
+    }
+    public double fromCentre(int x, int z) {
+        return Math.hypot(x - x0 - copy(x, x0, sx) - sx / 2, z - z0 - copy(z, z0, sz) - sz / 2);
+    }
+    public boolean nearHoldsAtOrBelow(int x, int y, int z) {
+        return holdsAtOrBelow(x - copy(x, x0, sx), y, z - copy(z, z0, sz));
     }
 
     public double ground(int x, int z, double world) {

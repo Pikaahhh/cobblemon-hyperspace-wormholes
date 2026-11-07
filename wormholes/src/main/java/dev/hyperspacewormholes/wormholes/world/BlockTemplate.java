@@ -2,7 +2,6 @@ package dev.hyperspacewormholes.wormholes.world;
 
 import net.minecraft.nbt.CompoundTag;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -17,7 +16,6 @@ record BlockTemplate(int sx, int sy, int sz, int ox, int oy, int oz, byte[] cell
     static final byte AIR = 0;
 
     static BlockTemplate load(String folder, String name) {
-        long began = System.nanoTime();
         try {
             CompoundTag data = TemplateTiles.data(folder, name);
             int[] size = data.getIntArray("size"), origin = data.getIntArray("origin");
@@ -25,16 +23,10 @@ record BlockTemplate(int sx, int sy, int sz, int ox, int oy, int oz, byte[] cell
             byte[] cells = new byte[sx * sy * sz];
             TemplateTiles.read(folder, name, data, (x, y, z, state) -> cells[(x * sy + y) * sz + z] = (byte) (state + 1));
             BlockTemplate template = new BlockTemplate(sx, sy, sz, origin[0], origin[1], origin[2], cells);
-            ZoneCheck.log("formation", name, began, template::write);
             return template;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private void write(DataOutputStream out) throws IOException {
-        for (int v : new int[]{sx, sy, sz, ox, oy, oz}) out.writeInt(v);
-        out.write(cells);
     }
 
     byte at(int x, int y, int z) {

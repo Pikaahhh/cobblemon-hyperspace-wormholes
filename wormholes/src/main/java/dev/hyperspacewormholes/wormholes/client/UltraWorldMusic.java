@@ -94,7 +94,6 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
         if (theme == null || wait > 0) return;
         wait = RETRY_TICKS;
         mc.getMusicManager().stopPlaying();
-        if (sinceHold < Integer.MAX_VALUE) Wormholes.LOGGER.info("[music] {} fades back in {} ticks after the last hold", theme.getLocation(), sinceHold);
         current = new UltraWorldMusic(theme, sinceHold < Integer.MAX_VALUE);
         sinceHold = Integer.MAX_VALUE;
         mc.getSoundManager().play(current);

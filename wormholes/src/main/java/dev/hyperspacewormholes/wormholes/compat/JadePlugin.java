@@ -19,13 +19,10 @@ public final class JadePlugin implements IWailaPlugin {
     public void registerClient(IWailaClientRegistration registration) {
         try {
             Method hide = registration.getClass().getMethod("hideTarget", Block.class);
-            int hidden = 0;
             for (Block block : BuiltInRegistries.BLOCK) {
                 if (!BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals(Wormholes.MOD_ID) || block.asItem() != Items.AIR) continue;
                 hide.invoke(registration, block);
-                hidden++;
             }
-            Wormholes.LOGGER.info("Jade: no tooltip for {} Ultra-world-only blocks", hidden);
         } catch (ReflectiveOperationException | RuntimeException e) {
             Wormholes.LOGGER.warn("Couldn't hide the Ultra worlds' own blocks from Jade", e);
         }

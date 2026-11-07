@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.client;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import dev.hyperspacewormholes.wormholes.CosmicJar;
 import dev.hyperspacewormholes.wormholes.LuminescentIce;
 import dev.hyperspacewormholes.wormholes.Wormholes;
@@ -44,6 +45,8 @@ import net.minecraft.world.phys.Vec3;
 public class WormholesClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        ClientPlayNetworking.registerGlobalReceiver(GameplayConfig.Sync.TYPE, (payload, context) -> GameplayConfig.receive(payload));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GameplayConfig.forgetServer());
         EntityRendererRegistry.register(Wormholes.WORMHOLE, WormholeEntityRenderer::new);
         Block[] ice = LuminescentIce.family().toArray(Block[]::new);
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(), ice);

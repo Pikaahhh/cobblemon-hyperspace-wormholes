@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.pokeball.catching.CaptureContext;
@@ -33,7 +34,7 @@ public record DonutPowers(int humungo, int teensy, int sour, int dry) {
             if (event.getCaptureResult().isSuccessfulCapture() || !(event.getThrower() instanceof ServerPlayer player)) return Unit.INSTANCE;
             if (!player.level().dimension().equals(Hyperspace.HYPERSPACE)) return Unit.INSTANCE;
             WorldData.Trip trip = WorldData.get(player.level().getServer()).trips.get(player.getUUID());
-            if (trip != null && player.getRandom().nextFloat() < CATCHING[trip.powers.dry]) event.setCaptureResult(CaptureContext.Companion.successful(false));
+            if (trip != null && player.getRandom().nextFloat() < CATCHING[trip.powers.dry] * (float) GameplayConfig.get().catchingPowerMultiplier) event.setCaptureResult(CaptureContext.Companion.successful(false));
             return Unit.INSTANCE;
         });
     }
@@ -68,8 +69,11 @@ public record DonutPowers(int humungo, int teensy, int sour, int dry) {
     }
 
     public void size(Pokemon pokemon, RandomSource random) {
-        if (humungo > 0) pokemon.setScaleModifier(scale(HUMUNGO_FROM[humungo - 1], 255, random));
-        else if (teensy > 0) pokemon.setScaleModifier(scale(0, TEENSY_TO[teensy - 1], random));
+        if (humungo > 0) pokemon.setScaleModifier(strength(scale(HUMUNGO_FROM[humungo - 1], 255, random), GameplayConfig.get().humungoPowerMultiplier));
+        else if (teensy > 0) pokemon.setScaleModifier(strength(scale(0, TEENSY_TO[teensy - 1], random), GameplayConfig.get().teensyPowerMultiplier));
+    }
+    private static float strength(float scale, double multiplier) {
+        return Math.max(0.1f, 1 + (scale - 1) * (float) multiplier);
     }
 
     private static float scale(int from, int to, RandomSource random) {
@@ -77,15 +81,15 @@ public record DonutPowers(int humungo, int teensy, int sour, int dry) {
     }
 
     public float itemChance() {
-        return ITEM_CHANCE[sour];
+        return Math.min(1f, ITEM_CHANCE[sour] * (float) GameplayConfig.get().itemPowerMultiplier);
     }
 
     public int bigHaul() {
-        return BIG_HAUL[sour];
+        return (int) Math.round(BIG_HAUL[sour] * GameplayConfig.get().bigHaulPowerMultiplier);
     }
 
     public int nearbyCap(int cap) {
-        return cap + ENCOUNTER_EXTRA[dry];
+        return cap + (int) Math.round(ENCOUNTER_EXTRA[dry] * GameplayConfig.get().encounterPowerMultiplier);
     }
 
     public int[] saved() {
