@@ -129,7 +129,7 @@ public final class HoopaEvent {
                             new HoopaSummon.Wrist(new double[]{21.01, 74.33, 46.40}, new double[]{-0.094, -0.034, 0.995}, new float[]{0.0178f, -0.0466f, -0.0162f, 0.9986f})},
                     new HoopaSummon.Wrist[]{new HoopaSummon.Wrist(new double[]{-31.80, 83.07, 24.46}, new double[]{-0.290, 0.439, 0.851}, new float[]{-0.2221f, -0.1591f, -0.0368f, 0.9612f}),
                             new HoopaSummon.Wrist(new double[]{31.80, 83.07, 24.46}, new double[]{0.290, 0.439, 0.851}, new float[]{-0.2221f, 0.1591f, 0.0368f, 0.9612f})},
-                    new String[]{"volcanion level=70", "zygarde level=70"}),
+                    new String[]{"volcanion level=60", "zygarde level=60"}),
             new Call("summon3", "hold3", "catch3", 90, new int[]{44, 52, 60},
                     new HoopaSummon.Wrist[]{new HoopaSummon.Wrist(new double[]{-41.35, 50.09, 36.19}, new double[]{-0.084, -0.049, 0.995}, new float[]{0.0245f, -0.0424f, 0.0050f, 0.9988f}),
                             new HoopaSummon.Wrist(new double[]{11.90, 80.04, 59.60}, new double[]{-0.052, 0.032, 0.998}, new float[]{-0.0156f, -0.0261f, -0.0095f, 0.9995f}),
@@ -137,7 +137,7 @@ public final class HoopaEvent {
                     new HoopaSummon.Wrist[]{new HoopaSummon.Wrist(new double[]{-44.29, 57.50, 24.29}, new double[]{-0.403, 0.300, 0.864}, new float[]{-0.1482f, -0.2141f, -0.0329f, 0.9650f}),
                             new HoopaSummon.Wrist(new double[]{31.80, 83.07, 24.46}, new double[]{0.290, 0.439, 0.851}, new float[]{-0.2221f, 0.1591f, 0.0368f, 0.9612f}),
                             new HoopaSummon.Wrist(new double[]{44.29, 57.50, 24.29}, new double[]{0.403, 0.300, 0.864}, new float[]{-0.1482f, 0.2141f, 0.0329f, 0.9650f})},
-                    new String[]{"dialga level=90", "giratina orb_forme=origin level=90", "palkia level=90"})};
+                    new String[]{"dialga level=80", "giratina orb_forme=origin level=80", "palkia level=80"})};
 
     private enum Stage { ARRIVE, DESCEND, WAITING, FIGHT, CALL, WAVE, CATCH, OPEN }
 
@@ -176,11 +176,13 @@ public final class HoopaEvent {
         final Map<PokemonEntity, UUID> prizes = new LinkedHashMap<>();
         int settled = -1;
         final List<UUID> ready = new ArrayList<>(), seated = new ArrayList<>();
+        final Set<UUID> entered = new HashSet<>();
 
         Event(ServerLevel level, int island, UUID trigger) {
             this.level = level;
             this.island = island;
             this.trigger = trigger;
+            entered.add(trigger);
             BlockPos middle = Zones.middle(island);
             Vec3 centre = new Vec3(middle.getX() + 0.5, middle.getY(), middle.getZ() + 0.5);
             Zones.Zone zone = Zones.get(island);
@@ -226,10 +228,13 @@ public final class HoopaEvent {
 
     public static void enter(ServerPlayer player, int island) {
         Event already = events.get(island);
-        if (already != null && (already.stage != Stage.ARRIVE || already.ticks >= NORMAL) && (already.stage != Stage.OPEN || already.beaten || already.spliced)) {
+        if (already != null && (already.stage != Stage.ARRIVE || already.ticks >= NORMAL)) {
             ServerPlayNetworking.send(player, new Glitch(1));
         }
-        if (already != null) return;
+        if (already != null) {
+            already.entered.add(player.getUUID());
+            return;
+        }
         events.put(island, new Event(player.serverLevel(), island, player.getUUID()));
     }
     static boolean splice(ServerPlayer player) {
@@ -925,7 +930,6 @@ public final class HoopaEvent {
             e.ring = null;
             later(e.level, RING_CLOSE, () -> remove(ring));
         }
-        if (!e.beaten && !e.spliced) for (ServerPlayer player : present(e)) ServerPlayNetworking.send(player, new Glitch(0));
         enter(e, Stage.OPEN);
     }
 
@@ -1110,6 +1114,11 @@ public final class HoopaEvent {
         @Override
         public boolean lopsided() {
             return true;
+        }
+
+        @Override
+        public int trainerSlots(ServerPlayer player) {
+            return e.entered.size() == 1 && e.entered.contains(player.getUUID()) ? 2 : 1;
         }
 
         @Override

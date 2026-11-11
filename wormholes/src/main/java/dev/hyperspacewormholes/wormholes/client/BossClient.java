@@ -75,7 +75,8 @@ public final class BossClient {
     public static boolean lopsided(ActiveClientBattlePokemon own) {
         int slots = 0;
         for (ActiveClientBattlePokemon ignored : own.getSidePokemon()) slots++;
-        return slots == 1 && own.getFormat().getBattleType().getPokemonPerSide() > 1;
+        int foes = own.getAllActivePokemon().size() - slots;
+        return own.getFormat().getBattleType().getPokemonPerSide() > 1 && (slots == 1 || slots != foes);
     }
 
     /** Whether this slot still has a Pokemon: a faint sends its tile off, where it stays until the next switch. */

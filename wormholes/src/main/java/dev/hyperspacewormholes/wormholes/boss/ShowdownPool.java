@@ -19,7 +19,7 @@ public final class ShowdownPool {
             (function () {
               if (globalThis.hwBoss) return globalThis.hwBoss;
               const pools = new Map();
-              const members = new Map();
+              const members = new Map(), slotsOf = new Map();
               const STATS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
               const toId = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
               const slot = function (battle, id) {
@@ -60,7 +60,7 @@ public final class ShowdownPool {
                 p.getMoves = function () {
                   const moves = getMoves.apply(this, arguments);
                   for (const m of moves) {
-                    if (m && pool.banned.has(m.id)) { m.disabled = true; m.disabledSource = 'boss'; }
+                    if (m && (pool.banned.has(m.id) || this.battle.dex.moves.get(m.id).ohko)) { m.disabled = true; m.disabledSource = 'boss'; }
                   }
                   return moves.length && moves.every(m => m.disabled) ? [] : moves;
                 };
@@ -73,6 +73,13 @@ public final class ShowdownPool {
                 battle.actions.trySpreadMoveHit = function (targets, pokemon, move, notActive) {
                   if (this.battle.hwSpread && pokemon && pokemon.hwBoss && move && move.category !== 'Status') move.spreadHit = true;
                   return spread.call(this, targets, pokemon, move, notActive);
+                };
+                battle.actions.hitStepAccuracy = function (targets, pokemon, move) {
+                  if (move && move.ohko && pokemon && !pokemon.hwBoss) {
+                    for (const target of targets) this.battle.add('-immune', target, '[ohko]');
+                    return targets.map(() => false);
+                  }
+                  return Object.getPrototypeOf(this).hitStepAccuracy.call(this, targets, pokemon, move);
                 };
                 battle.go = function () {
                   if (this.turn < 1 || this.ended || this.hwFree) return go.apply(this, arguments);
@@ -140,11 +147,11 @@ public final class ShowdownPool {
               // never run on odd sides. Only validTargetLoc assumes equal sides, so this battle gets its own. Once the
               // whole wild side has fainted the next turn waits for sendBack, or the trainer would be asked for a move
               // with nobody to use it on.
-              const lopside = function (battle, wild) {
+              const lopside = function (battle, wild, slots) {
                 if (battle.gameType !== 'doubles') return;
                 const trainer = battle.sides[1 - wild.n];
-                trainer.active = [null];
-                trainer.slotConditions.length = 1;
+                trainer.active = trainer.active.slice(0, slots).map(() => null);
+                trainer.slotConditions.length = slots;
                 wild.active = wild.pokemon.map(() => null);
                 battle.hwWild = wild;
                 const nextTurn = battle.nextTurn;
@@ -187,7 +194,7 @@ public final class ShowdownPool {
                 };
               };
               const attach = function (battle) {
-                let n = 0, wild = null;
+                let n = 0, wild = null, slots = 1;
                 if (!battle || !battle.sides) return n;
                 for (const side of battle.sides) {
                   if (!side) continue;
@@ -203,7 +210,7 @@ public final class ShowdownPool {
                       wavewrap(battle);
                       continue;
                     }
-                    if (pool.lopsided) wild = side;
+                    if (pool.lopsided) { wild = side; slots = slotsOf.get(String(p.set.uuid)) || 1; }
                     if (p.hwBoss === id) continue;
                     Object.defineProperty(p, 'hp', { configurable: true, enumerable: true,
                       get() { return pool.hp; },
@@ -229,7 +236,7 @@ public final class ShowdownPool {
                     for (const p of side.pokemon) if (!p.hwBoss && p.hwWave === undefined) ban(p, pool);
                   }
                 }
-                if (wild && !battle.started) lopside(battle, wild);
+                if (wild && !battle.started) lopside(battle, wild, slots);
                 return n;
               };
               const run = function (b, action, pool, echo) {
@@ -482,6 +489,21 @@ public final class ShowdownPool {
                   const b = s && s.battle;
                   return b && !b.ended && b.requestState === 'switch' ? 'yes' : 'no';
                 },
+                flush(battleId) {
+                  const s = battleMap.get(battleId);
+                  const b = s && s.battle;
+                  if (!b || b.ended || !b.hwHeld) return '0';
+                  const own = a => a.pokemon && a.pokemon.hwBoss === undefined && a.pokemon.hwWave === undefined
+                    && (a.choice === 'instaswitch' || a.choice === 'runSwitch');
+                  let n = 0;
+                  for (let guard = 0; guard < 16; guard++) {
+                    const i = b.queue.list.findIndex(own);
+                    if (i < 0) break;
+                    run(b, b.queue.list.splice(i, 1)[0], null, false);
+                    n++;
+                  }
+                  return String(n);
+                },
                 sendBack(battleId) {
                   const s = battleMap.get(battleId);
                   const b = s && s.battle;
@@ -513,7 +535,7 @@ public final class ShowdownPool {
                   b.sendUpdates();
                   return 'ok';
                 },
-                join(uuid, id) { members.set(uuid, id); return 'ok'; },
+                join(uuid, id, slots) { members.set(uuid, id); slotsOf.set(uuid, Math.max(1, Math.min(2, Number(slots) || 1))); return 'ok'; },
                 wave(id) {
                   const p = pools.get(id);
                   if (!p) return 'none';
@@ -526,10 +548,10 @@ public final class ShowdownPool {
                   if (p) p.lopsided = true;
                   return 'ok';
                 },
-                leave(uuid) { members.delete(uuid); return 'ok'; },
+                leave(uuid) { members.delete(uuid); slotsOf.delete(uuid); return 'ok'; },
                 drop(id) {
                   pools.delete(id);
-                  for (const [k, v] of [...members]) if (v === id) members.delete(k);
+                  for (const [k, v] of [...members]) if (v === id) { members.delete(k); slotsOf.delete(k); }
                   return 'ok';
                 }
               };
@@ -681,8 +703,16 @@ public final class ShowdownPool {
         call("turn", battleId);
     }
 
+    public static int flush(String battleId) {
+        return number(call("flush", battleId));
+    }
+
     public static void join(String pokemonUuid, String id) {
-        call("join", pokemonUuid, id);
+        join(pokemonUuid, id, 1);
+    }
+
+    public static void join(String pokemonUuid, String id, int slots) {
+        call("join", pokemonUuid, id, String.valueOf(slots));
     }
 
     public static void leave(String pokemonUuid) {

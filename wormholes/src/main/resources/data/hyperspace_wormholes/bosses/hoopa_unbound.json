@@ -1,6 +1,6 @@
 {
   "name": "Hoopa Unbound",
-  "properties": "hoopa djinn_state=unbound level=100 moves=hyperspacefury,psychic,darkpulse,focusblast",
+  "properties": "hoopa djinn_state=unbound level=90 moves=hyperspacefury,psychic,darkpulse,focusblast",
   "moves": ["hyperspacefury", "psychic", "darkpulse", "focusblast", "gunkshot", "nastyplot"],
   "hp_per_trainer": 10,
   "scaling": [10, 20, 30, 40],

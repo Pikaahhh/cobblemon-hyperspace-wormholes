@@ -78,6 +78,7 @@ public final class ItemAnalyser {
     private static final MonitorBlock.MonitorScreen READY_SCREEN = MonitorBlock.MonitorScreen.BLUE_PROGRESS_9;
 
     private static final MonitorBlock.MonitorScreen CHARGED_SCREEN = MonitorBlock.MonitorScreen.TM_ELECTRIC;
+    private static final ResourceLocation CHARGED_SOUND = ResourceLocation.fromNamespaceAndPath("cobblemon", "move.thunderwave.actor");
     private static final int DISTANCE = 5;
     private static final int MAX_RISE = 4;
     private static final double LIGHTNING_BREAK_CHANCE = 0.90;
@@ -205,7 +206,7 @@ public final class ItemAnalyser {
         store.setDirty();
         Vec3 c = Vec3.atCenterOf(pos);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, c.x, c.y, c.z, 20, 0.3, 0.3, 0.3, 0.1);
-        level.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1f, 1.4f);
+        level.playSound(null, pos, SoundEvent.createVariableRangeEvent(CHARGED_SOUND), SoundSource.BLOCKS, 1f, 1f);
         refreshScreen(level, pos.below());
     }
     private static double breakChance(double power) {
@@ -229,6 +230,13 @@ public final class ItemAnalyser {
         }
     }
 
+    private static MonitorBlock.MonitorScreen chargedScreen(Store store, BlockPos pos) {
+        Loaded loaded = store.devices.get(pos.asLong());
+        if (loaded == null || loaded.core.isEmpty()) return CHARGED_SCREEN;
+        MonitorBlock.MonitorScreen screen = screenFor(loaded.recipe() == Recipe.COSMOG ? "psychic" : typeOf(loaded.core.getItem()));
+        return screen == READY_SCREEN ? CHARGED_SCREEN : screen;
+    }
+
     private static boolean ready(ServerLevel level, BlockPos pos, Store store) {
         if (overheated(level, pos, store)) return false;
         Loaded loaded = store.devices.get(pos.asLong());
@@ -242,10 +250,10 @@ public final class ItemAnalyser {
         if (isRunning(level, monitorPos)) return;
         MonitorBlock.MonitorScreen current = monitor.getValue(MonitorBlock.Companion.getSCREEN());
         Store store = Store.of(level);
-        MonitorBlock.MonitorScreen wanted = store.charged.contains(monitorPos.asLong()) ? CHARGED_SCREEN : ready(level, pos, store) ? READY_SCREEN : null;
+        MonitorBlock.MonitorScreen wanted = store.charged.contains(monitorPos.asLong()) ? chargedScreen(store, pos) : null;
         if (wanted != null) {
             if (current != wanted) level.setBlockAndUpdate(monitorPos, withScreen(monitor, wanted));
-        } else if (current == READY_SCREEN || current == CHARGED_SCREEN) {
+        } else if (current == READY_SCREEN || current.name().startsWith("TM_")) {
             level.setBlockAndUpdate(monitorPos, withScreen(monitor, MonitorBlock.MonitorScreen.OFF));
         }
     }

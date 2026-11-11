@@ -68,6 +68,8 @@ public final class LegendWave {
         if (closed || fighters.containsKey(t.player) || !t.live() || !t.battle.getStarted() || t.battle.getTurn() < 1 || Boss.busy(t)) return;
         ServerPlayer player = boss.online(t);
         if (player == null) return;
+        String held = t.battle.getBattleId().toString();
+        if (ShowdownPool.switching(held) || ShowdownPool.flush(held) > 0) return;
         List<Pokemon> copies = new ArrayList<>();
         List<BattlePokemon> wild = new ArrayList<>();
         for (int i = 0; i < legends.size(); i++) {

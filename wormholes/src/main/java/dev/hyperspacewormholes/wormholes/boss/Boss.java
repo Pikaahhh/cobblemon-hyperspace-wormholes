@@ -109,6 +109,10 @@ public final class Boss {
             return false;
         }
 
+        default int trainerSlots(ServerPlayer player) {
+            return 1;
+        }
+
         /** It is invisible from the first, as adding it to the world sends it to the players there and then. */
         default boolean startsHidden() {
             return false;
@@ -116,6 +120,8 @@ public final class Boss {
     }
 
     record Hud(String name, int level, float hp, Map<String, Integer> stages, String status) {}
+
+    private static final double PAIR_GAP = 1.25;
 
     record Seat(Vec3 pokemon, Vec3 trainer) {}
 
@@ -318,11 +324,15 @@ public final class Boss {
         spots.put(player, new Seat(pokemonAt, trainerAt));
     }
 
-    @Nullable Vec3 sendOutAt(PokemonBattle battle, BattleActor actor) {
+    @Nullable Vec3 sendOutAt(PokemonBattle battle, BattleActor actor, int slot) {
         for (Trainer t : trainers) {
             if (t.battle != battle || t.side != actor) continue;
             Seat seat = spots.get(t.player);
-            return seat == null ? null : seat.pokemon();
+            if (seat == null) return null;
+            if (t.actor.trainerSlots < 2) return seat.pokemon();
+            Vec3 out = seat.pokemon().subtract(entity.position());
+            Vec3 side = new Vec3(-out.z, 0, out.x).normalize().scale(slot == 0 ? -PAIR_GAP : PAIR_GAP);
+            return seat.pokemon().add(side);
         }
         return null;
     }
@@ -444,10 +454,12 @@ public final class Boss {
         BossActor actor = new BossActor(new BattlePokemon(copy, copy, new ArrayList<>(), new ArrayList<>()),
                 rules != null ? rules.fleeDistance(usual) : usual, ai);
         actor.lopsided = rules != null && rules.lopsided();
+        int healthy = (int) team.stream().filter(p -> p.getHealth() > 0).count();
+        actor.trainerSlots = actor.lopsided ? Mth.clamp(Math.min(rules.trainerSlots(player), healthy), 1, 2) : 1;
         Trainer trainer = new Trainer(player, copy, actor, side);
         trainers.add(trainer);
         rescale();
-        ShowdownPool.join(copy.getUuid().toString(), id);
+        ShowdownPool.join(copy.getUuid().toString(), id, actor.trainerSlots);
         BattleStartResult result = BattleRegistry.startBattle(actor.lopsided ? BattleFormat.Companion.getGEN_9_DOUBLES() : BattleFormat.Companion.getGEN_9_SINGLES(),
                 new BattleSide(side), new BattleSide(actor), true);
         if (!(result instanceof SuccessfulBattleStart started)) {

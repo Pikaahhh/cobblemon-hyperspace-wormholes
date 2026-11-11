@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * The distortion's own record is what's saved, so rifts come back when its chunk loads again.
  */
 public class Rift extends Entity {
+    public static final int SPLICE_HEAD_START = 30;
     public static final EntityType<Rift> TYPE = register("rift", EntityType.Builder.<Rift>of(Rift::new, MobCategory.MISC)
             .sized(0.5f, 0.5f).fireImmune().noSave().noSummon().clientTrackingRange(10).updateInterval(20));
     public static final double HEIGHT = 1.5;
@@ -66,7 +67,7 @@ public class Rift extends Entity {
     }
 
     public static Rift portal(ServerLevel level, Vec3 base, Vec3 normal, boolean unstable) {
-        return spawn(level, base, normal, true, level.getGameTime(), unstable, Component.empty());
+        return spawn(level, base, normal, true, level.getGameTime() - (unstable ? SPLICE_HEAD_START : 0), unstable, Component.empty());
     }
 
     /** A portal that's already fully open, for the one you've just stepped out of. */

@@ -170,7 +170,7 @@ public final class Bosses {
     public static @Nullable Vec3 sendOutAt(ActiveBattlePokemon active) {
         if (BOSSES.isEmpty()) return null;
         for (Boss boss : BOSSES.values()) {
-            Vec3 at = boss.sendOutAt(active.getBattle(), active.getActor());
+            Vec3 at = boss.sendOutAt(active.getBattle(), active.getActor(), Math.max(0, active.getActor().getActivePokemon().indexOf(active)));
             if (at != null) return at;
         }
         return null;

@@ -20,6 +20,12 @@ float distanceAt(ivec2 cell) {
     return (t.r * 255.0 * 256.0 + t.g * 255.0) / 65535.0 * 16.0 - 8.0;
 }
 
+float lineHeight(ivec2 cell) {
+    ivec2 limit = ivec2(int(MaskInfo.z) - 1);
+    vec4 t = texelFetch(MaskSampler, clamp(cell, ivec2(0), limit), 0);
+    return (t.b * 255.0 * 256.0 + t.a * 255.0) / 16.0 - 2048.0;
+}
+
 vec3 sky(vec3 dir) {
     float c = cos(SkyAngle), s = sin(SkyAngle);
     float lx = c * dir.x - s * dir.z;
@@ -59,6 +65,7 @@ void main() {
     float phase = 7.0 * theta / 6.2831853 + 0.25 * sin(12.0 * theta) + 0.15 * sin(30.0 * theta + 1.3);
     float shift = 0.5 * (0.5 - 0.5 * cos(6.2831853 * (MaskInfo.w + phase)));
     float t = d + shift;
+    if (rel.y - MaskOrigin.y > lineHeight(ivec2(floor(cell))) + 1.0) t = d;
     float a = t >= 0.0 ? 1.0 : 0.95 * clamp(1.0 + t / 0.25, 0.0, 1.0);
     fragColor = vec4(mix(grey, sky(normalize(rel)), a), 1.0);
 }

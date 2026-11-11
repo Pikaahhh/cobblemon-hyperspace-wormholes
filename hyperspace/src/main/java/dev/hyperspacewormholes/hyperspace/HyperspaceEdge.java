@@ -47,6 +47,7 @@ import java.util.Set;
  */
 public class HyperspaceEdge {
     private static final int HALF = 52;
+    private static final float NO_LINE = 4095f;
     private static final int SIZE = HALF * 2 + 1;
     private static final float CURTAIN_DEPTH = 64f;
     private static final int RES = 4;
@@ -144,7 +145,7 @@ public class HyperspaceEdge {
         Vec3 cam = context.camera().getPosition();
         float ticks = context.world().getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false);
         effect.getUniform("InverseView").set(new Matrix4f(context.projectionMatrix()).mul(context.positionMatrix()).invert());
-        effect.getUniform("MaskOrigin").set((float) (current.x0 - cam.x), 0f, (float) (current.z0 - cam.z));
+        effect.getUniform("MaskOrigin").set((float) (current.x0 - cam.x), (float) -cam.y, (float) (current.z0 - cam.z));
         effect.getUniform("SkyAngle").set(HyperspaceSky.angle(ticks));
         info.set(1f, RES, SIZE * RES, creep);
         int maskId = mask.getId();
@@ -156,20 +157,23 @@ public class HyperspaceEdge {
     private static void fillMask(Edge edge) {
         int n = SIZE * RES;
         if (mask == null) mask = new DynamicTexture(n, n, false);
-        float[] distance = field(edge);
+        float[] height = new float[n * n];
+        float[] distance = field(edge, height);
         NativeImage image = mask.getPixels();
         for (int tx = 0; tx < n; tx++) {
             for (int tz = 0; tz < n; tz++) {
                 int d = Mth.clamp(Math.round((distance[tx * n + tz] + 8f) / 16f * 65535f), 0, 65535);
-                image.setPixelRGBA(tx, tz, (255 << 24) | ((d & 255) << 8) | (d >> 8));
+                int h = Mth.clamp(Math.round((Math.min(height[tx * n + tz], NO_LINE) + 2048f) * 16f), 0, 65535);
+                image.setPixelRGBA(tx, tz, ((h & 255) << 24) | ((h >> 8) << 16) | ((d & 255) << 8) | (d >> 8));
             }
         }
         mask.upload();
     }
 
-    private static float[] field(Edge edge) {
+    private static float[] field(Edge edge, float[] height) {
         int n = SIZE * RES;
         float[] distance = new float[n * n];
+        Arrays.fill(height, Float.MAX_VALUE);
         for (int tx = 0; tx < n; tx++) {
             for (int tz = 0; tz < n; tz++) distance[tx * n + tz] = edge.solid[tx / RES][tz / RES] ? -FAR : FAR;
         }
@@ -196,6 +200,7 @@ public class HyperspaceEdge {
                         int k = tx * n + tz;
                         if (d >= Math.abs(distance[k])) continue;
                         distance[k] = dx * nx + dz * nz >= 0 ? d : -d;
+                        height[k] = Math.max(p[2], q[2]);
                     }
                 }
             }

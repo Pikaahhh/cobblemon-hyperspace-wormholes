@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.api.moves.animations.UsersProvider;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.ActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.AnimationActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.EntityConditionalActionEffectKeyframe;
+import com.cobblemon.mod.common.api.moves.animations.keyframes.EntityParticlesActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.PauseActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.RemoveHoldsActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.categories.DamageCategories;
@@ -23,6 +24,7 @@ import com.cobblemon.mod.common.api.types.ElementalType;
 import com.cobblemon.mod.common.battles.BattleRegistry;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.net.messages.client.animation.PlayPosableAnimationPacket;
+import com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonParser;
 import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
@@ -35,6 +37,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -108,7 +111,7 @@ public class QuickBattles {
     private static final List<String> PROTECTED = List.of("legendary", "mythical", "ultra_beast", "paradox");
     private static final int LANDING = 10;
     private static final int GIVE_UP = 200;
-    private static final double RECOIL = 0.2;
+    private static final double RECOIL = 0.2, BURST_RANGE = 64;
 
     private static class Attack {
         final UUID owner;
@@ -138,7 +141,10 @@ public class QuickBattles {
         }
     }
 
+    private record Burst(ServerLevel level, int at, String effect, Vec3 where) {}
+
     private static final Map<PokemonEntity, Attack> attacks = new HashMap<>();
+    private static final List<Burst> bursts = new ArrayList<>();
     private static final Map<UUID, Map<String, Long>> cooldowns = new HashMap<>();
     private static Set<String> sounds;
 
@@ -279,6 +285,11 @@ public class QuickBattles {
     }
 
     private static void tick(MinecraftServer server) {
+        bursts.removeIf(burst -> {
+            if (burst.at > server.getTickCount()) return false;
+            new SpawnSnowstormParticlePacket(ResourceLocation.parse(burst.effect), burst.where).sendToPlayers(PlayerLookup.around(burst.level, burst.where, BURST_RANGE));
+            return true;
+        });
         for (Iterator<Map.Entry<PokemonEntity, Attack>> it = attacks.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<PokemonEntity, Attack> entry = it.next();
             if (!step(server, entry.getKey(), entry.getValue())) continue;
@@ -404,6 +415,7 @@ public class QuickBattles {
         pokemon.getNavigation().stop();
         pokemon.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         attack.ran = attack.timeline != null && run(attack.timeline, pokemon, attack.target);
+        if (attack.ran && attack.monitor != null) landOnMonitor(server, pokemon, attack);
         if (!attack.ran) {
             new PlayPosableAnimationPacket(pokemon.getId(), new LinkedHashSet<>(animations(attack.move.getName(), attack.physical)), List.of())
                     .sendToPlayers(PlayerLookup.tracking(pokemon));
@@ -416,6 +428,26 @@ public class QuickBattles {
             owner.displayClientMessage(Component.empty().append(pokemon.getDisplayName()).append(" used ")
                     .append(attack.move.getDisplayName()).append("!"), true);
         }
+    }
+
+    private static void landOnMonitor(MinecraftServer server, PokemonEntity pokemon, Attack attack) {
+        MoLangRuntime runtime = runtime();
+        Vec3 centre = Vec3.atCenterOf(attack.monitor);
+        double seconds = 0;
+        for (ActionEffectKeyframe keyframe : attack.timeline.getTimeline()) {
+            if (keyframe instanceof PauseActionEffectKeyframe pause) {
+                seconds += pause.getPause().resolveDouble(runtime);
+                continue;
+            }
+            seconds += delay(keyframe, runtime);
+            if (keyframe instanceof EntityParticlesActionEffectKeyframe particles && particles.getEffect() != null && onTarget(particles)) {
+                bursts.add(new Burst((ServerLevel) pokemon.level(), server.getTickCount() + (int) Math.round(seconds * 20), particles.getEffect(), centre));
+            }
+        }
+    }
+
+    private static boolean onTarget(EntityConditionalActionEffectKeyframe keyframe) {
+        return keyframe.getEntityCondition() != null && keyframe.getEntityCondition().toString().replace(" ", "").contains("is_user==false");
     }
 
     private static void hit(MinecraftServer server, PokemonEntity pokemon, Attack attack) {
@@ -435,6 +467,7 @@ public class QuickBattles {
         if (!has(sound)) sound = "impact." + attack.move.getType().getName().toLowerCase(Locale.ROOT);
         if (!attack.ran || !(attack.target instanceof PokemonEntity)) play(level, centre, sound);
         if (attack.monitor != null) {
+            level.sendParticles(ParticleTypes.CRIT, centre.x, centre.y, centre.z, 12, 0.3, 0.3, 0.3, 0.3);
             ItemAnalyser.struck(level, attack.monitor, attack.move.getType().getName().equalsIgnoreCase("electric"), attack.move.getTemplate().getPower());
         } else if (attack.target instanceof FloatingBall ball) {
             ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);
@@ -528,8 +561,7 @@ public class QuickBattles {
                 landed = seconds;
                 break;
             }
-            if (landed < 0 && keyframe instanceof EntityConditionalActionEffectKeyframe conditional && conditional.getEntityCondition() != null
-                    && conditional.getEntityCondition().toString().replace(" ", "").contains("is_user==false")) {
+            if (landed < 0 && keyframe instanceof EntityConditionalActionEffectKeyframe conditional && onTarget(conditional)) {
                 landed = seconds;
             }
         }

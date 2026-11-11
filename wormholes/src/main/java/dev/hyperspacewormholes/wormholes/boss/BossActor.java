@@ -35,6 +35,7 @@ import java.util.List;
 public final class BossActor extends PokemonBattleActor {
     private final BattleAI ai;
     boolean waiting, wave, lopsided;
+    int trainerSlots = 1;
     @Nullable BattleAI waveAi;
 
     BossActor(BattlePokemon pokemon, float fleeDistance, BattleAI ai) {
@@ -84,8 +85,8 @@ public final class BossActor extends PokemonBattleActor {
     public static void fitSlots(PokemonBattle battle) {
         for (BattleActor actor : battle.getSide2().getActors()) {
             if (!(actor instanceof BossActor boss) || !boss.lopsided) continue;
-            oneSlot(boss);
-            for (BattleActor trainer : battle.getSide1().getActors()) oneSlot(trainer);
+            slots(boss, 1);
+            for (BattleActor trainer : battle.getSide1().getActors()) slots(trainer, boss.trainerSlots);
         }
     }
 
@@ -100,9 +101,9 @@ public final class BossActor extends PokemonBattleActor {
         return null;
     }
 
-    private static void oneSlot(BattleActor actor) {
+    private static void slots(BattleActor actor, int keep) {
         List<ActiveBattlePokemon> slots = actor.getActivePokemon();
-        while (slots.size() > 1) slots.removeLast();
+        while (slots.size() > keep) slots.removeLast();
     }
 
     boolean ready() {
