@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.CobblemonEntities;
 import com.cobblemon.mod.common.api.Priority;
@@ -71,7 +72,6 @@ public class Spawns {
     public static final String HERD = "hyperspace_herd";
     public static float herdChance = 0.1f;
     public static int megaLevel = 200;
-    public static float bossShinyChance = 0.25f;
     private static final Set<String> NOT_SPAWNED = Set.of("cosmog", "cosmoem", "solgaleo", "lunala");
     private static final Set<String> MONUMENT_LEGENDS = Set.of(
             "articuno", "zapdos", "moltres", "mew", "celebi", "entei", "raikou", "suicune", "lugia", "hooh",
@@ -258,7 +258,6 @@ public class Spawns {
         List<Species> kinds = herdKinds(species);
         Pokemon leader = species.create(DonutBoosts.maxLevel(stars(trip)));
         leader.setAlpha(true);
-        leader.setScaleModifier(leaderScale(species, kinds));
         PokemonProperties.Companion.parse("held_item=cobblemon:" + species.getPrimaryType().getName().toLowerCase(Locale.ROOT) + "_gem").apply(leader);
         rollShiny(leader, trip, random);
         PokemonEntity head = place(level, leader, pos, random);
@@ -292,16 +291,6 @@ public class Spawns {
         }
         if (kinds.isEmpty()) kinds.add(species);
         return kinds;
-    }
-
-    private static float leaderScale(Species species, List<Species> kinds) {
-        float biggest = 0;
-        for (Species kind : kinds) biggest = Math.max(biggest, size(kind));
-        return Math.max(1.25f, 1.3f * biggest / Math.max(0.1f, size(species)));
-    }
-
-    private static float size(Species species) {
-        return Math.max(species.getHitbox().width(), species.getHitbox().height()) * species.getBaseScale();
     }
 
     private static void followHerds(ServerLevel level) {
@@ -369,8 +358,9 @@ public class Spawns {
         pokemon.getPersistentData().putUUID(OWNER, owner.getUUID());
         if (random.nextFloat() < Math.max(alphaChance(trip), trip.legendaryAlpha)) pokemon.setAlpha(true);
         pokemon.setScaleModifier(2f);
-        rollShiny(pokemon, trip, random);
-        if (random.nextFloat() < Math.max(bossShinyChance, trip.legendaryShiny)) pokemon.setShiny(true);
+        // Shiny odds from the settings (Cobblemon's own rate by default), times the donut's shiny rolls
+        int rolls = Math.max(1, trip.shiny);
+        if (random.nextFloat() < rolls / GameplayConfig.specialShinyRate(GameplayConfig.get().hyperspaceLegendaryShinyOneIn)) pokemon.setShiny(true);
         pokemon.setCurrentHealth(pokemon.getMaxHealth());
         return pokemon;
     }
@@ -542,7 +532,7 @@ public class Spawns {
 
     public static List<Species> legendPool() {
         List<Species> pool = new ArrayList<>();
-        boolean monuments = FabricLoader.getInstance().isModLoaded("legendarymonuments");
+        boolean monuments = GameplayConfig.get().leaveToMonuments() && FabricLoader.getInstance().isModLoaded("legendarymonuments");
         for (Species species : PokemonSpecies.getImplemented()) {
             String path = species.getResourceIdentifier().getPath();
             if (!legendTagged.contains(species) || NOT_SPAWNED.contains(path) || monuments && MONUMENT_LEGENDS.contains(path)) continue;

@@ -102,8 +102,8 @@ public class FloatingBall extends Entity implements PosableEntity {
         if (isRemoved()) return;
         Vec3 centre = position().add(0, size() / 2, 0);
         LootParams params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, centre)
-                .withOptionalParameter(LootContextParams.THIS_ENTITY, onlineOwner()).create(LootContextParamSets.CHEST);
-        DonutPowers powers = FloatingBalls.powers(level, onlineOwner());
+                .withOptionalParameter(LootContextParams.THIS_ENTITY, looter()).create(LootContextParamSets.CHEST);
+        DonutPowers powers = FloatingBalls.powers(level, looter());
         boolean rich = golden() || random.nextFloat() < powers.itemChance();
         LootTable table = level.getServer().reloadableRegistries().getLootTable(rich ? GOLDEN_LOOT : LOOT);
         List<ItemStack> loot = new ArrayList<>(table.getRandomItems(params));
@@ -133,8 +133,17 @@ public class FloatingBall extends Entity implements PosableEntity {
         }
     }
 
-    public long money() {
-        return Math.round((golden() ? GOLDEN_MONEY : MONEY) * HoopaStarsCount.factor(HoopaStars.of(onlineOwner())));
+    /** CobbleDollars for popping it, scaled by the payer's trip stars (only golden balls have an owner, so a normal ball
+     *  used to count as 5 stars for everyone). */
+    public long money(ServerPlayer payer) {
+        return Math.round((golden() ? GOLDEN_MONEY : MONEY) * HoopaStarsCount.factor(HoopaStars.of(payer != null ? payer : onlineOwner())));
+    }
+
+    /** Whose trip stars the loot uses: the player popping it, else the golden ball's owner. Normal balls have no owner, so
+     *  without the popper their loot always counted as 5 stars. */
+    private ServerPlayer looter() {
+        ServerPlayer popper = FloatingBalls.popper();
+        return popper != null ? popper : onlineOwner();
     }
 
     private ServerPlayer onlineOwner() {

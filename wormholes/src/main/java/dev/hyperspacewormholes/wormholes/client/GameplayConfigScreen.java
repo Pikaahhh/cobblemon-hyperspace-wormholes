@@ -17,14 +17,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 
 /**
  * The Mod Menu page for GameplayConfig: one row per setting, grouped under headings, with Done saving to the same file
- * server owners edit by hand. A box left empty or not a number keeps the value it opened with. Hovering a name shows what
- * it does. Ring rarity is file only, and the griefing toggle sets all three of the file's Data Monitor switches, showing
+ * server owners edit by hand. A box left empty, not a number or not changed keeps the value it opened with (decimals show
+ * two places, so an untouched 1 in 5.26 stays exactly what the file had). Hovering a name shows what it does, with an
+ * example. Ring rarity is file only, and the griefing toggle sets all three of the file's Data Monitor switches, showing
  * Custom until it's pressed when the file has them mixed.
  */
 public final class GameplayConfigScreen extends Screen {
@@ -46,9 +48,11 @@ public final class GameplayConfigScreen extends Screen {
         GameplayConfig to = GameplayConfig.defaults();
         to.hoopaPity = from.hoopaPity;
         to.necrozmaPity = from.necrozmaPity;
-        to.wormholeBaseShinyChance = from.wormholeBaseShinyChance;
-        to.wormholeShinyMultiplierPerRing = from.wormholeShinyMultiplierPerRing;
+        to.wormholeShinyOneIn = from.wormholeShinyOneIn.copy();
         to.wormholeRingWeights = from.wormholeRingWeights.clone();
+        to.wormholeLegendaryShinyOneIn = from.wormholeLegendaryShinyOneIn;
+        to.wormholeUltraBeastShinyOneIn = from.wormholeUltraBeastShinyOneIn;
+        to.hyperspaceLegendaryShinyOneIn = from.hyperspaceLegendaryShinyOneIn;
         to.sparklingPowerMultiplier = from.sparklingPowerMultiplier;
         to.alphaPowerMultiplier = from.alphaPowerMultiplier;
         to.humungoPowerMultiplier = from.humungoPowerMultiplier;
@@ -63,6 +67,11 @@ public final class GameplayConfigScreen extends Screen {
         to.monitorBreaksFromLightning = from.monitorBreaksFromLightning;
         to.monitorBreaksFromElectricMoves = from.monitorBreaksFromElectricMoves;
         to.monitorBreaksFromOtherMoves = from.monitorBreaksFromOtherMoves;
+        to.hyperspaceLegendaries = from.hyperspaceLegendaries;
+        to.wormholeLegendaries = from.wormholeLegendaries;
+        to.bossCatches = from.bossCatches;
+        to.cosmogSummon = from.cosmogSummon;
+        to.legendaryMonuments = from.legendaryMonuments;
         return to;
     }
 
@@ -76,15 +85,27 @@ public final class GameplayConfigScreen extends Screen {
         whole("necrozmaPity", c.necrozmaPity, value -> shown.necrozmaPity = value);
         toggle("hardMode", c.bossHardModeAlwaysOn, value -> shown.bossHardModeAlwaysOn = value);
         heading("wormholes", null);
-        decimal("baseShiny", c.wormholeBaseShinyChance, value -> shown.wormholeBaseShinyChance = value);
-        decimal("shinyPerRing", c.wormholeShinyMultiplierPerRing, value -> shown.wormholeShinyMultiplierPerRing = value);
+        for (int i = 0; i < GameplayConfig.RING_TIERS; i++) {
+            int rings = i;
+            decimal("shiny" + rings, c.wormholeShinyOneIn.get(rings), value -> shown.wormholeShinyOneIn.set(rings, value));
+        }
+        decimal("legendaryShiny", c.wormholeLegendaryShinyOneIn, value -> shown.wormholeLegendaryShinyOneIn = value);
+        decimal("ultraBeastShiny", c.wormholeUltraBeastShinyOneIn, value -> shown.wormholeUltraBeastShinyOneIn = value);
         griefing(c);
+        heading("legendaries", tip("legendaries"));
+        toggle("hyperspaceLegendaries", c.hyperspaceLegendaries, value -> shown.hyperspaceLegendaries = value);
+        toggle("wormholeLegendaries", c.wormholeLegendaries, value -> shown.wormholeLegendaries = value);
+        toggle("bossCatches", c.bossCatches, value -> shown.bossCatches = value);
+        toggle("cosmogSummon", c.cosmogSummon, value -> shown.cosmogSummon = value);
+        monuments(c);
         heading("hyperspace", null);
         whole("maxDistortions", c.maxDistortionsPerPlayer, value -> shown.maxDistortionsPerPlayer = value);
+        decimal("hyperspaceLegendaryShiny", c.hyperspaceLegendaryShinyOneIn, value -> shown.hyperspaceLegendaryShinyOneIn = value);
         heading("stars", tip("stars"));
         for (int i = 0; i < GameplayConfig.STARS; i++) {
             int star = i;
-            whole(Component.translatable(KEY + "star", star + 1), null, c.distortionStarWeights[star], value -> shown.distortionStarWeights[star] = value);
+            whole(Component.translatable(KEY + "star", star + 1), Component.translatable(KEY + "star.tip", star + 1),
+                    c.distortionStarWeights[star], value -> shown.distortionStarWeights[star] = value);
         }
         heading("donuts", tip("donuts"));
         decimal("sparkling", c.sparklingPowerMultiplier, value -> shown.sparklingPowerMultiplier = value);
@@ -134,8 +155,10 @@ public final class GameplayConfigScreen extends Screen {
 
     private void decimal(String name, double value, DoubleConsumer set) {
         Component label = Component.translatable(KEY + name);
-        EditBox box = box(label, value == Math.rint(value) ? String.valueOf((long) value) : String.valueOf(value), "[0-9]*[.]?[0-9]*");
+        String opened = value == Math.rint(value) ? String.valueOf((long) value) : String.format(Locale.ROOT, "%.2f", value);
+        EditBox box = box(label, opened, "[0-9]*[.]?[0-9]*");
         reads.add(c -> {
+            if (box.getValue().equals(opened)) return;
             try {
                 set.accept(Double.parseDouble(box.getValue()));
             } catch (NumberFormatException ignored) {
@@ -177,6 +200,20 @@ public final class GameplayConfigScreen extends Screen {
             config.monitorBreaksFromOtherMoves = on[0];
         });
         rows.add(new Row(Component.translatable(KEY + "griefing"), button, tip("griefing")));
+    }
+
+    private void monuments(GameplayConfig c) {
+        boolean[] both = {!c.leaveToMonuments()};
+        Button button = Button.builder(monumentsLabel(both[0]), b -> {
+            both[0] = !both[0];
+            b.setMessage(monumentsLabel(both[0]));
+        }).size(BOX_WIDTH, 18).build();
+        reads.add(config -> config.legendaryMonuments = both[0] ? GameplayConfig.BOTH : GameplayConfig.MONUMENTS);
+        rows.add(new Row(Component.translatable(KEY + "monuments"), button, tip("monuments")));
+    }
+
+    private static Component monumentsLabel(boolean both) {
+        return Component.translatable(KEY + (both ? "monuments.both" : "monuments.leave"));
     }
 
     @Override

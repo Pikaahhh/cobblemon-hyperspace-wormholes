@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import com.cobblemon.mod.common.client.settings.ServerSettings;
 import com.cobblemon.mod.common.client.tooltips.TooltipGenerator;
 import com.cobblemon.mod.common.client.tooltips.TooltipManager;
 import java.util.List;
@@ -47,6 +48,12 @@ public class HyperspaceClient implements ClientModInitializer {
             OtherPlayersLegendaries.hidden.addAll(payload.ids());
         });
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> OtherPlayersLegendaries.hidden.clear());
+        // Cobblemon sends the party on join before its server settings, which carry the level cap Hyperspace raises to
+        // LevelScaling.maxLevel. A client that just started still checks party levels against its own cap of 100 then, so
+        // rejoining in Hyperspace with boosted Pokemon failed to decode.
+        ClientPlayConnectionEvents.INIT.register((handler, client) -> {
+            if (ServerSettings.INSTANCE.getMaxPokemonLevel() < LevelScaling.maxLevel) ServerSettings.INSTANCE.setMaxPokemonLevel(LevelScaling.maxLevel);
+        });
         TooltipManager.INSTANCE.registerTooltipGenerator(new TooltipGenerator() {
             @Override
             public List<Component> generateAdditionalTooltip(ItemStack stack, List<Component> lines) {

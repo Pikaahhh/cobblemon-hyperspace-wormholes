@@ -49,7 +49,11 @@ public final class UltraMegalopolisSky {
 
     public static void render(WorldRenderContext context) {
         if (space == null) build();
-        Matrix4f view = new Matrix4f(RenderSystem.getModelViewMatrix()).mul(context.positionMatrix());
+        ShaderPacks.outsideSky(() -> draw(new Matrix4f(RenderSystem.getModelViewMatrix()).mul(context.positionMatrix())
+                .scale(ShaderPacks.skyScale())));
+    }
+
+    private static void draw(Matrix4f view) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();

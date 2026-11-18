@@ -22,6 +22,8 @@
     "PlayerAdvancementsMixin"
   ],
   "client": [
+    "KeyMappingMixin",
+    "KeyMappingKeyAccessor",
     "PostChainAccessor",
     "EntityRenderDispatcherMixin",
     "PosableStateMixin",

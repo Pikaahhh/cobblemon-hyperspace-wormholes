@@ -1,6 +1,8 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import com.cobblemon.mod.common.client.CobblemonClient;
+import com.cobblemon.mod.common.client.gui.battle.BattleGUI;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -9,32 +11,52 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
 
-/** Shows the trip's task list on screen in Hyperspace, hidden during battles; the Hoopa event glitches its characters (HoopaGlitch). */
+/**
+ * Shows the trip's task list on screen in Hyperspace; the Hoopa event glitches its characters (HoopaGlitch).
+ *
+ * <p>It sits in the top left, every line on one left edge: in the corner above Cobblemon's party icons, or at the top
+ * beside them when a big GUI scale leaves too little room over the party. It never reaches the middle column (hotbar,
+ * boss bars, action bar) and shrinks to fit, down to SMALLEST_SCALE.
+ *
+ * <p>Hidden with F1, the debug screen and Cobblemon battles, and for LINGER ticks after any of those so it doesn't
+ * flash on the way into or out of a battle.
+ */
 public class TasksHud {
-    private static final int LEFT = 4;
-    private static final int TOP = 14;
     private static final int BOX = 7;
     private static final int INDENT = BOX + 4;
     private static final int LINE = 11;
     private static final int GAP = 4;
-    private static final float SCALE = 0.9f;
     private static final int ENTRY = 20;
-    private static final int PARTY_SLOT = 30;
-    private static final int PARTY_GAP = 4;
+    /** Its usual scale; the corner is only used at that scale, else it goes beside the party; never past SMALLEST_SCALE. */
+    private static final float SCALE = 0.9f, SMALLEST_SCALE = 0.5f;
+    /** Left and top margin, and the gap kept round anything else. */
+    private static final int LEFT = 4, TOP = 4, CLEAR = 4;
+    /** Half the hotbar's width: the middle column (hotbar, boss bars, action bar) is the window's middle +/- this. */
+    private static final int HOTBAR_HALF = 91;
+    /** Cobblemon's party icons: a slot's height, and where the column ends on the right. */
+    private static final int PARTY_SLOT = 30, PARTY_RIGHT = 60;
+    /** Kept clear of the bottom (chat box and hotbar row) beside the party. */
+    private static final int BOTTOM_KEEP = 48;
+    private static final int LINGER = 20;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int GREY = 0xFFAAAAAA;
     private static final int DARK = 0xFF555555;
     private static final int GREEN = 0xFF55FF55;
     private static final int GLITCH_STEP = 3;
+    private static final String TITLE = "Current Hyperspace Tasks:", ALL_DONE = "All Tasks Complete! A Golden Pokeball can now be found.",
+            MISSION_TITLE = "Hyperspace Task:";
 
     private static List<Tasks.Line> tasks = List.of();
     private static List<Tasks.Line> missions = List.of();
     private static int eaten, counted, total, widest, tall;
     private static float shown = SCALE;
+    private static int atX, atY;
+    private static long ticks, lastHidden = -1000;
 
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(Tasks.Sync.TYPE, (payload, context) -> {
@@ -45,7 +67,16 @@ public class TasksHud {
             tasks = List.of();
             missions = List.of();
         });
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            ticks++;
+            if (client.player != null && hiddenNow(client)) lastHidden = ticks;
+        });
         HudRenderCallback.EVENT.register(TasksHud::render);
+    }
+
+    private static boolean hiddenNow(Minecraft mc) {
+        return mc.options.hideGui || mc.getDebugOverlay().showDebugScreen() || CobblemonClient.INSTANCE.getBattle() != null
+                || mc.screen instanceof BattleGUI;
     }
 
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
@@ -54,36 +85,32 @@ public class TasksHud {
             glitch(graphics, shown);
             return;
         }
-        if (tasks.isEmpty() && missions.isEmpty() || mc.options.hideGui || mc.getDebugOverlay().showDebugScreen()
-                || CobblemonClient.INSTANCE.getBattle() != null) return;
-        eaten = HoopaGlitch.eaten(total, GLITCH_STEP);
-        counted = 0;
-        widest = 0;
+        if (tasks.isEmpty() && missions.isEmpty() || hiddenNow(mc) || ticks - lastHidden <= LINGER) return;
         Font font = mc.font;
         boolean all = !tasks.isEmpty() && tasks.stream().allMatch(Tasks.Line::done);
-        int height = (tasks.isEmpty() ? 0 : LINE + tasks.size() * ENTRY + LINE)
-                + (missions.isEmpty() ? 0 : (tasks.isEmpty() ? 0 : GAP) + LINE + missions.size() * ENTRY);
-        float scale = Math.min(SCALE, (float) (partyTop(graphics) - PARTY_GAP - TOP) / height);
+        measure(font, all);
+        place(mc, graphics.guiWidth(), graphics.guiHeight());
+        eaten = HoopaGlitch.eaten(total, GLITCH_STEP);
+        counted = 0;
         graphics.pose().pushPose();
-        graphics.pose().translate(LEFT, TOP, 0);
-        graphics.pose().scale(scale, scale, 1f);
-        graphics.pose().translate(-LEFT, -TOP, 0);
-        int y = TOP;
+        graphics.pose().translate(atX, atY, 0);
+        graphics.pose().scale(shown, shown, 1f);
+        int y = 0;
         if (!tasks.isEmpty()) {
-            graphics.drawString(font, chars("Current Hyperspace Tasks:").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), LEFT, y, WHITE, true);
+            title(graphics, font, chars(TITLE).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), y);
             y += LINE;
             for (Tasks.Line line : tasks) {
                 line(graphics, font, line, y, all || line.done());
                 y += ENTRY;
             }
             if (all) {
-                graphics.drawString(font, chars("All Tasks Complete! A Golden Pokeball can now be found.").withStyle(ChatFormatting.YELLOW), LEFT, y, WHITE, true);
+                title(graphics, font, chars(ALL_DONE).withStyle(ChatFormatting.YELLOW), y);
                 y += LINE;
             }
         }
         if (!missions.isEmpty()) {
             if (!tasks.isEmpty()) y += GAP;
-            graphics.drawString(font, chars("Hyperspace Task:").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), LEFT, y, WHITE, true);
+            title(graphics, font, chars(MISSION_TITLE).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), y);
             y += LINE;
             for (Tasks.Line line : missions) {
                 line(graphics, font, line, y, line.done());
@@ -91,18 +118,69 @@ public class TasksHud {
             }
         }
         graphics.pose().popPose();
-        tall = y - TOP;
-        shown = scale;
-        glitch(graphics, scale);
+        glitch(graphics, shown);
         total = counted;
+    }
+
+    /** The list's size before scaling: widest (the longest line, a task with its box) and tall. */
+    private static void measure(Font font, boolean all) {
+        widest = 0;
+        tall = 0;
+        if (!tasks.isEmpty()) {
+            widest = Math.max(widest, font.width(Component.literal(TITLE).withStyle(ChatFormatting.BOLD)));
+            tall += LINE;
+            for (Tasks.Line line : tasks) {
+                widest = Math.max(widest, entryWidth(font, line));
+                tall += ENTRY;
+            }
+            if (all) {
+                widest = Math.max(widest, font.width(ALL_DONE));
+                tall += LINE;
+            }
+        }
+        if (!missions.isEmpty()) {
+            if (!tasks.isEmpty()) tall += GAP;
+            widest = Math.max(widest, font.width(Component.literal(MISSION_TITLE).withStyle(ChatFormatting.BOLD)));
+            tall += LINE;
+            for (Tasks.Line line : missions) {
+                widest = Math.max(widest, entryWidth(font, line));
+                tall += ENTRY;
+            }
+        }
+    }
+
+    /** atX, atY and shown: the top left corner over the party if it fits at SCALE, else at the top beside the
+     *  party, whichever is bigger. */
+    private static void place(Minecraft mc, int width, int height) {
+        if (widest <= 0 || tall <= 0) return;
+        int middle = width / 2 - HOTBAR_HALF - CLEAR;
+        int slots = CobblemonClient.INSTANCE.getStorage().getParty().getSlots().size();
+        int partyTop = slots == 0 ? height - BOTTOM_KEEP : height / 2 - slots * PARTY_SLOT / 2 - 10 - CLEAR;
+        float corner = fit(partyTop - TOP, middle - LEFT);
+        int besideX = PARTY_RIGHT + CLEAR;
+        // Beside the party it stays at the top, so it can run up to the screen's centre: the hotbar is far below it.
+        float beside = fit(height - BOTTOM_KEEP - TOP, width / 2 - CLEAR - besideX);
+        // The corner above the party only when the list fits there at full size.
+        if (corner >= SCALE || corner >= beside) set(LEFT, TOP, Math.max(corner, SMALLEST_SCALE));
+        else set(besideX, TOP, Math.max(beside, SMALLEST_SCALE));
+    }
+
+    /** The scale (at most SCALE) that fits the list in room tall and wide GUI pixels. */
+    private static float fit(int room, int wide) {
+        return Math.min(SCALE, Math.min(Math.max(0, room) / (float) tall, Math.max(0, wide) / (float) widest));
+    }
+
+    private static void set(int x, int y, float scale) {
+        atX = x;
+        atY = y;
+        shown = scale;
     }
 
     private static void glitch(GuiGraphics graphics, float scale) {
         graphics.pose().pushPose();
-        graphics.pose().translate(LEFT, TOP, 0);
+        graphics.pose().translate(atX, atY, 0);
         graphics.pose().scale(scale, scale, 1f);
-        graphics.pose().translate(-LEFT, -TOP, 0);
-        HoopaGlitch.draw(graphics, LEFT, TOP, widest, tall);
+        HoopaGlitch.draw(graphics, 0, 0, widest, tall);
         graphics.pose().popPose();
     }
 
@@ -110,21 +188,33 @@ public class TasksHud {
         int gone = Math.min(eaten, text.length());
         eaten -= gone;
         counted += text.length();
-        widest = Math.max(widest, INDENT + Minecraft.getInstance().font.width(text));
         return HoopaEvent.scrambled(text, gone);
     }
 
-    private static int partyTop(GuiGraphics graphics) {
-        int slots = CobblemonClient.INSTANCE.getStorage().getParty().getSlots().size();
-        return graphics.guiHeight() / 2 - slots * PARTY_SLOT / 2 - 10;
+    private static String text(Tasks.Line line) {
+        return line.text() + (line.goal() > 1 ? " " + line.progress() + "/" + line.goal() : "");
     }
 
+    private static String reward(Tasks.Line line) {
+        return "Reward: " + line.reward();
+    }
+
+    private static int entryWidth(Font font, Tasks.Line line) {
+        return INDENT + Math.max(font.width(text(line)), font.width(reward(line)));
+    }
+
+    private static void title(GuiGraphics graphics, Font font, MutableComponent text, int y) {
+        graphics.drawString(font, text, 0, y, WHITE, true);
+    }
+
+    /** A task: its box, then its text with its reward under it. */
     private static void line(GuiGraphics graphics, Font font, Tasks.Line line, int y, boolean faded) {
-        graphics.renderOutline(LEFT, y, BOX, BOX, faded ? DARK : WHITE);
-        if (line.done()) graphics.drawString(font, "✔", LEFT, y - 1, GREEN, true);
-        MutableComponent text = chars(line.text() + (line.goal() > 1 ? " " + line.progress() + "/" + line.goal() : ""));
+        int left = 0;
+        graphics.renderOutline(left, y, BOX, BOX, faded ? DARK : WHITE);
+        if (line.done()) graphics.drawString(font, "✔", left, y - 1, GREEN, true);
+        MutableComponent text = chars(text(line));
         text.withStyle(style -> style.withStrikethrough(line.done()));
-        graphics.drawString(font, text, LEFT + INDENT, y, faded ? DARK : WHITE, !faded);
-        graphics.drawString(font, chars("Reward: " + line.reward()).withStyle(style -> style.withStrikethrough(line.done())), LEFT + INDENT, y + LINE - 1, faded ? DARK : GREY, !faded);
+        graphics.drawString(font, text, left + INDENT, y, faded ? DARK : WHITE, !faded);
+        graphics.drawString(font, chars(reward(line)).withStyle(style -> style.withStrikethrough(line.done())), left + INDENT, y + LINE - 1, faded ? DARK : GREY, !faded);
     }
 }

@@ -1,0 +1,22 @@
+{
+  "pokemon": [
+    "magcargo",
+    "medicham",
+    "hippowdon",
+    "abomasnow",
+    "crustle",
+    "sableye",
+    "steelix",
+    "clefable"
+  ],
+  "legendaries": [
+    "regirock",
+    "regice",
+    "registeel",
+    "groudon",
+    "palkia",
+    "heatran",
+    "regigigas",
+    {"pokemon": "giratina", "party": ["dialga", "palkia"]}
+  ]
+}

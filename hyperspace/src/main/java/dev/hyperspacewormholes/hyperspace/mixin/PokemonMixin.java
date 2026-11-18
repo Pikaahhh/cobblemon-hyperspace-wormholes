@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Doubles boss health and lets alpha bosses be scaled up.
+ * Doubles boss health.
  */
 @Mixin(value = Pokemon.class, remap = false)
 public abstract class PokemonMixin {
@@ -16,11 +16,5 @@ public abstract class PokemonMixin {
     private void hyperspace_wormholes$bossHealth(CallbackInfoReturnable<Integer> cir) {
         Pokemon pokemon = (Pokemon) (Object) this;
         if (Spawns.isBoss(pokemon) || Spawns.megaBoss(pokemon) != null) cir.setReturnValue(cir.getReturnValue() * 2);
-    }
-
-    @Inject(method = "getEffectiveScale", at = @At("RETURN"), cancellable = true)
-    private void hyperspace_wormholes$alphaBossScale(CallbackInfoReturnable<Float> cir) {
-        Pokemon pokemon = (Pokemon) (Object) this;
-        if (pokemon.isAlpha() && pokemon.getScaleModifier() != 1f) cir.setReturnValue(cir.getReturnValue() * pokemon.getScaleModifier());
     }
 }

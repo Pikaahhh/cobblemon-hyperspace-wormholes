@@ -70,6 +70,7 @@ public class WormholesClient implements ClientModInitializer {
         DimensionRenderingRegistry.registerCloudRenderer(Wormholes.ULTRA_MEGALOPOLIS, context -> {});
         DimensionRenderingRegistry.registerWeatherRenderer(Wormholes.ULTRA_WARP, context -> {});
         WorldRenderEvents.AFTER_ENTITIES.register(TunnelRenderer::renderWorld);
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(TunnelRenderer::renderAfterWater);
         WorldRenderEvents.AFTER_ENTITIES.register(SkyClouds::render);
         WorldRenderEvents.START.register(context -> WormholeEntityRenderer.clearQueued());
         WorldRenderEvents.AFTER_TRANSLUCENT.register(WormholeEntityRenderer::drawAfterWater);

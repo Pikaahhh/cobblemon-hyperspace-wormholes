@@ -22,7 +22,8 @@ import java.util.function.Consumer;
  * Draws wormholes in the world: the funnel opening and closing. By water (or seen from under water) it is drawn with the
  * entities, so a water surface in front of it tints it, except when the camera and the whole wormhole are under water (the
  * Ultra Deep Sea), where the translucent blocks behind it (the Luminescent Ice) would otherwise paint over its glow. Never
- * culled, so Entity Culling can't drop a way home whose box is mostly in rock.
+ * culled, so Entity Culling can't drop a way home whose box is mostly in rock. Skipped in a shader pack's shadow pass, or
+ * BSL shows a second wormhole that follows the player around.
  */
 public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
     private static final List<Consumer<MultiBufferSource>> AFTER_WATER = new ArrayList<>();
@@ -35,6 +36,7 @@ public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
     @Override
     public void render(WormholeEntity entity, float yaw, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffers, int light) {
+        if (ShaderPacks.inShadowPass()) return;
         WarpTextures.ensureReady();
         float time = entity.tickCount + partialTick;
         float open = Math.min(1f, time / 20f);

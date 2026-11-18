@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -73,7 +74,7 @@ public enum WormholeType {
     public static WormholeType pick(double roll, double warpDistance, boolean gameColours) {
         int stage = Math.min(MAX_STAGE, 1 + (int) (warpDistance / STAGE_EVERY));
         double white = warpDistance >= WHITE.minWarpDistance ? stage / 8.0 : 0;
-        double gold = !gameColours && warpDistance >= GOLD.minWarpDistance ? stage / 12.0 : 0;
+        double gold = !gameColours && GameplayConfig.get().wormholeLegendaries && warpDistance >= GOLD.minWarpDistance ? stage / 12.0 : 0;
         if (roll < white) return WHITE;
         if (roll < white + gold) return GOLD;
         double rest = (roll - white - gold) / (1 - white - gold);

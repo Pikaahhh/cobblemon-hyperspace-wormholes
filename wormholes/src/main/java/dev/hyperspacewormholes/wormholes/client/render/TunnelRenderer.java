@@ -12,7 +12,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.hyperspacewormholes.wormholes.Wormholes;
+import org.joml.Matrix4fStack;
+import org.lwjgl.opengl.GL11;
 import dev.hyperspacewormholes.wormholes.client.RideClient;
+import dev.hyperspacewormholes.wormholes.client.ShaderPacks;
 import dev.hyperspacewormholes.wormholes.ride.TunnelLayout;
 import dev.hyperspacewormholes.wormholes.ride.WarpTunnel;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -159,13 +162,48 @@ public final class TunnelRenderer {
     }
 
     public static void renderSky(WorldRenderContext context) {
-        if (Minecraft.getInstance().player == null) return;
+        if (Minecraft.getInstance().player == null || ShaderPacks.inUse()) return;
+        drawSky(context);
+    }
+
+    /**
+     * With a shader pack on, the sky is drawn here, after the pack's deferred pass, instead of as the sky: a pack like BSL
+     * adds its own sky colour to every pixel nothing solid covers in that pass, which turned the ride's purple a pale teal
+     * by day. Drawn at the very back (depth range 1) so the ride and everything else stay in front, then the tunnel on
+     * top, as without a pack (renderWorld skips itself then).
+     */
+    public static void renderAfterWater(WorldRenderContext context) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!ShaderPacks.inUse() || mc.player == null || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;
+        Matrix4fStack modelView = RenderSystem.getModelViewStack();
+        modelView.pushMatrix();
+        modelView.identity();
+        RenderSystem.applyModelViewMatrix();
+        GL11.glDepthRange(1, 1);
+        try {
+            drawSky(context);
+        } finally {
+            GL11.glDepthRange(0, 1);
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+            modelView.popMatrix();
+            RenderSystem.applyModelViewMatrix();
+        }
+        drawWorld(context);
+    }
+
+    private static void drawSky(WorldRenderContext context) {
+        boolean late = ShaderPacks.inUse();
         WarpTextures.ensureReady();
 
         float pt = context.tickCounter().getGameTimeDeltaPartialTick(false);
         float time = RideClient.time(pt);
         RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
+        if (late) {
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        } else {
+            RenderSystem.disableDepthTest();
+        }
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -311,6 +349,10 @@ public final class TunnelRenderer {
     }
 
     public static void renderWorld(WorldRenderContext context) {
+        if (!ShaderPacks.inUse()) drawWorld(context);
+    }
+
+    private static void drawWorld(WorldRenderContext context) {
         Minecraft mc = Minecraft.getInstance();
         if (!RideClient.isActive() || mc.player == null
                 || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;

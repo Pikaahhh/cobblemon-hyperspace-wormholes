@@ -473,7 +473,7 @@ public class QuickBattles {
             ServerPlayer owner = server.getPlayerList().getPlayer(attack.owner);
             if (owner != null) {
                 Tasks.progress(owner, Tasks.Kind.BALLS);
-                if (!ball.isRemoved()) Money.give(owner, ball.money());
+                if (!ball.isRemoved()) Money.give(owner, ball.money(owner));
             }
             ball.pop(level);
         } else if (attack.target instanceof PokemonEntity wild) {

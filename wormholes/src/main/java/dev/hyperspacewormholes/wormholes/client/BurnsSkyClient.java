@@ -191,7 +191,14 @@ public final class BurnsSkyClient {
         ClientPlayNetworking.registerGlobalReceiver(BurnsSkyPayload.TYPE, (payload, context) -> start(payload));
         ClientPlayNetworking.registerGlobalReceiver(BurnsSkyStopPayload.TYPE, (payload, context) -> RUNS.remove(payload.userId()));
         ClientTickEvents.END_CLIENT_TICK.register(BurnsSkyClient::tick);
-        WorldRenderEvents.LAST.register(BurnsSkyClient::renderWorld);
+        // With a shader pack on, what's drawn at LAST is lost under the pack's own passes (under BSL none of the move
+        // showed but Necrozma's glow), so it's drawn after water instead, like the wormholes (WormholeEntityRenderer).
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
+            if (ShaderPacks.inUse()) renderWorld(context);
+        });
+        WorldRenderEvents.LAST.register(context -> {
+            if (!ShaderPacks.inUse()) renderWorld(context);
+        });
         HudRenderCallback.EVENT.register(BurnsSkyClient::renderHud);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> RUNS.clear());
     }

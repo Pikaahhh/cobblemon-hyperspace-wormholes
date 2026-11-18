@@ -285,7 +285,7 @@ public final class ItemAnalyser {
 
     private static @Nullable Recipe recipeFor(ItemStack core, ItemStack partner) {
         if (core.is(TYPE_GEMS) && partner.is(Items.BLAZE_POWDER)) return Recipe.BLAZE;
-        if (core.is(CosmicJar.ITEM) && partner.is(Items.GOLDEN_APPLE)) return Recipe.COSMOG;
+        if (core.is(CosmicJar.ITEM) && partner.is(Items.GOLDEN_APPLE) && GameplayConfig.get().cosmogSummon) return Recipe.COSMOG;
         return null;
     }
 

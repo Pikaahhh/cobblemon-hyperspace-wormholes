@@ -827,7 +827,7 @@ public final class HoopaEvent {
         }
         int since = e.ticks - e.settled;
         if (hoopa != null && since == BOTTLE_AT) bottleEffect(hoopa);
-        if (hoopa != null && since == BOTTLE_AT + FORM_AT) prizes(e, hoopa);
+        if (hoopa != null && since == BOTTLE_AT + FORM_AT && GameplayConfig.get().bossCatches) prizes(e, hoopa);
         if (since <= BOTTLE_AT + FORM_AT) return;
         for (Iterator<Map.Entry<PokemonEntity, UUID>> it = e.prizes.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<PokemonEntity, UUID> prize = it.next();

@@ -337,7 +337,7 @@ public final class NecrozmaFight {
         if (real == null) return;
         Vec3 at = real.position();
         float yaw = stairsYaw(f);
-        for (ServerPlayer player : partyPlayers(f)) {
+        for (ServerPlayer player : GameplayConfig.get().bossCatches ? partyPlayers(f) : List.<ServerPlayer>of()) {
             try {
                 Pokemon pokemon = real.getPokemon().clone(true, f.level.registryAccess());
                 pokemon.getPersistentData().remove(Boss.DATA);

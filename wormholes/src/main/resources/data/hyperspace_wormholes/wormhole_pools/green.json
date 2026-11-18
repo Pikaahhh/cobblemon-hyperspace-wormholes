@@ -1,0 +1,25 @@
+{
+  "pokemon": [
+    "nuzleaf",
+    "grumpig",
+    "drapion",
+    "audino",
+    "heliolisk",
+    "golurk",
+    "ferrothorn",
+    "bronzong",
+    "granbull"
+  ],
+  "legendaries": [
+    "mewtwo",
+    "cobalion",
+    "terrakion",
+    "virizion",
+    "raikou",
+    "entei",
+    "dialga",
+    "reshiram",
+    "zekrom",
+    "xerneas"
+  ]
+}

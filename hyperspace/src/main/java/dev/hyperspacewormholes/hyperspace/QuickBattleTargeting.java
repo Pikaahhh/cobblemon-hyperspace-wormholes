@@ -53,11 +53,23 @@ import java.util.UUID;
 
 /**
  * Client side of quick battles: aiming at a target with your crosshair, the four move tiles in the bottom right, the
- * hotbar keys that fire them, and the marker over whatever you're aiming at.
+ * move keys that fire them (their own controls, 1 to 4 by default), and the marker over whatever you're aiming at.
+ * A move key is read off the keyboard as well as by its clicks, because on 1.21.1 a key shared with another control only
+ * clicks that one (KeyMappingMixin). While aiming, a hotbar key on the same key as a move key doesn't change the slot.
  */
 public class QuickBattleTargeting {
     public static final KeyMapping TARGET = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.target",
             InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE, "key.categories.hyperspace_wormholes"));
+    public static final KeyMapping[] MOVE_KEYS = new KeyMapping[4];
+
+    static {
+        for (int slot = 0; slot < MOVE_KEYS.length; slot++) {
+            MOVE_KEYS[slot] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.move" + (slot + 1),
+                    InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_1 + slot, "key.categories.hyperspace_wormholes"));
+        }
+        MoveKeys.keys = MOVE_KEYS.clone();
+        KeyMapping.resetMapping();
+    }
 
     private static final ResourceLocation TILE = ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/gui/battle/battle_move.png");
     private static final ResourceLocation TILE_OVERLAY = ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/gui/battle/battle_move_overlay.png");
@@ -85,6 +97,7 @@ public class QuickBattleTargeting {
     private static int aimTicks;
     private static List<QuickBattles.MoveInfo> moves = List.of();
     private static final int[] cooldowns = new int[4];
+    private static final boolean[] moveDown = new boolean[4];
 
     public static void register() {
         ClientTickEvents.START_CLIENT_TICK.register(QuickBattleTargeting::tick);
@@ -119,6 +132,13 @@ public class QuickBattleTargeting {
         }
         if (!held) holding = false;
         aiming = ready && held && holding;
+        boolean[] fired = new boolean[4];
+        for (int slot = 0; slot < 4; slot++) fired[slot] = pressed(mc, slot);
+        if (aiming) {
+            for (KeyMapping hotbar : mc.options.keyHotbarSlots) {
+                for (KeyMapping move : MOVE_KEYS) if (hotbar.same(move)) while (hotbar.consumeClick()) ;
+            }
+        }
         if (!aiming) {
             target = -1;
             monitor = null;
@@ -134,15 +154,30 @@ public class QuickBattleTargeting {
         monitor = aimedMonitor(mc);
         target = monitor != null ? -1 : pick(mc);
         for (int slot = 0; slot < 4; slot++) {
-            while (mc.options.keyHotbarSlots[slot].consumeClick()) {
-                if ((target >= 0 || monitor != null) && usable(slot) && ClientPlayNetworking.canSend(QuickBattles.Payload.TYPE)) {
-                    ClientPlayNetworking.send(monitor != null ? new QuickBattles.Strike(monitor, slot, contact(mc, slot), chosen, runs(mc))
-                            : new QuickBattles.Payload(target, slot, contact(mc, slot), chosen, runs(mc)));
-                    cooldowns[slot] = QuickBattles.cooldown(Moves.getByName(moves.get(slot).name()));
-                    busy = true;
-                }
+            if (fired[slot] && (target >= 0 || monitor != null) && usable(slot) && ClientPlayNetworking.canSend(QuickBattles.Payload.TYPE)) {
+                ClientPlayNetworking.send(monitor != null ? new QuickBattles.Strike(monitor, slot, contact(mc, slot), chosen, runs(mc))
+                        : new QuickBattles.Payload(target, slot, contact(mc, slot), chosen, runs(mc)));
+                cooldowns[slot] = QuickBattles.cooldown(Moves.getByName(moves.get(slot).name()));
+                busy = true;
             }
         }
+    }
+
+    /** Whether this move key went down since the last tick: a click, or the key found down now and not before. */
+    private static boolean pressed(Minecraft mc, int slot) {
+        KeyMapping key = MOVE_KEYS[slot];
+        boolean clicked = false;
+        while (key.consumeClick()) clicked = true;
+        boolean down = mc.screen == null && down(mc, KeyBindingHelper.getBoundKeyOf(key));
+        boolean edge = down && !moveDown[slot];
+        moveDown[slot] = down;
+        return clicked || edge;
+    }
+
+    private static boolean down(Minecraft mc, InputConstants.Key key) {
+        long window = mc.getWindow().getWindow();
+        if (key.getType() == InputConstants.Type.MOUSE) return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+        return key.getType() == InputConstants.Type.KEYSYM && key.getValue() >= 0 && InputConstants.isKeyDown(window, key.getValue());
     }
 
     private static int contact(Minecraft mc, int slot) {
@@ -208,7 +243,7 @@ public class QuickBattleTargeting {
             MutableComponent name = large(move.getDisplayName().copy()).withStyle(s -> s.withBold(true));
             MoveNames.draw(graphics, mc.font, name, x + 12, y + 2, room, second, 0xFFFFFF);
             graphics.drawString(mc.font, right, x + TILE_WIDTH - 6 - mc.font.width(right), y + 13, 0xFFFFFF, true);
-            Component key = mc.options.keyHotbarSlots[slot].getTranslatedKeyMessage();
+            Component key = MOVE_KEYS[slot].getTranslatedKeyMessage();
             graphics.drawString(mc.font, key, x - mc.font.width(key) / 2, y + 3 - mc.font.lineHeight, 0xFFFFFF, true);
         }
         RenderSystem.disableBlend();
@@ -256,10 +291,7 @@ public class QuickBattleTargeting {
     }
 
     private static boolean held(Minecraft mc) {
-        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(TARGET);
-        long window = mc.getWindow().getWindow();
-        if (key.getType() == InputConstants.Type.MOUSE) return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
-        return key.getType() == InputConstants.Type.KEYSYM && InputConstants.isKeyDown(window, key.getValue());
+        return down(mc, KeyBindingHelper.getBoundKeyOf(TARGET));
     }
 
     private static Optional<UUID> selected() {

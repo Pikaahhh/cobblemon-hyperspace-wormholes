@@ -18,6 +18,7 @@ import dev.hyperspacewormholes.wormholes.network.BossTransitionPayload;
 import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
 import dev.hyperspacewormholes.wormholes.network.UltraBurstPayload;
 import dev.hyperspacewormholes.wormholes.network.WarpFlashPayload;
+import dev.hyperspacewormholes.wormholes.ride.WormholePools;
 import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
 import dev.hyperspacewormholes.wormholes.ride.NecrozmaFight;
 import dev.hyperspacewormholes.wormholes.boss.Bosses;
@@ -184,6 +185,7 @@ public class Wormholes implements ModInitializer {
         WormholeConfig.load();
         GameplayConfig.register();
         PokemonTags.register();
+        WormholePools.register();
         FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(mod -> {
             ResourceManagerHelper.registerBuiltinResourcePack(id("full_mipmaps"), mod, Component.literal("Full Mipmaps"),
                     ResourcePackActivationType.ALWAYS_ENABLED);

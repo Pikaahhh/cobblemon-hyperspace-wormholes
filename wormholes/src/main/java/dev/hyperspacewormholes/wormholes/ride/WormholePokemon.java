@@ -26,19 +26,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Picks the wild Pokemon waiting past each tunnel wormhole from its colour, plus its level and its shiny and alpha odds from its rings.
- * Normal wormholes use the level tags, legendaries and Ultra Beasts have their own pools, and the Ultra Space Wilds use each world's tags (wilds_cliff and so on, with wilds_cliff_legendaries), some legendaries needing certain legendaries in the party (PARTY_NEEDS).
- * Odds follow the wormhole's rings and the light-years flown (WarpTunnel.band); Necrozma is only ever had by beating it (NecrozmaFight), and species Cobblemon hasn't implemented are skipped.
+ * Normal wormholes use the level tags, legendaries and Ultra Beasts have their own pools, and the Ultra Space Wilds use each colour's pool file (WormholePools), some legendaries needing certain legendaries in the party as in the game.
+ * Odds follow the wormhole's rings and the light-years flown (WarpTunnel.band); legendaries and Ultra Beasts use the shiny odds from the settings. Necrozma is only ever had by beating it (NecrozmaFight), and species Cobblemon hasn't implemented are skipped.
  */
 public final class WormholePokemon {
     public static final List<String> CATEGORIES = List.of("regular", "legendary", "mythical", "ultra_beast", "paradox");
     private static final Set<String> SPECIAL = Set.of("legendary", "mythical", "ultra_beast", "paradox");
     private static final int SHINY_BOOST_PER_RING = 3;
+    /** The game's shiny percent for each ring count at the top light-year band (b = 10). */
+    private static final double[] GAME_TOP_PERCENT = {1, 10, 19, 36};
     private static final float ALPHA_BASE = 0.02f;
     private static final float ALPHA_BOOST_PER_RING = 1.5f;
     private static final int[] LEVELS = {45, 65, 80};
@@ -50,10 +51,6 @@ public final class WormholePokemon {
     private static final double OWNED_LEGEND_WEIGHT = 0.25;
     private static final double VISIT_LIGHT_YEARS = 5_000;
     private static final Set<String> CLONED_LEGENDS = Set.of("cosmog", "cosmoem", "solgaleo", "lunala");
-    private static final Map<String, List<String>> PARTY_NEEDS = Map.of(
-            "rayquaza", List.of("kyogre", "groudon"), "landorus", List.of("tornadus", "thundurus"),
-            "suicune", List.of("entei", "raikou"), "kyurem", List.of("reshiram", "zekrom"),
-            "giratina", List.of("dialga", "palkia"));
     private static final List<WorldOdds> ULTRA_BEAST_WORLD_ODDS = List.of(
             new WorldOdds("nihilego", 60, 2, 1, 1), new WorldOdds("buzzwole", 18, 3, 1, 1),
             new WorldOdds("pheromosa", 17, 3, 1, 1), new WorldOdds("xurkitree", 2, 71, 20, 5),
@@ -72,40 +69,49 @@ public final class WormholePokemon {
         String wanted = type.toLowerCase(Locale.ROOT);
         List<Candidate> pool = ultraBeasts().stream().filter(c -> c.types().contains(wanted)).toList();
         if (pool.isEmpty()) return null;
-        return spawn(pool.get(random.nextInt(pool.size())), LEGENDARY_LEVEL, wildShiny(random));
+        Candidate chosen = pool.get(random.nextInt(pool.size()));
+        return spawn(chosen, LEGENDARY_LEVEL, wildShiny(chosen, random));
     }
 
+    /** The Item Analyser's regular Pokemon: every Wilds colour's pokemon list together, by their weights and levels,
+     *  ones of the gem's type when there are any, else any of them. */
     public static @Nullable String regularOfType(String type, RandomSource random) {
         String wanted = type.toLowerCase(Locale.ROOT);
-        List<String> all = new ArrayList<>(), matching = new ArrayList<>();
-        for (int difficulty = 1; difficulty <= LEVELS.length; difficulty++) {
-            for (Candidate c : regular(difficulty)) {
-                String spawn = c.properties() + " level=" + LEVELS[difficulty - 1];
-                all.add(spawn);
-                if (c.types().contains(wanted)) matching.add(spawn);
-            }
-        }
-        List<String> pool = matching.isEmpty() ? all : matching;
+        List<Pooled> all = new ArrayList<>();
+        for (WormholePools.Pool pool : WormholePools.wilds()) all.addAll(pooled(pool.pokemon()));
+        List<Pooled> matching = all.stream().filter(p -> p.candidate().types().contains(wanted)).toList();
+        List<Pooled> pool = matching.isEmpty() ? all : matching;
         if (pool.isEmpty()) return null;
-        String chosen = pool.get(random.nextInt(pool.size()));
-        return chosen + " shiny=" + wildShiny(random);
+        Pooled chosen = weighted(pool, null, random);
+        return spawn(chosen.candidate(), chosen.entry().level(GAME_LEVEL, random), wildShiny(chosen.candidate(), random));
     }
 
     public static @Nullable String ultraBeastNamed(String species, RandomSource random) {
         Candidate chosen = candidate(species);
-        return chosen == null ? null : spawn(chosen, LEGENDARY_LEVEL, wildShiny(random));
+        return chosen == null ? null : spawn(chosen, LEGENDARY_LEVEL, wildShiny(chosen, random));
     }
 
     private static String spawn(Candidate c, int level, boolean shiny) {
         return c.properties() + " level=" + level + " shiny=" + shiny;
     }
 
-    private static boolean wildShiny(RandomSource random) {
-        return random.nextFloat() < 1 / Math.max(1f, Cobblemon.config.getShinyRate());
+    private static boolean wildShiny(Candidate c, RandomSource random) {
+        return random.nextFloat() < 1 / shinyRate(find(speciesOf(c)));
+    }
+
+    /** "1 in N" for this species past a wormhole: the settings' Ultra Beast odds for an Ultra Beast, their legendary odds for
+     *  a legendary, mythical or paradox Pokemon (0 in either is Cobblemon's own rate), and Cobblemon's rate for the rest. */
+    private static float shinyRate(@Nullable Species species) {
+        Set<String> labels = species == null ? Set.of() : species.getLabels();
+        GameplayConfig config = GameplayConfig.get();
+        if (labels.contains("ultra_beast")) return GameplayConfig.specialShinyRate(config.wormholeUltraBeastShinyOneIn);
+        if (labels.stream().anyMatch(SPECIAL::contains)) return GameplayConfig.specialShinyRate(config.wormholeLegendaryShinyOneIn);
+        return GameplayConfig.specialShinyRate(0);
     }
 
     public static boolean analyserShiny(Pokemon pokemon, @Nullable ServerPlayer player, RandomSource random) {
-        return shiny(ANALYSER_SHINY_RATE, pokemon, player, random);
+        if (pokemon.getSpecies().getLabels().stream().anyMatch(SPECIAL::contains)) return random.nextFloat() < 1 / shinyRate(pokemon.getSpecies());
+        return random.nextDouble() < shinyChance(0, 1);
     }
 
     private static boolean shiny(float baseRate, Pokemon pokemon, @Nullable ServerPlayer player, RandomSource random) {
@@ -128,31 +134,63 @@ public final class WormholePokemon {
         if (pool.isEmpty()) return null;
         Candidate chosen = pool.get(random.nextInt(pool.size()));
         int level = type == WormholeType.WHITE || type == WormholeType.GOLD ? LEGENDARY_LEVEL : LEVELS[difficulty - 1];
-        return spawn(chosen, level, ringShiny(rings, random));
+        return spawn(chosen, level, ringShiny(chosen, rings, random));
     }
 
     public static @Nullable String wilds(ResourceKey<Level> world, WormholeType type, int rings, double lightYears,
                                          RandomSource random, @Nullable ServerPlayer player) {
-        String pool = poolOf(world);
+        WormholePools.Pool pool = WormholePools.of(world);
         boolean game = WormholeConfig.get().gameWormholeColours;
         int band = WarpTunnel.band(lightYears);
-        boolean legend = game ? random.nextDouble() < legendChance(rings, band) : rings >= WILDS_LEGEND_RINGS;
-        List<Candidate> legends = !legend ? List.of()
-                : withoutClonedLegends(tagged(Wormholes.id(pool + "_legendaries"))).stream()
-                        .filter(c -> partyHas(player, PARTY_NEEDS.getOrDefault(speciesOf(c), List.of()))).toList();
-        List<Candidate> found = legends.isEmpty() ? tagged(Wormholes.id(pool)) : legends;
+        boolean legend = GameplayConfig.get().wormholeLegendaries
+                && (game ? random.nextDouble() < legendChance(rings, band) : rings >= WILDS_LEGEND_RINGS);
+        List<Pooled> legends = !legend ? List.of()
+                : pooled(pool.legendaries()).stream().filter(p -> partyHas(player, p.entry().party())).toList();
+        List<Pooled> found = legends.isEmpty() ? pooled(pool.pokemon()) : legends;
         if (found.isEmpty()) return pick(type, rings, random);
-        Candidate chosen = game && !legends.isEmpty() ? favourUnowned(legends, player, random)
-                : found.get(random.nextInt(found.size()));
+        Pooled chosen = weighted(found, !legends.isEmpty() && game ? player : null, random);
         if (game) {
-            return spawn(chosen, GAME_LEVEL, legends.isEmpty() ? random.nextDouble() < shinyChance(rings, band) : wildShiny(random));
+            return spawn(chosen.candidate(), chosen.entry().level(GAME_LEVEL, random),
+                    legends.isEmpty() ? random.nextDouble() < shinyChance(rings, band) : wildShiny(chosen.candidate(), random));
         }
         int level = !legends.isEmpty() ? LEGENDARY_LEVEL : LEVELS[Math.max(1, type.difficulty()) - 1];
-        return spawn(chosen, level, ringShiny(rings, random));
+        return spawn(chosen.candidate(), chosen.entry().level(level, random), ringShiny(chosen.candidate(), rings, random));
     }
 
-    private static String poolOf(ResourceKey<Level> world) {
-        return world.location().getPath().replace("ultra_", "");
+    /** A pool entry with its species found; species Cobblemon hasn't implemented, and ones that never come from a
+     *  wormhole (Ultra Beasts, which keep their own worlds, Cosmog's line and Necrozma), are left out. */
+    private record Pooled(Candidate candidate, WormholePools.Entry entry) {}
+
+    private static List<Pooled> pooled(List<WormholePools.Entry> entries) {
+        List<Pooled> found = new ArrayList<>();
+        for (WormholePools.Entry entry : entries) {
+            Candidate c = candidate(entry.pokemon());
+            if (c == null || locked(c)) continue;
+            found.add(new Pooled(c, entry));
+        }
+        return found;
+    }
+
+    private static boolean locked(Candidate c) {
+        String species = speciesOf(c);
+        if (CLONED_LEGENDS.contains(species) || species.equals("necrozma")) return true;
+        Species s = find(species);
+        return s != null && s.getLabels().contains("ultra_beast");
+    }
+
+    /** By the entries' weights; with a player, a legendary they already own counts OWNED_LEGEND_WEIGHT as much (unless they own them all). */
+    private static Pooled weighted(List<Pooled> pool, @Nullable ServerPlayer player, RandomSource random) {
+        double[] weights = new double[pool.size()];
+        double total = 0;
+        boolean ownsAll = player != null && pool.stream().allMatch(p -> owns(player, p.candidate()));
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] = pool.get(i).entry().weight() * (player != null && !ownsAll && owns(player, pool.get(i).candidate()) ? OWNED_LEGEND_WEIGHT : 1);
+            total += weights[i];
+        }
+        double roll = random.nextDouble() * total;
+        int i = 0;
+        while (i < weights.length - 1 && roll >= weights[i]) roll -= weights[i++];
+        return pool.get(i);
     }
 
     public static boolean known(String species) {
@@ -177,9 +215,12 @@ public final class WormholePokemon {
         }
         Candidate chosen = species != null ? candidate(species) : null;
         if (species == null && category != null) {
-            String pool = poolOf(world);
-            List<Candidate> here = new ArrayList<>(tagged(Wormholes.id(pool)));
-            here.addAll(tagged(Wormholes.id(pool + "_legendaries")));
+            List<Candidate> here = new ArrayList<>();
+            if (WormholeDestinations.isWilds(world)) {
+                WormholePools.Pool pool = WormholePools.of(world);
+                for (Pooled p : pooled(pool.pokemon())) here.add(p.candidate());
+                for (Pooled p : pooled(pool.legendaries())) here.add(p.candidate());
+            }
             String beast = UltraBeastWorlds.beastOf(world);
             Candidate own = beast == null ? null : candidate(beast);
             if (own != null) here.add(own);
@@ -195,7 +236,7 @@ public final class WormholePokemon {
         }
         if (chosen == null) return null;
         return spawn(chosen, GAME_LEVEL, is(chosen, "regular")
-                ? random.nextDouble() < shinyChance(rings, WarpTunnel.band(VISIT_LIGHT_YEARS)) : wildShiny(random));
+                ? random.nextDouble() < shinyChance(rings, WarpTunnel.band(VISIT_LIGHT_YEARS)) : wildShiny(chosen, random));
     }
 
     private static boolean is(Candidate c, String category) {
@@ -219,7 +260,7 @@ public final class WormholePokemon {
         if (total == 0) return null;
         int roll = random.nextInt(total), i = 0;
         while (roll >= weights.get(i)) roll -= weights.get(i++);
-        return spawn(found.get(i), GAME_LEVEL, wildShiny(random));
+        return spawn(found.get(i), GAME_LEVEL, wildShiny(found.get(i), random));
     }
 
     private static double legendChance(int rings, int band) {
@@ -231,29 +272,24 @@ public final class WormholePokemon {
         };
     }
 
+    /**
+     * The game's chance for this many rings and light-year band, with the settings' four "1 in N" values standing for
+     * the no-ring chance and each ring count's chance at the top band: a shorter ride gets the same share of the way
+     * from the no-ring chance to its ring count's as the game's own numbers do (b% with one ring, 2b - 1% with two,
+     * 4b - 4% with three, never under the no-ring chance), so the defaults roll as the game's.
+     */
     private static double shinyChance(int rings, int band) {
-        double percent = switch (rings) {
-            case 0 -> 1;
+        GameplayConfig.ShinyOdds odds = GameplayConfig.get().wormholeShinyOneIn;
+        int tier = Math.min(rings, GAME_TOP_PERCENT.length - 1);
+        double none = odds.chance(0);
+        if (tier == 0) return none;
+        double percent = switch (tier) {
             case 1 -> band;
             case 2 -> 2 * band - 1;
             default -> 4 * band - 4;
         };
-        GameplayConfig config = GameplayConfig.get();
-        return Math.min(1, (config.wormholeBaseShinyChance + (Math.max(1, percent) - 1) * config.wormholeShinyMultiplierPerRing) / 100);
-    }
-
-    private static Candidate favourUnowned(List<Candidate> legends, @Nullable ServerPlayer player, RandomSource random) {
-        double[] weights = new double[legends.size()];
-        double total = 0;
-        for (int i = 0; i < weights.length; i++) {
-            weights[i] = owns(player, legends.get(i)) ? OWNED_LEGEND_WEIGHT : 1;
-            total += weights[i];
-        }
-        if (total == OWNED_LEGEND_WEIGHT * weights.length) return legends.get(random.nextInt(legends.size()));
-        double roll = random.nextDouble() * total;
-        int i = 0;
-        while (i < weights.length - 1 && roll >= weights[i]) roll -= weights[i++];
-        return legends.get(i);
+        double share = (Math.max(1, percent) - 1) / (GAME_TOP_PERCENT[tier] - 1);
+        return Math.max(0, Math.min(1, none + (odds.chance(tier) - none) * share));
     }
 
     private static boolean owns(@Nullable ServerPlayer player, Candidate c) {
@@ -262,10 +298,10 @@ public final class WormholePokemon {
                 .getHighestKnowledgeForSpecies(species.getResourceIdentifier()) == PokedexEntryProgress.OWNED;
     }
 
-    private static boolean ringShiny(int rings, RandomSource random) {
-        float shinyRate = Math.max(1f, Cobblemon.config.getShinyRate());
-        GameplayConfig config = GameplayConfig.get();
-        return rings >= WarpTunnel.SHINY_RINGS || random.nextFloat() < (config.wormholeBaseShinyChance + SHINY_BOOST_PER_RING * rings * config.wormholeShinyMultiplierPerRing) / shinyRate;
+    private static boolean ringShiny(Candidate c, int rings, RandomSource random) {
+        float shinyRate = shinyRate(find(speciesOf(c)));
+        double base = GameplayConfig.get().wormholeShinyOneIn.chance(0) * 100;
+        return rings >= WarpTunnel.SHINY_RINGS || random.nextFloat() < (base + SHINY_BOOST_PER_RING * rings) / shinyRate;
     }
 
     private static boolean partyHas(@Nullable ServerPlayer player, List<String> species) {

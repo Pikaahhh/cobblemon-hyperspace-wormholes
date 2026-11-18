@@ -1,0 +1,22 @@
+{
+  "pokemon": [
+    "quagsire",
+    "lombre",
+    "floatzel",
+    "stunfisk",
+    "barbaracle",
+    "jellicent",
+    "azumarill"
+  ],
+  "legendaries": [
+    "uxie",
+    "mesprit",
+    "azelf",
+    "lugia",
+    "latias",
+    "latios",
+    "kyogre",
+    {"pokemon": "suicune", "party": ["entei", "raikou"]},
+    {"pokemon": "kyurem", "party": ["reshiram", "zekrom"]}
+  ]
+}

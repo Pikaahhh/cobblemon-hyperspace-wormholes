@@ -66,6 +66,11 @@ public class FloatingBalls {
         popper = player;
     }
 
+    /** The player popping a ball right now (Tasks sets it just before the pop), or null. */
+    public static ServerPlayer popper() {
+        return popper;
+    }
+
     public static DonutPowers powers(ServerLevel level, ServerPlayer owner) {
         ServerPlayer player = popper != null ? popper : owner;
         WorldData.Trip trip = player == null ? null : WorldData.get(level.getServer()).trips.get(player.getUUID());

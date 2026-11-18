@@ -21,14 +21,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * /wormhole: create [destination] (op) opens a wormhole 12 blocks ahead that anyone can use, mounted or not; with no
  * destination it starts an Ultra Warp Ride, with one (a WormholeOrder, e.g. cliff[rings=3,category=legendary]) it takes
  * whoever walks in straight there. clearCooldown (op) clears your ride cooldown; unstuck (anyone) ends the Ultra Warp
  * Ride you're on and takes you back to where it started.
  */
-import java.util.Collection;
-import java.util.List;
 public final class WormholeCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("wormhole")

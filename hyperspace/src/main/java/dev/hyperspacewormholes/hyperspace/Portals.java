@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.pokemon.Species;
 import dev.hyperspacewormholes.hyperspace.mixin.DisplayAccessor;
 import dev.hyperspacewormholes.hyperspace.mixin.TextDisplayAccessor;
@@ -123,9 +124,10 @@ public class Portals {
         portal.splice = splice;
         portal.hoopa = hoopa;
         portal.opener = player.getUUID();
+        boolean legends = GameplayConfig.get().hyperspaceLegendaries;
         portal.legendary = hoopa ? null : legendary != null ? legendary : DonutBoosts.legendary(stack);
         portal.mega = hoopa ? null : mega != null ? mega : DonutBoosts.mega(stack);
-        portal.legendaryChance = hoopa ? 0 : DonutBoosts.legendaryChance(stack, stars);
+        portal.legendaryChance = hoopa || !legends ? 0 : DonutBoosts.legendaryChance(stack, stars);
         if (portal.legendary == null && player.getRandom().nextFloat() < portal.legendaryChance) portal.legendary = DonutBoosts.RANDOM;
         portal.alphaChance = DonutBoosts.alphaChance(stack);
         portal.powers = DonutPowers.of(DonutBoosts.ids(stack));
