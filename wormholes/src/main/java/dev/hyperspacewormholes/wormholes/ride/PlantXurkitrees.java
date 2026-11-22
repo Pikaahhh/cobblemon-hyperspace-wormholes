@@ -1,12 +1,15 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
+import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.entity.Despawner;
+import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.CellFeature;
 import dev.hyperspacewormholes.wormholes.world.UltraPlantFeature;
+import kotlin.Unit;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -45,6 +48,9 @@ import java.util.Set;
  * lightning strikes it and BOLT_TICKS later it drops the pose and cries. Statues never despawn or turn (Cobblemon turns a
  * body to its spawn direction for a client's first second, so that is set too) and are tracked to the whole view distance
  * (StatueTrackingMixin).
+ * <p>
+ * None of them can be caught: a thrown ball is cancelled on hitting a statue or the zone's Xurkitree while it still sleeps
+ * (WAKE_TAG), so that one only becomes catchable once the lightning has woken it.
  */
 public final class PlantXurkitrees {
     public static final String STATUE = "hyperspace_statue";
@@ -104,6 +110,10 @@ public final class PlantXurkitrees {
     private PlantXurkitrees() {}
 
     public static void register() {
+        CobblemonEvents.THROWN_POKEBALL_HIT.subscribe(Priority.HIGHEST, event -> {
+            if (!catchable(event.getPokemon())) event.cancel();
+            return Unit.INSTANCE;
+        });
         ServerEntityEvents.ENTITY_LOAD.register(PlantXurkitrees::onLoad);
         ServerTickEvents.END_SERVER_TICK.register(PlantXurkitrees::tick);
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> HELD.remove(entity));
@@ -113,6 +123,10 @@ public final class PlantXurkitrees {
             WAITING.clear();
             HELD.clear();
         });
+    }
+
+    static boolean catchable(PokemonEntity entity) {
+        return !entity.getTags().contains(SCENERY) && !entity.getTags().contains(WAKE_TAG);
     }
 
     static void sleep(PokemonEntity entity) {

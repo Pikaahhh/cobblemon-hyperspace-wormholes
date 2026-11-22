@@ -3,6 +3,8 @@ package dev.hyperspacewormholes.hyperspace;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
+import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore;
+import com.cobblemon.mod.common.net.messages.client.storage.party.SetPartyReferencePacket;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import kotlin.Unit;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
@@ -69,15 +71,15 @@ public class LevelScaling {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             forAll(handler.getPlayer(), LevelScaling::restoreOld);
-            if (!Hyperspace.inHyperspace(handler.getPlayer())) forAll(handler.getPlayer(), LevelScaling::unboost);
+            if (!Hyperspace.inHyperspace(handler.getPlayer())) unboostAll(handler.getPlayer());
         });
 
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            if (origin.dimension().equals(Hyperspace.HYPERSPACE)) forAll(player, LevelScaling::unboost);
+            if (origin.dimension().equals(Hyperspace.HYPERSPACE)) unboostAll(player);
         });
 
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            if (!Hyperspace.inHyperspace(newPlayer)) forAll(newPlayer, LevelScaling::unboost);
+            if (!Hyperspace.inHyperspace(newPlayer)) unboostAll(newPlayer);
         });
     }
 
@@ -99,15 +101,29 @@ public class LevelScaling {
     public static void boost(ServerPlayer player, int stars) {
         stars = Math.max(1, stars);
         int min = DonutBoosts.minLevel(stars), max = DonutBoosts.maxLevel(stars);
+        boolean changed = false;
         for (Pokemon mon : Cobblemon.INSTANCE.getStorage().getParty(player)) {
             if (mon.getPersistentData().contains(BOOST)) continue;
             int level = min + random.nextInt(max - min + 1);
             if (level <= mon.getLevel()) continue;
             CompoundTag tag = new CompoundTag();
             tag.putInt("xp", mon.getExperience());
+            tag.putInt("level", mon.getLevel());
             mon.getPersistentData().put(BOOST, tag);
             setLevel(mon, level);
+            changed = true;
         }
+        if (changed) resend(player);
+    }
+
+    public static boolean boosted(Pokemon mon) {
+        return mon.getPersistentData().contains(BOOST);
+    }
+
+    public static int baseLevel(Pokemon mon) {
+        if (!boosted(mon)) return mon.getLevel();
+        int level = mon.getPersistentData().getCompound(BOOST).getInt("level");
+        return level > 0 ? level : mon.getLevel();
     }
 
     private static void forAll(ServerPlayer player, Consumer<Pokemon> action) {
@@ -119,12 +135,25 @@ public class LevelScaling {
         }
     }
 
-    private static void unboost(Pokemon mon) {
-        if (!mon.getPersistentData().contains(BOOST)) return;
+    private static void unboostAll(ServerPlayer player) {
+        boolean[] changed = {false};
+        forAll(player, mon -> changed[0] |= unboost(mon));
+        if (changed[0]) resend(player);
+    }
+
+    private static void resend(ServerPlayer player) {
+        PlayerPartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
+        party.sendTo(player);
+        new SetPartyReferencePacket(party.getUuid()).sendToPlayer(player);
+    }
+
+    private static boolean unboost(Pokemon mon) {
+        if (!mon.getPersistentData().contains(BOOST)) return false;
         int xp = mon.getPersistentData().getCompound(BOOST).getInt("xp");
         mon.getPersistentData().remove(BOOST);
         mon.setExperienceAndUpdateLevel(xp);
         mon.onChange(null);
+        return true;
     }
 
     private static void setLevel(Pokemon mon, int level) {

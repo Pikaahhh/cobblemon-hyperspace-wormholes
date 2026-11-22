@@ -2,6 +2,7 @@ package dev.hyperspacewormholes.hyperspace;
 
 import com.cobblemon.mod.common.client.CobblemonClient;
 import com.cobblemon.mod.common.client.gui.battle.BattleGUI;
+import com.cobblemon.mod.common.pokemon.Pokemon;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -15,13 +16,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Shows the trip's task list on screen in Hyperspace; the Hoopa event glitches its characters (HoopaGlitch).
  *
  * <p>It sits in the top left, every line on one left edge: in the corner above Cobblemon's party icons, or at the top
- * beside them when a big GUI scale leaves too little room over the party. It never reaches the middle column (hotbar,
- * boss bars, action bar) and shrinks to fit, down to SMALLEST_SCALE.
+ * beside them when a big GUI scale leaves too little room over the party. It stays at the top and never runs past the
+ * screen's middle, so it never gets near the hotbar, and shrinks to fit, down to SMALLEST_SCALE.
  *
  * <p>Hidden with F1, the debug screen and Cobblemon battles, and for LINGER ticks after any of those so it doesn't
  * flash on the way into or out of a battle.
@@ -32,14 +34,13 @@ public class TasksHud {
     private static final int LINE = 11;
     private static final int GAP = 4;
     private static final int ENTRY = 20;
-    /** Its usual scale; the corner is only used at that scale, else it goes beside the party; never past SMALLEST_SCALE. */
+    /** Its usual scale (the corner always gets it when the list fits there at it); never past SMALLEST_SCALE. */
     private static final float SCALE = 0.9f, SMALLEST_SCALE = 0.5f;
     /** Left and top margin, and the gap kept round anything else. */
     private static final int LEFT = 4, TOP = 4, CLEAR = 4;
-    /** Half the hotbar's width: the middle column (hotbar, boss bars, action bar) is the window's middle +/- this. */
-    private static final int HOTBAR_HALF = 91;
-    /** Cobblemon's party icons: a slot's height, and where the column ends on the right. */
-    private static final int PARTY_SLOT = 30, PARTY_RIGHT = 60;
+    /** Cobblemon's party icons (PartyOverlay): a slot's height, and where the column ends on the right (a 62 wide slot,
+     *  the selected one drawn 6 further right). */
+    private static final int PARTY_SLOT = 30, PARTY_RIGHT = 68;
     /** Kept clear of the bottom (chat box and hotbar row) beside the party. */
     private static final int BOTTOM_KEEP = 48;
     private static final int LINGER = 20;
@@ -89,7 +90,7 @@ public class TasksHud {
         Font font = mc.font;
         boolean all = !tasks.isEmpty() && tasks.stream().allMatch(Tasks.Line::done);
         measure(font, all);
-        place(mc, graphics.guiWidth(), graphics.guiHeight());
+        place(graphics.guiWidth(), graphics.guiHeight());
         eaten = HoopaGlitch.eaten(total, GLITCH_STEP);
         counted = 0;
         graphics.pose().pushPose();
@@ -149,19 +150,22 @@ public class TasksHud {
         }
     }
 
-    /** atX, atY and shown: the top left corner over the party if it fits at SCALE, else at the top beside the
-     *  party, whichever is bigger. */
-    private static void place(Minecraft mc, int width, int height) {
+    /** atX, atY and shown: the top left corner over the party if it fits there at SCALE, else the corner or the top
+     *  beside the party, whichever shows it bigger. */
+    private static void place(int width, int height) {
         if (widest <= 0 || tall <= 0) return;
-        int middle = width / 2 - HOTBAR_HALF - CLEAR;
-        int slots = CobblemonClient.INSTANCE.getStorage().getParty().getSlots().size();
-        int partyTop = slots == 0 ? height - BOTTOM_KEEP : height / 2 - slots * PARTY_SLOT / 2 - 10 - CLEAR;
-        float corner = fit(partyTop - TOP, middle - LEFT);
+        // Both spots are at the top, so both can run up to the screen's middle: the hotbar is far below them.
+        int right = width / 2 - CLEAR;
+        List<Pokemon> party = CobblemonClient.INSTANCE.getStorage().getParty().getSlots();
+        // Cobblemon draws nothing for an empty party, else every slot (empty ones collapsed) down from the same top.
+        boolean drawn = party.stream().anyMatch(Objects::nonNull);
+        int partyTop = drawn ? height / 2 - party.size() * PARTY_SLOT / 2 - 10 - CLEAR : height - BOTTOM_KEEP;
+        float corner = fit(partyTop - TOP, right - LEFT);
         int besideX = PARTY_RIGHT + CLEAR;
-        // Beside the party it stays at the top, so it can run up to the screen's centre: the hotbar is far below it.
-        float beside = fit(height - BOTTOM_KEEP - TOP, width / 2 - CLEAR - besideX);
-        // The corner above the party only when the list fits there at full size.
-        if (corner >= SCALE || corner >= beside) set(LEFT, TOP, Math.max(corner, SMALLEST_SCALE));
+        float beside = fit(height - BOTTOM_KEEP - TOP, right - besideX);
+        // Beside the party when that shows it bigger; never the corner below SMALLEST_SCALE, where it would run into the party.
+        if (!drawn || corner >= SMALLEST_SCALE && (corner >= SCALE || corner >= beside))
+            set(LEFT, TOP, Math.max(corner, SMALLEST_SCALE));
         else set(besideX, TOP, Math.max(beside, SMALLEST_SCALE));
     }
 
@@ -184,6 +188,7 @@ public class TasksHud {
         graphics.pose().popPose();
     }
 
+    /** This text, with as much of it as the glitch has reached so far gone to glitch text. */
     private static MutableComponent chars(String text) {
         int gone = Math.min(eaten, text.length());
         eaten -= gone;
