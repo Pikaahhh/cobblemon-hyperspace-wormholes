@@ -3,11 +3,11 @@ package dev.hyperspacewormholes.wormholes.client.cinematic;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.hyperspacewormholes.wormholes.client.render.WarpRenderTypes;
 import dev.hyperspacewormholes.wormholes.client.render.WarpTextures;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -24,9 +24,9 @@ final class GlowQuads {
     private float[] data = new float[VERTEX * 4 * 64];
     private int size;
 
-    GlowQuads(WorldRenderContext context) {
-        cam = context.camera().getPosition();
-        Quaternionf orientation = context.camera().rotation();
+    GlowQuads(RenderLevelStageEvent event) {
+        cam = event.getCamera().getPosition();
+        Quaternionf orientation = event.getCamera().rotation();
         Vector3f r = orientation.transform(new Vector3f(1, 0, 0)), u = orientation.transform(new Vector3f(0, 1, 0));
         right = new Vec3(r.x, r.y, r.z);
         up = new Vec3(u.x, u.y, u.z);

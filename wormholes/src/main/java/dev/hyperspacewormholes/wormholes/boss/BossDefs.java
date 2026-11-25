@@ -4,11 +4,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -29,9 +32,11 @@ public final class BossDefs {
     private BossDefs() {}
 
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTED.register(BossDefs::reload);
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> reload(server));
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> DEFS.clear());
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> reload(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((OnDatapackSyncEvent event) -> {
+            if (event.getPlayer() == null) reload(event.getPlayerList().getServer());
+        });
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> DEFS.clear());
     }
 
     public static @Nullable BossDef get(ResourceLocation id) {
@@ -59,7 +64,7 @@ public final class BossDefs {
                 Wormholes.LOGGER.error("[boss] couldn't read boss data {}", file, e);
             }
         }
-        Path folder = FabricLoader.getInstance().getConfigDir().resolve(Wormholes.MOD_ID).resolve(FOLDER);
+        Path folder = FMLPaths.CONFIGDIR.get().resolve(Wormholes.MOD_ID).resolve(FOLDER);
         try {
             Files.createDirectories(folder);
             try (Stream<Path> files = Files.list(folder)) {

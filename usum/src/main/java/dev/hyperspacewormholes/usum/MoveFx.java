@@ -4,15 +4,15 @@ import com.cobblemon.mod.common.api.moves.animations.ActionEffectContext;
 import com.cobblemon.mod.common.api.moves.animations.EntityProvider;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.ActionEffectKeyframe;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
  * The move-animation steps the signature-move animations' data can't do on its own, added to Cobblemon's action effect keyframe types: a camera shake, a wait for a projectile to cross the real user-to-target gap, a render-only model motion of the user or target, the real Ultra Sun move sounds and the stand-in sounds of a plain build.
  * Shake and model motion run with the battle on the server and hand the effect to players within {@value #RANGE} blocks of the battling Pokemon; the clients draw it (client.MoveFxClient, client.ModelMotion), the shake behind its own toggle in config/horizons_movefx.json. The assets use the {@value #NAMESPACE} namespace.
  */
-public final class MoveFx implements ModInitializer {
+public final class MoveFx {
     public static final String MOD_ID = "hyperspace_wormholes";
     public static final String NAMESPACE = "horizons_movefx";
     public static final double RANGE = 48;
@@ -30,10 +30,9 @@ public final class MoveFx implements ModInitializer {
         return ResourceLocation.fromNamespaceAndPath(NAMESPACE, path);
     }
 
-    @Override
-    public void onInitialize() {
-        PayloadTypeRegistry.playS2C().register(CameraShakePayload.TYPE, CameraShakePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ModelMotionPayload.TYPE, ModelMotionPayload.CODEC);
+    public static void init(IEventBus modBus) {
+        Packets.toClient(CameraShakePayload.TYPE, CameraShakePayload.CODEC);
+        Packets.toClient(ModelMotionPayload.TYPE, ModelMotionPayload.CODEC);
         ActionEffectKeyframe.Companion.getTypes().put(CameraShakeKeyframe.TYPE, CameraShakeKeyframe.class);
         ActionEffectKeyframe.Companion.getTypes().put(TravelKeyframe.TYPE, TravelKeyframe.class);
         ActionEffectKeyframe.Companion.getTypes().put(UsumSoundKeyframe.TYPE, UsumSoundKeyframe.class);
@@ -64,7 +63,7 @@ public final class MoveFx implements ModInitializer {
             if (battlers.stream().anyMatch(b -> b instanceof PokemonEntity && !b.broadcastToPlayer(player))) continue;
             for (Entity entity : battlers) {
                 if (entity.level() == level && player.distanceToSqr(entity) < RANGE * RANGE) {
-                    ServerPlayNetworking.send(player, payload);
+                    PacketDistributor.sendToPlayer(player, payload);
                     break;
                 }
             }

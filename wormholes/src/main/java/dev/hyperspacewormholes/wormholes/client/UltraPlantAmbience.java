@@ -3,9 +3,8 @@ package dev.hyperspacewormholes.wormholes.client;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.ride.PlantXurkitrees;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -28,6 +27,8 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -78,9 +79,9 @@ public final class UltraPlantAmbience {
     private UltraPlantAmbience() {}
 
     public static void register() {
-        ClientTickEvents.END_CLIENT_TICK.register(mc -> tick());
-        WorldRenderEvents.START.register(context -> {
-            Matrix4f p = context.projectionMatrix();
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
+        RenderStages.start(event -> {
+            Matrix4f p = event.getProjectionMatrix();
             float tan = VIEW_MARGIN * (float) Math.sqrt(1 / (p.m00() * p.m00()) + 1 / (p.m11() * p.m11()));
             viewCos = (float) (1 / Math.sqrt(1 + tan * tan));
         });

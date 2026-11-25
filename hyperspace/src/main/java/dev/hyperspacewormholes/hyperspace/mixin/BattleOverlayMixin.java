@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 /** Fixes Cobblemon's battle overlay crashing if it gets drawn right after a battle ends. */
 @Mixin(value = BattleOverlay.class, remap = false)
 public class BattleOverlayMixin {
-    @WrapMethod(method = {"method_1753", "render"})
+    @WrapMethod(method = "render")
     private void hyperspace_wormholes$battleGone(GuiGraphics context, DeltaTracker delta, Operation<Void> original) {
         try {
             original.call(context, delta);

@@ -1,9 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -11,6 +8,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +48,10 @@ public final class MapDistortions {
     private MapDistortions() {}
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Marks.TYPE, Marks.CODEC);
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> SENT.remove(handler.getPlayer().getUUID()));
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % SYNC_EVERY == 0) sync(server);
+        Packets.toClient(Marks.TYPE, Marks.CODEC);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> SENT.remove(event.getEntity().getUUID()));
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
+            if (event.getServer().getTickCount() % SYNC_EVERY == 0) sync(event.getServer());
         });
     }
 
@@ -62,9 +63,9 @@ public final class MapDistortions {
             marks.add(new Mark(new BlockPos(distortion.x, distortion.y, distortion.z), distortion.stars, List.copyOf(distortion.types)));
         }
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (!ServerPlayNetworking.canSend(player, Marks.TYPE) || marks.equals(SENT.get(player.getUUID()))) continue;
+            if (!player.connection.hasChannel(Marks.TYPE) || marks.equals(SENT.get(player.getUUID()))) continue;
             SENT.put(player.getUUID(), marks);
-            ServerPlayNetworking.send(player, new Marks(marks));
+            PacketDistributor.sendToPlayer(player, new Marks(marks));
         }
     }
 }

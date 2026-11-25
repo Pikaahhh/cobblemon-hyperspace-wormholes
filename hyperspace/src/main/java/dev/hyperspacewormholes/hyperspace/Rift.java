@@ -1,7 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -17,6 +16,9 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * The look of a spatial distortion and of the portal Hoopa opens there, as one unsaved entity 1.5 blocks up in front of
@@ -26,7 +28,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public class Rift extends Entity {
     public static final int SPLICE_HEAD_START = 30;
-    public static final EntityType<Rift> TYPE = register("rift", EntityType.Builder.<Rift>of(Rift::new, MobCategory.MISC)
+    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, Hyperspace.MOD_ID);
+    public static final DeferredHolder<EntityType<?>, EntityType<Rift>> TYPE = register("rift", EntityType.Builder.<Rift>of(Rift::new, MobCategory.MISC)
             .sized(0.5f, 0.5f).fireImmune().noSave().noSummon().clientTrackingRange(10).updateInterval(20));
     public static final double HEIGHT = 1.5;
     public static final int APPEAR = 67;
@@ -55,11 +58,12 @@ public class Rift extends Entity {
         setNoGravity(true);
     }
 
-    public static void register() {
+    public static void register(IEventBus modBus) {
+        ENTITIES.register(modBus);
     }
 
-    private static EntityType<Rift> register(String name, EntityType.Builder<Rift> builder) {
-        return Registry.register(BuiltInRegistries.ENTITY_TYPE, Hyperspace.id(name), builder.build(name));
+    private static DeferredHolder<EntityType<?>, EntityType<Rift>> register(String name, EntityType.Builder<Rift> builder) {
+        return ENTITIES.register(name, () -> builder.build(name));
     }
 
     public static Rift distortion(ServerLevel level, Vec3 base, Vec3 normal, long born, Component label) {
@@ -76,7 +80,7 @@ public class Rift extends Entity {
     }
 
     private static Rift spawn(ServerLevel level, Vec3 base, Vec3 normal, boolean portal, long since, boolean unstable, Component label) {
-        Rift rift = TYPE.create(level);
+        Rift rift = TYPE.get().create(level);
         rift.setPos(base.x, base.y + HEIGHT, base.z);
         rift.setYRot((float) Math.toDegrees(Math.atan2(-normal.x, normal.z)));
         rift.entityData.set(PORTAL, portal);

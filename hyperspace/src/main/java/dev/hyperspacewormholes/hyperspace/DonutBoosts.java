@@ -9,8 +9,8 @@ import com.cobblemon.mod.common.api.types.ElementalType;
 import com.cobblemon.mod.common.api.types.ElementalTypes;
 import com.cobblemon.mod.common.item.components.IngredientComponent;
 import com.cobblemon.mod.common.pokemon.Species;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
@@ -414,7 +414,7 @@ public class DonutBoosts {
 
     public static void addLore(ItemStack stack, List<Component> tooltip) {
         tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.ring.calories", calories(stack)).withStyle(ChatFormatting.GRAY));
-        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT || !Screen.hasShiftDown()) {
+        if (FMLEnvironment.dist != Dist.CLIENT || !Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("tooltip.hyperspace_wormholes.ring.more").withStyle(ChatFormatting.DARK_GRAY));
             return;
         }

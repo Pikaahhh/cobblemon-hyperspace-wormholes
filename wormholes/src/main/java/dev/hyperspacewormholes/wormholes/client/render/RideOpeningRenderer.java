@@ -5,6 +5,7 @@ import dev.hyperspacewormholes.wormholes.client.RideOpening;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**

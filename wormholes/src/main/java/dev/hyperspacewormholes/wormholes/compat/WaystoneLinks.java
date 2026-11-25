@@ -1,7 +1,6 @@
 package dev.hyperspacewormholes.wormholes.compat;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -11,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
@@ -33,7 +33,7 @@ public final class WaystoneLinks {
     public record Landing(ServerLevel level, Vec3 pos, float yaw) {}
 
     private static boolean available() {
-        return FabricLoader.getInstance().isModLoaded("waystones");
+        return ModList.get().isLoaded("waystones");
     }
 
     @SuppressWarnings("unchecked")

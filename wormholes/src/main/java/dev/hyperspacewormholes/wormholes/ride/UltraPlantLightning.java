@@ -1,7 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +11,8 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * Harmless lightning that strikes the open ground around players in the Ultra Plant, just for show. STATUE_SHARE of
@@ -26,7 +27,7 @@ public final class UltraPlantLightning {
     private UltraPlantLightning() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(UltraPlantLightning::tick);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
     }
 
     public static boolean isUltraPlant(Level level) {

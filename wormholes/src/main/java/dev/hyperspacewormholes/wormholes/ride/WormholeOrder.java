@@ -34,6 +34,7 @@ import java.util.concurrent.CompletableFuture;
 public record WormholeOrder(String destination, @Nullable ResourceKey<Level> world, int rings, @Nullable String category,
                             @Nullable String pokemon, boolean ride) {
     public static final WormholeOrder WAYSTONES = new WormholeOrder("waystones", null, 0, null, null, true);
+
     private static final List<String> KEYS = List.of("rings", "category", "pokemon", "ride");
     private static final DynamicCommandExceptionType BAD_RIDE = new DynamicCommandExceptionType(
             value -> Component.translatable("hyperspace_wormholes.msg.bad_ride", value));

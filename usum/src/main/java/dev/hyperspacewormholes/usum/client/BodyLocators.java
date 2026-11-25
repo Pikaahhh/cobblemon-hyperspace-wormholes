@@ -192,7 +192,7 @@ public final class BodyLocators {
         return out;
     }
 
-    /** ModelPart's children and cubes are public through Cobblemon's access widener. */
+    /** ModelPart's children and cubes are public through Cobblemon's access transformer. */
     private static void walk(ModelPart part, List<ModelPart> path, Map<String, List<ModelPart>> out) {
         for (Map.Entry<String, ModelPart> e : part.children.entrySet()) {
             List<ModelPart> next = new ArrayList<>(path);

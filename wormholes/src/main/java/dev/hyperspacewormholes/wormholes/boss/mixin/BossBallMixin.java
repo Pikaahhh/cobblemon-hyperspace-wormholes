@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(EmptyPokeBallEntity.class)
 public abstract class BossBallMixin {
-    // onHitEntity is Projectile's method, so it goes through the refmap; only the call inside is Cobblemon's
     @Redirect(method = "onHitEntity", at = @At(value = "INVOKE",
             target = "Lcom/cobblemon/mod/common/entity/pokemon/PokemonServerDelegate;getBattle()Lcom/cobblemon/mod/common/api/battles/model/PokemonBattle;",
             remap = false))

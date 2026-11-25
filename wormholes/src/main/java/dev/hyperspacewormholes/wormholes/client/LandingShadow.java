@@ -6,7 +6,6 @@ import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.ride.UltraZones;
 import dev.hyperspacewormholes.wormholes.ride.WildsShadows;
 import dev.hyperspacewormholes.wormholes.world.Zone;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -16,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /** A shadow on the ground where Cliff World's circling Pokemon will land: vanilla's round entity shadow laid flat on the zone's spot while a flying shadow (WildsShadows.isFlyingShadow) is in the level, sized from the Pokemon's width, fainter and wider the higher it is and darker and tighter as it comes down (over FADE_HEIGHT); once it has landed it stops being a shadow and this stops. */
 public final class LandingShadow {
@@ -24,7 +24,7 @@ public final class LandingShadow {
 
     private LandingShadow() {}
 
-    public static void render(WorldRenderContext context) {
+    public static void render(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.level.dimension() != Wormholes.WILDS_CLIFF) return;
         Zone zone = UltraZones.of(mc.level);
@@ -37,13 +37,13 @@ public final class LandingShadow {
             }
         }
         if (flier == null) return;
-        float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Vec3 spot = zone.standOn(zone.spot());
         double height = Math.max(0, Mth.lerp(partialTick, flier.yOld, flier.getY()) - spot.y);
         float near = (float) Mth.clamp(1 - height / FADE_HEIGHT, 0, 1);
         float alpha = 0.3f + 0.45f * near;
         float radius = Math.max(0.9f, flier.getBbWidth() * 0.9f) * (1.4f - 0.4f * near);
-        Vec3 cam = context.camera().getPosition();
+        Vec3 cam = event.getCamera().getPosition();
         float x = (float) (spot.x - cam.x), y = (float) (spot.y - cam.y + 0.01), z = (float) (spot.z - cam.z);
         PoseStack.Pose pose = new PoseStack().last();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();

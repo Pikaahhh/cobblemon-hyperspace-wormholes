@@ -4,9 +4,6 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.Zone;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
@@ -22,6 +19,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -85,18 +85,18 @@ public final class WildsShadows {
         }
     }
 
+    private static final List<Shadow> HIDDEN = new ArrayList<>();
     private record Trip(ResourceKey<Level> world, @Nullable UUID player) {}
 
-    private static final List<Shadow> HIDDEN = new ArrayList<>();
     private static final Map<Trip, UUID> CURRENT = new HashMap<>();
     private static final List<PokemonEntity> STALE = new ArrayList<>();
 
     private WildsShadows() {}
 
     public static void register() {
-        ServerEntityEvents.ENTITY_LOAD.register(WildsShadows::onLoad);
-        ServerTickEvents.END_SERVER_TICK.register(WildsShadows::tick);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        Wormholes.onEntityLoad(WildsShadows::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             HIDDEN.clear();
             CURRENT.clear();
             STALE.clear();

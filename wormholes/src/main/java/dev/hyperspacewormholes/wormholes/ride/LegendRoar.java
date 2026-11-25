@@ -5,8 +5,6 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
 import dev.hyperspacewormholes.wormholes.network.RoarPayload;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,9 +16,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -68,9 +66,7 @@ public final class LegendRoar {
         COOLDOWN_UNTIL.put(player.getUUID(), now + COOLDOWN_TICKS);
 
         RoarPayload roar = new RoarPayload(mount.getId());
-        Collection<ServerPlayer> viewers = PlayerLookup.tracking(mount);
-        for (ServerPlayer viewer : viewers) ServerPlayNetworking.send(viewer, roar);
-        if (!viewers.contains(player)) ServerPlayNetworking.send(player, roar);
+        PacketDistributor.sendToPlayersTrackingEntity(mount, roar);
 
         mount.level().playSound(null, mount.getX(), mount.getY(), mount.getZ(),
                 SoundEvent.createVariableRangeEvent(cryId(pokemon)), SoundSource.NEUTRAL, 3f, 1f);
@@ -105,7 +101,7 @@ public final class LegendRoar {
         Vec3 centre = mount.position().add(0, mount.getBbHeight() / 2, 0).add(ahead.scale(DISTANCE_AHEAD + lead));
 
         ServerLevel level = (ServerLevel) mount.level();
-        WormholeEntity wormhole = Wormholes.WORMHOLE.create(level);
+        WormholeEntity wormhole = Wormholes.WORMHOLE.get().create(level);
         wormhole.setRings(0);
         wormhole.setWormholeType(WormholeType.BLUE);
         wormhole.setLifetime(200);

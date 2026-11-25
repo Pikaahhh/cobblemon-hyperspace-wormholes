@@ -1,6 +1,7 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'java-library'
     id 'maven-publish'
+    id 'net.neoforged.moddev' version "${moddev_version}"
 }
 
 version = project.mod_version
@@ -10,66 +11,22 @@ base {
     archivesName = project.archives_base_name
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
 repositories {
     mavenCentral()
-    maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://maven.impactdev.net/repository/development/' }
     exclusiveContent {
         forRepository { maven { url = 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }
     }
-    exclusiveContent {
-        forRepository { maven { url = 'https://maven.bawnorton.com/releases' } }
-        filter { includeGroup 'com.github.bawnorton.mixinsquared' }
-    }
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // Cobblemon and CobbleNav are only needed at compile time; we only compile against them.
-    modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
-    modCompileOnly("maven.modrinth:cobblemon-pokenav:BV5KiAcY") { transitive = false }  // CobbleNav 2.4.1
-    modCompileOnly("maven.modrinth:modmenu:11.0.3") { transitive = false }
-    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
-
-    // Lets VeilShaderFix skip a Veil mixin that can't apply; bundled inside our jar (MIT).
-    include(implementation("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}"))
-
-    // Dev-only runtime so runServer/runClient boot with Cobblemon; never bundled.
-    modLocalRuntime("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
-    modLocalRuntime 'net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20'
-}
-
-processResources {
-    inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
-}
-
-// remapJar writes into an existing jar in place, so files since deleted from the sources would stay in it.
-remapJar {
-    doFirst { delete archiveFile }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
 }
 
 // The mod is two halves (hyperspace, wormholes) plus usum (the Solgaleo / Lunala / Necrozma signature move animations
-// and the boss turning), each with its own code and resources; only fabric.mod.json (in src/main/resources) is shared.
+// and the boss turning), each with its own code and resources. src/main holds the @Mod class and neoforge.mods.toml.
 sourceSets {
     main {
-        java.srcDirs = ['hyperspace/src/main/java', 'wormholes/src/main/java', 'usum/src/main/java']
+        java.srcDirs = ['src/main/java', 'hyperspace/src/main/java', 'wormholes/src/main/java', 'usum/src/main/java']
         resources.srcDirs = ['src/main/resources', 'hyperspace/src/main/resources', 'wormholes/src/main/resources',
                              'usum/src/main/resources']
     }
@@ -80,6 +37,46 @@ sourceSets {
     }
 }
 
+neoForge {
+    version = project.neo_version
+
+    mods {
+        hyperspace_wormholes {
+            sourceSet sourceSets.main
+        }
+    }
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+}
+
 dependencies {
+    // Cobblemon and CobbleNav are only needed at compile time; we only compile against them.
+    compileOnly("com.cobblemon:neoforge:${project.cobblemon_version}") { transitive = false }
+    compileOnly("maven.modrinth:cobblemon-pokenav:qbUwxhni") { transitive = false }  // CobbleNav 2.4.1
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
     compileOnly sourceSets.jadeApi.output
+}
+
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [version: project.version, minecraft_version: project.minecraft_version]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+    options.compilerArgs += ['-Xmaxerrs', '10000']
 }

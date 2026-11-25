@@ -6,10 +6,13 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.Camera;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -26,13 +29,23 @@ public class HyperspaceSky {
         return (float) Math.toRadians(ticks * 0.004f);
     }
 
-    public static void register() {
-        DimensionRenderingRegistry.registerSkyRenderer(Hyperspace.HYPERSPACE, HyperspaceSky::render);
+    public static void register(IEventBus modBus) {
+        // dimension_type/hyperspace.json points its effects here: the End's, with this sky
+        modBus.addListener((RegisterDimensionSpecialEffectsEvent event) -> event.register(Hyperspace.HYPERSPACE.location(),
+                new DimensionSpecialEffects.EndEffects() {
+                    @Override
+                    public boolean renderSky(ClientLevel level, int ticks, float partialTick, Matrix4f modelViewMatrix, Camera camera,
+                                             Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
+                        setupFog.run();
+                        render(level, partialTick, modelViewMatrix);
+                        return true;
+                    }
+                }));
     }
 
-    private static void render(WorldRenderContext context) {
-        float time = context.world().getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false);
-        Matrix4f matrix = new Matrix4f(context.positionMatrix()).rotateY(angle(time));
+    private static void render(ClientLevel level, float partialTick, Matrix4f modelView) {
+        float time = level.getGameTime() + partialTick;
+        Matrix4f matrix = new Matrix4f(modelView).rotateY(angle(time));
 
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();

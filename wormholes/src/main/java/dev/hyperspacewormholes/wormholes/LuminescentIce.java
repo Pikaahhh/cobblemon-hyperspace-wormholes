@@ -1,23 +1,17 @@
 package dev.hyperspacewormholes.wormholes;
 
-import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
-import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.material.MapColor;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 
@@ -35,24 +29,23 @@ public final class LuminescentIce {
     private static final int[] GRADIENT = {0xB3DAA6, 0xAFE6A7, 0xA8E2AB, 0x9DE2AF, 0x8EE3B0, 0x7EDBB3, 0x65D2B6,
             0x4FCCC0, 0x49D5DF, 0x4BC4ED, 0x49A2E2, 0x508CDD, 0x6B8AE1, 0x7D8AE7, 0x9491E4, 0xA177BC, 0xA682B3, 0xAE85B6,
             0xAB8AAB, 0xB390AB};
-    private static final TagKey<Biome> TUNDRA =
-            TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath("cobblemon", "is_tundra"));
-    public static final Block BLOCK = Registry.register(BuiltInRegistries.BLOCK, Wormholes.id("luminescent_ice"),
-            new HalfTransparentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(2.8f).friction(0.989f)
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Wormholes.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Wormholes.MOD_ID);
+    public static final DeferredBlock<Block> BLOCK = BLOCKS.register("luminescent_ice",
+            () -> new HalfTransparentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(2.8f).friction(0.989f)
                     .sound(SoundType.GLASS).lightLevel(state -> LIGHT).noOcclusion()
                     .isValidSpawn((state, level, pos, type) -> false).isRedstoneConductor((state, level, pos) -> false)));
-    public static final Item ITEM = Registry.register(BuiltInRegistries.ITEM, Wormholes.id("luminescent_ice"),
-            new BlockItem(BLOCK, new Item.Properties()));
+    public static final DeferredItem<BlockItem> ITEM = ITEMS.registerSimpleBlockItem(BLOCK);
 
     private LuminescentIce() {}
 
-    public static void register() {
-        BiomeModifications.addFeature(BiomeSelectors.tag(TUNDRA), GenerationStep.Decoration.UNDERGROUND_ORES,
-                ResourceKey.create(Registries.PLACED_FEATURE, Wormholes.id("luminescent_ice")));
+    public static void register(IEventBus modBus) {
+        BLOCKS.register(modBus);
+        ITEMS.register(modBus);
     }
 
     public static List<Block> family() {
-        return List.of(BLOCK, shape("slab"), shape("stairs"));
+        return List.of(BLOCK.get(), shape("slab"), shape("stairs"));
     }
 
     private static Block shape(String kind) {

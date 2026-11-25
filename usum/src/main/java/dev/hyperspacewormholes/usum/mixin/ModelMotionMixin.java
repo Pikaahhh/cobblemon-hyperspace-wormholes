@@ -12,9 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Shifts and turns a Pokemon's drawn model while a move's model motion plays (client.ModelMotion): the pose is pushed and
- * moved as Cobblemon starts drawing the Pokemon and popped when it is done. render keeps its own name in the
- * intermediary jar (only its bridges are remapped) and it's the class's first render, so the bare name finds it with no
- * Minecraft types in the selector. Optional (require 0).
+ * moved as Cobblemon starts drawing the Pokemon and popped when it is done. The typed render is the class's first
+ * render (the others are its bridges), so the bare name finds it. Optional (require 0).
  */
 @Mixin(value = PokemonRenderer.class, remap = false)
 public abstract class ModelMotionMixin {

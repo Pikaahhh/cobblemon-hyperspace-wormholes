@@ -9,9 +9,7 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.client.UltraWorldMusic;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -26,6 +24,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -75,9 +76,9 @@ public final class UltraBurstCinematic {
     public static void register() {
         if (registered) return;
         registered = true;
-        ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
-        WorldRenderEvents.LAST.register(UltraBurstEffects::collect);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> stop());
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
+        RenderStages.last(UltraBurstEffects::collect);
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> stop());
     }
 
     public static boolean play(int bossId, int challengerId) {
@@ -179,7 +180,7 @@ public final class UltraBurstCinematic {
         float[] shaft = new float[7];
         Vector3f corner = new Vector3f();
         for (Map.Entry<String, Bone> top : model.getRootPart().getChildren().entrySet()) {
-            if (!(top.getValue() instanceof ModelPart part)) continue;
+            if (!((Object) top.getValue() instanceof ModelPart part)) continue;
             boolean core = top.getKey().startsWith("core");
             part.visit(pose, (at, path, index, cube) -> {
                 if (core || path.contains("/core")) {

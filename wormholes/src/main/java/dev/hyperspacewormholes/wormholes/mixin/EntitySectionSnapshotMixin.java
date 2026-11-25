@@ -13,13 +13,13 @@ import java.util.stream.Stream;
 
 /**
  * Walks a copy of a section's entities when a chunk's status changes, skipping any removed along the way. The game starts
- * and stops ticking and tracking each entity while walking the live list, and those steps call out to mods (Fabric's
- * entity load and unload events, among them this mod's clean-ups that remove a stale Pokemon), so an entity removed,
- * added or moved there threw a ConcurrentModificationException.
+ * and stops ticking and tracking each entity while walking the live list, and those steps call out to mods (the entity
+ * leave event among them), so an entity removed, added or moved there threw a ConcurrentModificationException. The lambda
+ * is matched by pattern, as its number depends on the lambdas before it in the class.
  */
 @Mixin(PersistentEntitySectionManager.class)
 public abstract class EntitySectionSnapshotMixin {
-    @WrapOperation(method = "method_31825",
+    @WrapOperation(method = "/^lambda\\$updateChunkStatus\\$\\d+$/",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/EntitySection;getEntities()Ljava/util/stream/Stream;"))
     private Stream<EntityAccess> hyperspace_wormholes$snapshot(EntitySection<EntityAccess> section,
                                                                Operation<Stream<EntityAccess>> original) {

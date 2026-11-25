@@ -4,10 +4,8 @@ import com.cobblemon.mod.common.client.render.models.blockbench.PosableState;
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimation;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.client.NecrozmaWeakened;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -19,6 +17,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -57,12 +58,12 @@ public final class NecrozmaSceneCinematic {
     public static void register() {
         if (registered) return;
         registered = true;
-        ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
-        WorldRenderEvents.LAST.register(context -> {
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
+        RenderStages.last(event -> {
             if (scene == null || kind != NecrozmaScenePayload.POWER_UP) return;
-            PowerUpEffects.collect(context, frame(context.tickCounter().getGameTimeDeltaPartialTick(false)));
+            PowerUpEffects.collect(event, frame(event.getPartialTick().getGameTimeDeltaPartialTick(false)));
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> stop());
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> stop());
     }
 
     public static boolean play(NecrozmaScenePayload payload) {

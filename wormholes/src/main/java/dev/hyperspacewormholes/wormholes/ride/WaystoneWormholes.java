@@ -27,7 +27,6 @@ public final class WaystoneWormholes {
         return targets;
     }
 
-    /** Where to put someone beside a destination, or empty if it's gone. */
     public static Optional<WaystoneLinks.Landing> landing(MinecraftServer server, WaystoneLinks.Target target) {
         return target.id() == null ? Lodestones.landing(server, target) : WaystoneLinks.landing(server, target);
     }

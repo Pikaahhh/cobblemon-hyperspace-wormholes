@@ -73,7 +73,7 @@ public final class WormholeCommand {
         Vec3 flat = new Vec3(look.x, 0, look.z);
         flat = flat.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : flat.normalize();
         Vec3 pos = player.position().add(flat.scale(12)).add(0, 1, 0);
-        WormholeEntity wormhole = Wormholes.WORMHOLE.create(level);
+        WormholeEntity wormhole = Wormholes.WORMHOLE.get().create(level);
         wormhole.setRings(order == null ? 0 : order.rings());
         wormhole.setWormholeType(order == null ? WormholeType.BLUE : WormholeDestinations.colourOf(order.world()));
         wormhole.moveTo(pos.x, pos.y, pos.z, player.getYRot() + 180f, 0f);
@@ -97,7 +97,7 @@ public final class WormholeCommand {
     }
 
     private static int showPity(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        int pity = ctx.getSource().getPlayerOrException().getAttachedOrElse(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
+        int pity = ctx.getSource().getPlayerOrException().getExistingData(Wormholes.WHITE_WITHOUT_NECROZMA).orElse(0);
         ctx.getSource().sendSuccess(() -> Component.translatable("hyperspace_wormholes.msg.pity", pity), false);
         return pity;
     }
@@ -112,24 +112,24 @@ public final class WormholeCommand {
             ctx.getSource().sendFailure(Component.translatable("hyperspace_wormholes.msg.pity_high", most));
             return 0;
         }
-        player.setAttached(Wormholes.WHITE_WITHOUT_NECROZMA, amount);
+        player.setData(Wormholes.WHITE_WITHOUT_NECROZMA, amount);
         ctx.getSource().sendSuccess(() -> Component.translatable("hyperspace_wormholes.msg.pity_set", amount), false);
         return amount;
     }
     private static int clearPity(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
-        if (player.getAttachedOrElse(Wormholes.WHITE_WITHOUT_NECROZMA, 0) == 0) {
+        if (player.getExistingData(Wormholes.WHITE_WITHOUT_NECROZMA).orElse(0) == 0) {
             ctx.getSource().sendFailure(Component.translatable("hyperspace_wormholes.msg.pity_none"));
             return 0;
         }
-        player.setAttached(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
+        player.setData(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
         ctx.getSource().sendSuccess(() -> Component.translatable("hyperspace_wormholes.msg.pity_cleared"), false);
         return 1;
     }
     private static int bossCleared(CommandContext<CommandSourceStack> ctx, @Nullable Collection<ServerPlayer> targets) throws CommandSyntaxException {
         boolean cleared = BoolArgumentType.getBool(ctx, "cleared");
         Collection<ServerPlayer> players = targets == null ? List.of(ctx.getSource().getPlayerOrException()) : targets;
-        for (ServerPlayer player : players) player.setAttached(Wormholes.NECROZMA_BEATEN, cleared);
+        for (ServerPlayer player : players) player.setData(Wormholes.NECROZMA_BEATEN, cleared);
         String who = players.size() == 1 ? players.iterator().next().getScoreboardName() : players.size() + " players";
         ctx.getSource().sendSuccess(() -> Component.translatable("hyperspace_wormholes.msg.boss_cleared", String.valueOf(cleared), who), true);
         return players.size();

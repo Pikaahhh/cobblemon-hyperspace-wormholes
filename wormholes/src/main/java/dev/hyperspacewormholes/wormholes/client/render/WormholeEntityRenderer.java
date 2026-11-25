@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.hyperspacewormholes.wormholes.client.ShaderPacks;
 import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
 import dev.hyperspacewormholes.wormholes.ride.RideLegend;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.FogType;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -79,12 +79,12 @@ public class WormholeEntityRenderer extends EntityRenderer<WormholeEntity> {
         AFTER_WATER.clear();
     }
 
-    public static void drawAfterWater(WorldRenderContext context) {
+    public static void drawAfterWater(RenderLevelStageEvent event) {
         if (ShaderPacks.inUse()) flush();
     }
 
-    public static void drawLast(WorldRenderContext context) {
-        if (!ShaderPacks.inUse() && !AFTER_WATER.isEmpty()) ShaderPacks.inCameraView(context, WormholeEntityRenderer::flush);
+    public static void drawLast(RenderLevelStageEvent event) {
+        if (!ShaderPacks.inUse() && !AFTER_WATER.isEmpty()) ShaderPacks.inCameraView(event, WormholeEntityRenderer::flush);
     }
 
     private static void flush() {

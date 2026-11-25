@@ -6,20 +6,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.hyperspacewormholes.wormholes.PokemonTags;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.Map;
  * mod's whole file; nothing merges. Ultra Beast worlds aren't covered. The Wilds tags these replace (wilds_cliff and
  * so on) are no longer read, and a datapack still shipping one gets a warning in the log.
  */
-public final class WormholePools implements SimpleSynchronousResourceReloadListener {
+public final class WormholePools implements ResourceManagerReloadListener {
     private static final String DIRECTORY = "wormhole_pools";
     private static final List<String> OLD_TAGS = List.of("wilds_cliff", "wilds_crag", "wilds_cave", "wilds_water");
     private static Map<String, Pool> pools = Map.of();
@@ -53,7 +52,7 @@ public final class WormholePools implements SimpleSynchronousResourceReloadListe
     }
 
     public static void register() {
-        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new WormholePools());
+        NeoForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new WormholePools()));
     }
 
     public static String colourName(WormholeType type) {
@@ -74,16 +73,6 @@ public final class WormholePools implements SimpleSynchronousResourceReloadListe
 
     public static Pool of(ResourceKey<Level> wildsWorld) {
         return pools.getOrDefault(colourName(WormholeType.ofWilds(wildsWorld)), Pool.EMPTY);
-    }
-
-    @Override
-    public ResourceLocation getFabricId() {
-        return Wormholes.id("wormhole_pools");
-    }
-
-    @Override
-    public Collection<ResourceLocation> getFabricDependencies() {
-        return List.of(Wormholes.id("pokemon_tags"));
     }
 
     @Override

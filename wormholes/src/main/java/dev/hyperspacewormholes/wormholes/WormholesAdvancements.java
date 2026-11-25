@@ -2,28 +2,31 @@ package dev.hyperspacewormholes.wormholes;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.advancements.AdvancementNode;
+import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.advancements.AdvancementVisibilityEvaluator;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * The Wormholes advancements tab (data/hyperspace_wormholes/advancement/wormholes/). One trigger, hyperspace_wormholes:wormholes,
@@ -44,8 +47,12 @@ public class WormholesAdvancements extends SimpleCriterionTrigger<WormholesAdvan
     // rarity rings it takes for "Maximum Rings"; 3 is the game's top tier
     public static final int MAXIMUM_RINGS = 3;
 
-    public static final AttachmentType<List<ResourceLocation>> VISITED = AttachmentRegistry.create(Wormholes.id("ultra_worlds_visited"),
-            builder -> builder.persistent(ResourceLocation.CODEC.listOf()).copyOnDeath());
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
+            DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Wormholes.MOD_ID);
+    private static final DeferredRegister<CriterionTrigger<?>> TRIGGER_TYPES = DeferredRegister.create(Registries.TRIGGER_TYPE, Wormholes.MOD_ID);
+
+    public static final Supplier<AttachmentType<List<ResourceLocation>>> VISITED = ATTACHMENT_TYPES.register("ultra_worlds_visited",
+            () -> AttachmentType.<List<ResourceLocation>>builder(() -> null).serialize(ResourceLocation.CODEC.listOf()).copyOnDeath().build());
 
     private static final WormholesAdvancements TRIGGER = new WormholesAdvancements();
 
@@ -56,9 +63,11 @@ public class WormholesAdvancements extends SimpleCriterionTrigger<WormholesAdvan
         ).apply(i, Event::new));
     }
 
-    public static void register() {
-        Registry.register(BuiltInRegistries.TRIGGER_TYPES, Wormholes.id("wormholes"), TRIGGER);
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> entered(player, destination));
+    public static void register(IEventBus modBus) {
+        TRIGGER_TYPES.register("wormholes", () -> TRIGGER);
+        ATTACHMENT_TYPES.register(modBus);
+        TRIGGER_TYPES.register(modBus);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> entered((ServerPlayer) event.getEntity(), event.getTo()));
     }
 
     @Override
@@ -101,16 +110,15 @@ public class WormholesAdvancements extends SimpleCriterionTrigger<WormholesAdvan
         fire(player, "ultra_necrozma");
     }
 
-    private static void entered(ServerPlayer player, ServerLevel destination) {
-        ResourceKey<Level> dimension = destination.dimension();
+    private static void entered(ServerPlayer player, ResourceKey<Level> dimension) {
         if (!ULTRA_WORLDS.contains(dimension)) return;
-        List<ResourceLocation> visited = player.getAttachedOrElse(VISITED, List.of());
+        List<ResourceLocation> visited = player.getExistingData(VISITED).orElse(List.of());
         ResourceLocation id = dimension.location();
         if (!visited.contains(id)) {
             List<ResourceLocation> more = new ArrayList<>(visited);
             more.add(id);
             visited = List.copyOf(more);
-            player.setAttached(VISITED, visited);
+            player.setData(VISITED, visited);
         }
         for (ResourceKey<Level> world : ULTRA_WORLDS) {
             if (!visited.contains(world.location())) return;

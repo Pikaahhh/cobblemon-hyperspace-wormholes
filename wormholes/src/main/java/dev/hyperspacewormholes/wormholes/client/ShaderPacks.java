@@ -2,7 +2,7 @@ package dev.hyperspacewormholes.wormholes.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -95,12 +95,12 @@ public final class ShaderPacks {
         }
     }
 
-    public static void inCameraView(WorldRenderContext context, Runnable draw) {
+    public static void inCameraView(RenderLevelStageEvent event, Runnable draw) {
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f(context.projectionMatrix()), VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setProjectionMatrix(new Matrix4f(event.getProjectionMatrix()), VertexSorting.DISTANCE_TO_ORIGIN);
         modelView.pushMatrix();
-        modelView.set(context.positionMatrix());
+        modelView.set(event.getModelViewMatrix());
         RenderSystem.applyModelViewMatrix();
         try {
             draw.run();

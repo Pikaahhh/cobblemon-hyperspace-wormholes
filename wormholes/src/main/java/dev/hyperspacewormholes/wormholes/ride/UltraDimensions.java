@@ -1,11 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -13,12 +8,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,18 +42,27 @@ public final class UltraDimensions {
     private UltraDimensions() {}
 
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTING.register(UltraDimensions::wipe);
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (isUltra(handler.getPlayer().level())) JOINED.put(handler.getPlayer().getUUID(), SEND_OUT_DELAY);
+        NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> wipe(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
+            if (isUltra(event.getEntity().level())) JOINED.put(event.getEntity().getUUID(), SEND_OUT_DELAY);
         });
-        ServerTickEvents.END_SERVER_TICK.register(UltraDimensions::tick);
-        UseBlockCallback.EVENT.register((player, level, hand, hit) ->
-                blocked(player, level, player.getItemInHand(hand))
-                        || BuiltInRegistries.BLOCK.getKey(level.getBlockState(hit.getBlockPos()).getBlock()).getNamespace().equals(WAYSTONES)
-                        && isUltra(level) && refuse(player, level)
-                        ? InteractionResult.FAIL : InteractionResult.PASS);
-        UseItemCallback.EVENT.register((player, level, hand) -> blocked(player, level, player.getItemInHand(hand))
-                ? InteractionResultHolder.fail(player.getItemInHand(hand)) : InteractionResultHolder.pass(player.getItemInHand(hand)));
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {
+            Player player = event.getEntity();
+            Level level = event.getLevel();
+            if (blocked(player, level, player.getItemInHand(event.getHand()))
+                    || BuiltInRegistries.BLOCK.getKey(level.getBlockState(event.getPos()).getBlock()).getNamespace().equals(WAYSTONES)
+                    && isUltra(level) && refuse(player, level)) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickItem event) -> {
+            if (blocked(event.getEntity(), event.getLevel(), event.getItemStack())) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+            }
+        });
     }
 
     public static boolean isUltra(Level level) {
@@ -99,8 +107,8 @@ public final class UltraDimensions {
 
     private static void sendOut(ServerPlayer player) {
         if (!isUltra(player.level())) return;
-        HomePoint home = player.getAttached(Wormholes.RETURN_POINT);
-        player.removeAttached(Wormholes.RETURN_POINT);
+        HomePoint home = player.getExistingDataOrNull(Wormholes.RETURN_POINT);
+        player.removeData(Wormholes.RETURN_POINT);
         ServerLevel level = home == null ? null : player.server.getLevel(home.dimension());
         if (level == null) {
             home = HomePoint.worldSpawn(player.server);

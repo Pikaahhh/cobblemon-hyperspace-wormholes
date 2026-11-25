@@ -3,15 +3,17 @@ package dev.hyperspacewormholes.hyperspace;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.AdvancementNode;
+import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.advancements.AdvancementVisibilityEvaluator;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -23,6 +25,7 @@ import java.util.function.Predicate;
 public class HyperspaceAdvancements extends SimpleCriterionTrigger<HyperspaceAdvancements.Event> {
     public static final ResourceLocation ROOT = Hyperspace.id("hyperspace/root");
     private static final HyperspaceAdvancements TRIGGER = new HyperspaceAdvancements();
+    private static final DeferredRegister<CriterionTrigger<?>> TRIGGERS = DeferredRegister.create(Registries.TRIGGER_TYPE, Hyperspace.MOD_ID);
 
     public record Event(Optional<ContextAwarePredicate> player, String event) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<Event> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -31,8 +34,9 @@ public class HyperspaceAdvancements extends SimpleCriterionTrigger<HyperspaceAdv
         ).apply(i, Event::new));
     }
 
-    public static void register() {
-        Registry.register(BuiltInRegistries.TRIGGER_TYPES, Hyperspace.id("hyperspace"), TRIGGER);
+    public static void register(IEventBus modBus) {
+        TRIGGERS.register("hyperspace", () -> TRIGGER);
+        TRIGGERS.register(modBus);
     }
 
     @Override

@@ -3,9 +3,6 @@ package dev.hyperspacewormholes.wormholes.ride;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.Zone;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
@@ -19,6 +16,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -69,9 +69,9 @@ public final class ZoneLeaps {
     private ZoneLeaps() {}
 
     public static void register() {
-        ServerEntityEvents.ENTITY_LOAD.register(ZoneLeaps::onLoad);
-        ServerTickEvents.END_SERVER_TICK.register(ZoneLeaps::tick);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> WAITING.clear());
+        Wormholes.onEntityLoad(ZoneLeaps::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> WAITING.clear());
     }
 
     static boolean waits(ServerLevel level) {

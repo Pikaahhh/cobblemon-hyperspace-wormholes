@@ -1,8 +1,7 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import dev.hyperspacewormholes.wormholes.GameplayConfig;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -30,6 +29,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -131,10 +133,10 @@ public class Distortions {
         }
     }
 
-    public static void register() {
-        Rift.register();
-        ServerTickEvents.END_SERVER_TICK.register(Distortions::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+    public static void register(IEventBus modBus) {
+        Rift.register(modBus);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity.getTags().contains(TAG)) entity.discard();
         });
     }

@@ -152,7 +152,7 @@ public class FloatingBall extends Entity implements PosableEntity {
     }
 
     public boolean golden() {
-        return getType() == FloatingBalls.GOLDEN;
+        return getType() == FloatingBalls.GOLDEN.get();
     }
 
     public float size() {

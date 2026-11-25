@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -47,9 +46,9 @@ public final class UltraMegalopolisSky {
 
     private UltraMegalopolisSky() {}
 
-    public static void render(WorldRenderContext context) {
+    public static void render(Matrix4f modelView) {
         if (space == null) build();
-        ShaderPacks.outsideSky(() -> draw(new Matrix4f(RenderSystem.getModelViewMatrix()).mul(context.positionMatrix())
+        ShaderPacks.outsideSky(() -> draw(new Matrix4f(RenderSystem.getModelViewMatrix()).mul(modelView)
                 .scale(ShaderPacks.skyScale())));
     }
 

@@ -6,10 +6,11 @@ import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animatio
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimation;
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimationRepository;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +38,7 @@ public class HoopaFeedClient {
     }
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(HoopaFeed.Play.TYPE, (payload, context) -> {
+        Packets.onClient(HoopaFeed.Play.TYPE, payload -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) return;
             if (payload.motion().equals(HoopaFeed.Play.FACE)) {
@@ -60,7 +61,7 @@ public class HoopaFeedClient {
             runs.put(payload.entity(), run);
             tick(mc);
         });
-        ClientTickEvents.END_CLIENT_TICK.register(HoopaFeedClient::tick);
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
     }
 
     private static void tick(Minecraft mc) {

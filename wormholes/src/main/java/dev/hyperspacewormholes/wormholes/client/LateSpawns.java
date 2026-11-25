@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 /**
  * Packets that reach the client before the entity they're for (its data, its riders, its removal), kept for KEEP_MILLIS
- * and applied when it shows up. Cobblemon spawns a Pokemon with its own packet, which Fabric runs a moment after the
+ * and applied when it shows up. Cobblemon spawns a Pokemon with its own packet, which is handled a moment after the
  * packets sent with it. A kept removal never applies to a player: when you change worlds the server tells you to drop
  * everyone from the old one only after your client has moved into the new one, which would remove a friend arriving
  * through the same wormhole.

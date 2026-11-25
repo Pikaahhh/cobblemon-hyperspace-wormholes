@@ -6,12 +6,9 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
+import dev.hyperspacewormholes.Packets;
 import io.netty.buffer.ByteBuf;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -28,6 +25,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +79,7 @@ public class Tasks {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Sync.TYPE, Sync.CODEC);
+        Packets.toClient(Sync.TYPE, Sync.CODEC);
 
         CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.HIGH, event -> {
             ServerPlayer player = event.getPlayer();
@@ -100,15 +102,15 @@ public class Tasks {
             return Unit.INSTANCE;
         });
 
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (!(entity instanceof PokemonEntity pokemon) || !(source.getEntity() instanceof ServerPlayer player)) return;
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, (LivingDeathEvent event) -> {
+            if (!(event.getEntity() instanceof PokemonEntity pokemon) || !(event.getSource().getEntity() instanceof ServerPlayer player)) return;
             Pokemon wild = pokemon.getPokemon();
             if (!wild.isWild() || HyperspaceLegendaries.faintedInBattle(wild) || !Hyperspace.inHyperspace(player)) return;
             progress(player, Kind.DEFEAT);
             if (Spawns.isBoss(wild)) progress(player, Kind.LEGENDARY);
         });
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> send(handler.getPlayer()));
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> send((ServerPlayer) event.getEntity()));
     }
 
     public static void quickDefeat(ServerPlayer player) {
@@ -131,7 +133,7 @@ public class Tasks {
     }
 
     public static void left(ServerPlayer player) {
-        ServerPlayNetworking.send(player, new Sync(List.of(), List.of()));
+        PacketDistributor.sendToPlayer(player, new Sync(List.of(), List.of()));
     }
 
     public static void ended(MinecraftServer server, int island) {
@@ -251,7 +253,7 @@ public class Tasks {
             Kind kind = Kind.values()[board.getInt("special")];
             missions.add(new Line(kind.text, "Enchanted Golden Apple x1, " + candy + " x3", board.getBoolean("specialDone") ? 1 : 0, 1));
         }
-        ServerPlayNetworking.send(player, new Sync(tasks, missions));
+        PacketDistributor.sendToPlayer(player, new Sync(tasks, missions));
     }
 
     private static int[] ints(CompoundTag board, String key) {

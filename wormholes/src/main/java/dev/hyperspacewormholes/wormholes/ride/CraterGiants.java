@@ -13,8 +13,6 @@ import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.CraterLayout;
 import dev.hyperspacewormholes.wormholes.world.Zone;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -32,6 +30,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -70,8 +70,8 @@ public final class CraterGiants {
     private CraterGiants() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(CraterGiants::tick);
-        ServerEntityEvents.ENTITY_LOAD.register(CraterGiants::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad(CraterGiants::onLoad);
         CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.HIGHEST, event -> {
             shrink(event.getPokemon());
             return Unit.INSTANCE;

@@ -1,9 +1,7 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -11,6 +9,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +41,8 @@ public class OtherPlayersLegendaries {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> SENT.remove(handler.getPlayer().getUUID()));
+        Packets.toClient(Payload.TYPE, Payload.CODEC);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> SENT.remove(event.getEntity().getUUID()));
     }
 
     public static void sync(ServerLevel level) {
@@ -50,14 +51,14 @@ public class OtherPlayersLegendaries {
             if (Spawns.isBoss(entity.getPokemon()) && Spawns.owner(entity.getPokemon()) != null) bosses.add(entity);
         }
         for (ServerPlayer player : level.players()) {
-            if (!ServerPlayNetworking.canSend(player, Payload.TYPE)) continue;
+            if (!player.connection.hasChannel(Payload.TYPE)) continue;
             List<Integer> ids = new ArrayList<>();
             for (PokemonEntity boss : bosses) {
                 if (!player.getUUID().equals(Spawns.owner(boss.getPokemon()))) ids.add(boss.getId());
             }
             if (ids.equals(SENT.get(player.getUUID()))) continue;
             SENT.put(player.getUUID(), ids);
-            ServerPlayNetworking.send(player, new Payload(ids));
+            PacketDistributor.sendToPlayer(player, new Payload(ids));
         }
     }
 

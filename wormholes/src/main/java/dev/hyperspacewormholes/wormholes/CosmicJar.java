@@ -2,9 +2,8 @@ package dev.hyperspacewormholes.wormholes;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +13,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 
@@ -23,24 +25,35 @@ import java.util.List;
 public final class CosmicJar extends Item {
     public static final int CAPACITY = 4;
 
-    public static final DataComponentType<Integer> ENERGY = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
-            Wormholes.id("cosmic_energy"),
-            DataComponentType.<Integer>builder().persistent(Codec.intRange(0, CAPACITY)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
-    public static final CosmicJar ITEM = Registry.register(BuiltInRegistries.ITEM, Wormholes.id("cosmic_jar"),
-            new CosmicJar(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+    private static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Wormholes.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Wormholes.MOD_ID);
+
+    public static final DataComponentType<Integer> ENERGY =
+            DataComponentType.<Integer>builder().persistent(Codec.intRange(0, CAPACITY)).networkSynchronized(ByteBufCodecs.VAR_INT).build();
+    public static final DeferredItem<CosmicJar> ITEM = ITEMS.register("cosmic_jar",
+            () -> new CosmicJar(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+
+    static {
+        COMPONENTS.register("cosmic_energy", () -> ENERGY);
+    }
 
     private CosmicJar(Properties properties) {
         super(properties);
     }
 
+    public static void register(IEventBus modBus) {
+        COMPONENTS.register(modBus);
+        ITEMS.register(modBus);
+    }
+
     public static ItemStack full() {
-        ItemStack stack = new ItemStack(ITEM);
+        ItemStack stack = new ItemStack(ITEM.get());
         stack.set(ENERGY, CAPACITY);
         return stack;
     }
 
     public static int energy(ItemStack stack) {
-        return stack.is(ITEM) ? stack.getOrDefault(ENERGY, 0) : 0;
+        return stack.is(ITEM.get()) ? stack.getOrDefault(ENERGY, 0) : 0;
     }
 
     public static boolean isFull(ItemStack stack) {
@@ -52,7 +65,7 @@ public final class CosmicJar extends Item {
         var inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
-            if (!stack.is(ITEM) || isFull(stack)) continue;
+            if (!stack.is(ITEM.get()) || isFull(stack)) continue;
             int energy = energy(stack) + 1;
             stack.set(ENERGY, energy);
             WormholesAdvancements.jarCharged(player);

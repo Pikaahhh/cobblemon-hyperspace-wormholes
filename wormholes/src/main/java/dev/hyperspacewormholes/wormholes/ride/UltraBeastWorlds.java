@@ -1,14 +1,14 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -39,8 +39,8 @@ public final class UltraBeastWorlds {
     private UltraBeastWorlds() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(UltraBeastWorlds::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (UltraDimensions.isUltra(level)
                     && BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace().equals("rctmod")) {
                 entity.discard();
@@ -76,7 +76,7 @@ public final class UltraBeastWorlds {
             if (level == null || level.players().isEmpty() || WaysHome.hasOpenUntilEmpty(level)) continue;
             ServerPlayer player = level.players().getFirst();
             if (!player.isAlive() || UltraWarpRide.isRiding(player)) continue;
-            HomePoint home = player.getAttached(Wormholes.ULTRA_HOME);
+            HomePoint home = player.getExistingDataOrNull(Wormholes.ULTRA_HOME);
             WormholeDestinations.openWayHomeBeside(player, home != null ? home : HomePoint.worldSpawn(server));
         }
     }

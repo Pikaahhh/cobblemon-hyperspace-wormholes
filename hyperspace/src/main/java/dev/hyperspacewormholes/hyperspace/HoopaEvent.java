@@ -1,5 +1,6 @@
 package dev.hyperspacewormholes.hyperspace;
 
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.CobblemonEntities;
@@ -23,12 +24,6 @@ import dev.hyperspacewormholes.wormholes.network.BossTransitionPayload;
 import dev.hyperspacewormholes.wormholes.ride.NecrozmaFight;
 import dev.hyperspacewormholes.wormholes.ride.WormholeDestinations;
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -56,6 +51,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -206,21 +206,22 @@ public final class HoopaEvent {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Glitch.TYPE, Glitch.CODEC);
-        ServerTickEvents.END_SERVER_TICK.register(HoopaEvent::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        Packets.toClient(Glitch.TYPE, Glitch.CODEC);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity.getTags().contains(TAG) && !ours.contains(entity.getUUID())) entity.discard();
         });
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (world.isClientSide() || !(player instanceof ServerPlayer clicker)) return InteractionResult.PASS;
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract event) -> {
+            if (event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer clicker)) return;
             for (Event e : events.values()) {
-                if (e.hoopa != entity) continue;
-                if (hand == InteractionHand.MAIN_HAND && e.stage == Stage.WAITING) ready(e, clicker);
-                return InteractionResult.SUCCESS;
+                if (e.hoopa != event.getTarget()) continue;
+                if (event.getHand() == InteractionHand.MAIN_HAND && e.stage == Stage.WAITING) ready(e, clicker);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
             }
-            return InteractionResult.PASS;
         });
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> {
             for (Event e : new ArrayList<>(events.values())) clear(e);
             events.clear();
         });
@@ -229,7 +230,7 @@ public final class HoopaEvent {
     public static void enter(ServerPlayer player, int island) {
         Event already = events.get(island);
         if (already != null && (already.stage != Stage.ARRIVE || already.ticks >= NORMAL)) {
-            ServerPlayNetworking.send(player, new Glitch(1));
+            PacketDistributor.sendToPlayer(player, new Glitch(1));
         }
         if (already != null) {
             already.entered.add(player.getUUID());
@@ -356,7 +357,7 @@ public final class HoopaEvent {
 
     private static void arrive(Event e) {
         if (e.ticks == NORMAL) {
-            for (ServerPlayer player : present(e)) ServerPlayNetworking.send(player, new Glitch(GLITCH));
+            for (ServerPlayer player : present(e)) PacketDistributor.sendToPlayer(player, new Glitch(GLITCH));
         }
         if (e.ticks == NORMAL + GLITCH) {
             for (ServerPlayer player : present(e)) player.displayClientMessage(Component.empty(), true);
@@ -375,7 +376,7 @@ public final class HoopaEvent {
         if (t == RING_AT) openRing(e);
         if (t == RING_AT + 1) HoopaSummon.resize(e.ring, wristScale(e), ringScale(e), GROW, true, HoopaSummon.FLAT);
         if (t == RING_AT + GROW) {
-            item(e.ring, ModItems.HOOPA_PORTAL);
+            item(e.ring, ModItems.HOOPA_PORTAL.get());
             Vec3 c = e.ringAt;
             e.level.sendParticles(ParticleTypes.REVERSE_PORTAL, c.x, c.y, c.z, 120, 4, 0.5, 4, 0.3);
             e.level.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 3f, 0.8f);
@@ -398,7 +399,7 @@ public final class HoopaEvent {
         Boss boss = Bosses.of(hoopa);
         ServerPlayer trigger = e.level.getServer().getPlayerList().getPlayer(e.trigger);
         // hard mode when whoever triggered it has beaten it before
-        if (boss != null && (GameplayConfig.get().bossHardModeAlwaysOn || trigger != null && trigger.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false))) Bosses.harden(boss);
+        if (boss != null && (GameplayConfig.get().bossHardModeAlwaysOn || trigger != null && trigger.getExistingData(Wormholes.HOOPA_BEATEN).orElse(false))) Bosses.harden(boss);
         return true;
     }
 
@@ -417,7 +418,7 @@ public final class HoopaEvent {
         if (ring == null) return;
         ring.setPos(e.ringAt.x, e.ringAt.y, e.ringAt.z);
         ring.setYRot(e.yaw);
-        ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_PORTAL_CLOSED));
+        ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_PORTAL_CLOSED.get()));
         ((DisplayAccessor) ring).hyperspace_wormholes$setBrightness(new Brightness(15, 15));
         ((DisplayAccessor) ring).hyperspace_wormholes$setViewRange(8f);
         ((DisplayAccessor) ring).hyperspace_wormholes$setTransformation(HoopaSummon.flat(wristScale(e)));
@@ -434,7 +435,7 @@ public final class HoopaEvent {
         Display.ItemDisplay ring = e.ring;
         if (ring == null) return;
         HoopaSummon.sendClip(e.level, e.hoopa, e.ringAt, new Vec3(0, -1, 0), false);
-        item(ring, ModItems.HOOPA_PORTAL_CLOSED);
+        item(ring, ModItems.HOOPA_PORTAL_CLOSED.get());
         HoopaSummon.resize(ring, ringScale(e), wristScale(e), RING_CLOSE, false, HoopaSummon.FLAT);
         e.ring = null;
         Vec3 wrist = wrist(e, e.ground, CAUGHT);
@@ -453,7 +454,7 @@ public final class HoopaEvent {
             openRing(e);
             Display.ItemDisplay ring = e.ring;
             HoopaSummon.resize(ring, wristScale(e), ringScale(e), RING_OPEN, true, HoopaSummon.FLAT);
-            later(e.level, RING_OPEN, () -> item(ring, ModItems.HOOPA_PORTAL));
+            later(e.level, RING_OPEN, () -> item(ring, ModItems.HOOPA_PORTAL.get()));
         });
     }
 
@@ -515,7 +516,7 @@ public final class HoopaEvent {
     private static void transition(Event e, BossTransitionPayload transition, @Nullable ResourceLocation music) {
         for (ServerPlayer player : present(e)) {
             if (music != null) new BattleMusicPacket(music, 1f, 1f, true).sendToPlayer(player);
-            ServerPlayNetworking.send(player, transition);
+            PacketDistributor.sendToPlayer(player, transition);
         }
         e.joinAt = e.now() + transition.black();
     }
@@ -808,10 +809,10 @@ public final class HoopaEvent {
         e.beaten = true;
         List<ServerPlayer> here = present(e);
         for (ServerPlayer player : here) {
-            player.setAttached(Wormholes.HOOPA_BEATEN, true);
+            player.setData(Wormholes.HOOPA_BEATEN, true);
             HyperspaceAdvancements.hoopa(player);
         }
-        for (ServerPlayer player : boss.players()) player.setAttached(Wormholes.HOOPA_BEATEN, true);
+        for (ServerPlayer player : boss.players()) player.setData(Wormholes.HOOPA_BEATEN, true);
         placeBottles(e, here);
         enter(e, Stage.CATCH);
     }
@@ -925,7 +926,7 @@ public final class HoopaEvent {
         }
         if (e.ring != null) {
             Display.ItemDisplay ring = e.ring;
-            item(ring, ModItems.HOOPA_PORTAL_CLOSED);
+            item(ring, ModItems.HOOPA_PORTAL_CLOSED.get());
             HoopaSummon.resize(ring, full, hoop, RING_CLOSE, false, HoopaSummon.FLAT);
             e.ring = null;
             later(e.level, RING_CLOSE, () -> remove(ring));
@@ -945,7 +946,7 @@ public final class HoopaEvent {
         Vec3 side = new Vec3(-ahead.z, 0, ahead.x);
         int i = 0;
         for (ServerPlayer player : players) {
-            if (player.getAttachedOrElse(Wormholes.PRISON_BOTTLE_TAKEN, false)) continue;
+            if (player.getExistingData(Wormholes.PRISON_BOTTLE_TAKEN).orElse(false)) continue;
             Vec3 spot = e.ground.add(ahead.scale(5)).add(side.scale((i++ - (players.size() - 1) / 2.0) * 1.5));
             Vec3 ground = HoopaSummon.ground(e.level, spot.add(0, 4, 0));
             if (ground == null) ground = spot;
@@ -968,7 +969,7 @@ public final class HoopaEvent {
             if (item.isRemoved()) {
                 ServerPlayer player = e.level.getServer().getPlayerList().getPlayer(entry.getKey());
                 if (player != null && player.getInventory().hasAnyMatching(stack -> stack.is(bottle))) {
-                    player.setAttached(Wormholes.PRISON_BOTTLE_TAKEN, true);
+                    player.setData(Wormholes.PRISON_BOTTLE_TAKEN, true);
                 }
                 it.remove();
                 continue;
@@ -1054,7 +1055,7 @@ public final class HoopaEvent {
     private static final List<Later> LATER = new ArrayList<>();
 
     static {
-        ServerTickEvents.END_SERVER_TICK.register(server -> LATER.removeIf(l -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> LATER.removeIf(l -> {
             if (l.level.getGameTime() < l.at) return false;
             l.run.run();
             return true;
@@ -1083,7 +1084,7 @@ public final class HoopaEvent {
 
         @Override
         public boolean defeated(Boss boss) {
-            for (ServerPlayer player : boss.players()) player.setAttached(Wormholes.HOOPA_BEATEN, true);
+            for (ServerPlayer player : boss.players()) player.setData(Wormholes.HOOPA_BEATEN, true);
             boss.endAllAsWins();
             return true;
         }

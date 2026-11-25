@@ -1,17 +1,18 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /** /stuck ends your trip and sends you back where you came from, or to Overworld spawn if not on one. */
 public class StuckCommand {
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registries, env) -> dispatcher.register(
+        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> event.getDispatcher().register(
                 Commands.literal("stuck").executes(ctx -> stuck(ctx.getSource().getPlayerOrException()))));
     }
 

@@ -3,10 +3,11 @@ package dev.hyperspacewormholes.wormholes.ride;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +27,12 @@ public final class DuplicatePokemonCleanup {
     private DuplicatePokemonCleanup() {}
 
     public static void register() {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity instanceof PokemonEntity pokemon && pokemon.getPokemon().isPlayerOwned()) {
                 PENDING.add(new Check(pokemon, ticks + CHECK_AFTER_TICKS));
             }
         });
-        ServerTickEvents.END_SERVER_TICK.register(DuplicatePokemonCleanup::tick);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
     }
 
     private static void tick(MinecraftServer server) {

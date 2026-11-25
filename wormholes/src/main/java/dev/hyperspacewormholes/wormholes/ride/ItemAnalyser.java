@@ -12,7 +12,6 @@ import dev.hyperspacewormholes.wormholes.mixin.TextDisplayAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -51,6 +50,9 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -99,8 +101,8 @@ public final class ItemAnalyser {
     private static final double SMOKE_SPREAD = 0.15;
     private static final double SMOKE_RISE = 0.05;
 
-    public static final Item ERROR_SCREEN = Registry.register(BuiltInRegistries.ITEM, Wormholes.id("error_screen"),
-            new Item(new Item.Properties()));
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Wormholes.MOD_ID);
+    public static final DeferredItem<Item> ERROR_SCREEN = ITEMS.registerSimpleItem("error_screen", new Item.Properties());
 
     private enum Recipe { BLAZE, COSMOG }
 
@@ -113,7 +115,9 @@ public final class ItemAnalyser {
 
     private ItemAnalyser() {}
 
-    public static void register() {}
+    public static void register(IEventBus modBus) {
+        ITEMS.register(modBus);
+    }
 
     public static InteractionResult onUse(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
@@ -148,7 +152,7 @@ public final class ItemAnalyser {
         if (!core && !isPartner(stack)) return InteractionResult.PASS;
         if (!(level instanceof ServerLevel server)) return InteractionResult.SUCCESS;
 
-        if (stack.is(CosmicJar.ITEM) && !CosmicJar.isFull(stack)) {
+        if (stack.is(CosmicJar.ITEM.get()) && !CosmicJar.isFull(stack)) {
             refuse(server, pos);
             return InteractionResult.CONSUME;
         }
@@ -276,7 +280,7 @@ public final class ItemAnalyser {
     }
 
     private static boolean isCore(ItemStack stack) {
-        return stack.is(TYPE_GEMS) || stack.is(CosmicJar.ITEM);
+        return stack.is(TYPE_GEMS) || stack.is(CosmicJar.ITEM.get());
     }
 
     private static boolean isPartner(ItemStack stack) {
@@ -285,7 +289,7 @@ public final class ItemAnalyser {
 
     private static @Nullable Recipe recipeFor(ItemStack core, ItemStack partner) {
         if (core.is(TYPE_GEMS) && partner.is(Items.BLAZE_POWDER)) return Recipe.BLAZE;
-        if (core.is(CosmicJar.ITEM) && partner.is(Items.GOLDEN_APPLE) && GameplayConfig.get().cosmogSummon) return Recipe.COSMOG;
+        if (core.is(CosmicJar.ITEM.get()) && partner.is(Items.GOLDEN_APPLE) && GameplayConfig.get().cosmogSummon) return Recipe.COSMOG;
         return null;
     }
 
@@ -350,7 +354,7 @@ public final class ItemAnalyser {
         store.overheated.put(pos.asLong(), now(level) + OVERHEAT_TICKS);
         showContents(level, pos, null);
         store.setDirty();
-        if (recipe == Recipe.COSMOG) Block.popResource(level, pos.above(2), new ItemStack(CosmicJar.ITEM));
+        if (recipe == Recipe.COSMOG) Block.popResource(level, pos.above(2), new ItemStack(CosmicJar.ITEM.get()));
         PokemonArrivals.start(level, entity, landing, yaw,
                 ultraBeast || recipe == Recipe.COSMOG ? WormholeType.WHITE : WormholeType.GREEN, false);
         if (player instanceof ServerPlayer serverPlayer) CosmicJar.maybeCharge(serverPlayer);
@@ -449,7 +453,7 @@ public final class ItemAnalyser {
 
         CompoundTag red = displayTag(centre, screen.toYRot(), floats(0, 0, 0, 1), 1f);
         red.put("brightness", brightness);
-        red.put("item", new ItemStack(ERROR_SCREEN).save(level.registryAccess()));
+        red.put("item", new ItemStack(ERROR_SCREEN.get()).save(level.registryAccess()));
         spawn(level, EntityType.ITEM_DISPLAY, red, COOLDOWN_TAG);
 
         Vec3 at = centre.add(Vec3.atLowerCornerOf(screen.getNormal()).scale(TIMER_OUT))

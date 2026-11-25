@@ -15,6 +15,7 @@ public final class UltraWormholeMusic extends AbstractTickableSoundInstance {
     private static final float FADE_TICKS = 40f, DUCK_TICKS = 50f, BACK_TICKS = 20f;
     private static final float DUCKED = 0.6f;
     private static final int VANILLA_OFF_TICKS = 40;
+
     private static UltraWormholeMusic current;
 
     private boolean fading;

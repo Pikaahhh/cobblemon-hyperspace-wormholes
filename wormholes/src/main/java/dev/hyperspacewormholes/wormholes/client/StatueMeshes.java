@@ -7,13 +7,15 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.ride.PlantXurkitrees;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -48,12 +50,15 @@ public final class StatueMeshes {
     private StatueMeshes() {}
 
     public static void register() {
-        ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> drop(entity));
-        WorldRenderEvents.START.register(context -> {
-            if (context.world() == level) return;
+        NeoForge.EVENT_BUS.addListener(EntityLeaveLevelEvent.class, event -> {
+            if (event.getLevel().isClientSide()) drop(event.getEntity());
+        });
+        RenderStages.start(event -> {
+            ClientLevel world = Minecraft.getInstance().level;
+            if (world == level) return;
             KEPT.values().forEach(Kept::close);
             KEPT.clear();
-            level = context.world();
+            level = world;
         });
     }
 

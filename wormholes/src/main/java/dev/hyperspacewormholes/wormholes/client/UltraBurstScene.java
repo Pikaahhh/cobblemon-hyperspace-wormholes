@@ -2,9 +2,6 @@ package dev.hyperspacewormholes.wormholes.client;
 
 import dev.hyperspacewormholes.wormholes.client.cinematic.UltraBurstCinematic;
 import dev.hyperspacewormholes.wormholes.network.UltraBurstPayload;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,6 +13,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * Plays the Ultra Burst when UltraBurstPayload arrives: the game's own cutscene (UltraBurstCinematic) when its camera
@@ -32,9 +32,9 @@ public final class UltraBurstScene {
     private UltraBurstScene() {}
 
     public static void register() {
-        ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
-        HudRenderCallback.EVENT.register(UltraBurstScene::render);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> age = -1);
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
+        WormholesClient.onHud(UltraBurstScene::render);
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> age = -1);
     }
 
     public static void start(UltraBurstPayload payload) {

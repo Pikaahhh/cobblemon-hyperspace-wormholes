@@ -3,8 +3,6 @@ package dev.hyperspacewormholes.wormholes.ride;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.network.RiderEmergePayload;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -73,10 +72,11 @@ public final class RiderArrival {
 
         RiderEmergePayload payload = new RiderEmergePayload(player.getId(), rider.passengers.stream().map(ServerPlayer::getId).toList(),
                 mouth, landing, EMERGE_TICKS, SETTLE_TICKS, airborne);
-        List<ServerPlayer> viewers = new ArrayList<>(PlayerLookup.around(rider.level, landing, VIEW_RANGE));
+        List<ServerPlayer> viewers = new ArrayList<>(rider.level.players().stream()
+                .filter(p -> p.distanceToSqr(landing) <= VIEW_RANGE * VIEW_RANGE).toList());
         if (!viewers.contains(player)) viewers.add(player);
         for (ServerPlayer p : rider.passengers) if (!viewers.contains(p)) viewers.add(p);
-        for (ServerPlayer viewer : viewers) ServerPlayNetworking.send(viewer, payload);
+        for (ServerPlayer viewer : viewers) PacketDistributor.sendToPlayer(viewer, payload);
     }
 
     public static boolean isEmerging(ServerPlayer player) {

@@ -1,10 +1,10 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.fml.ModList;
 
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -15,7 +15,7 @@ import java.math.BigInteger;
  */
 public class Money {
     public static void give(ServerPlayer player, long amount) {
-        if (!FabricLoader.getInstance().isModLoaded("cobbledollars")) return;
+        if (!ModList.get().isLoaded("cobbledollars")) return;
         BigInteger added = BigInteger.valueOf(amount);
         try {
             Class<?> money = Class.forName("fr.harmex.cobbledollars.common.utils.extensions.PlayerExtensionKt");

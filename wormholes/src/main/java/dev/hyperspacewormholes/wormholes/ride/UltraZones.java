@@ -6,7 +6,6 @@ import com.cobblemon.mod.common.api.riding.behaviour.RidingController;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.Zone;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +14,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public final class UltraZones {
     private UltraZones() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(UltraZones::tick);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
     }
 
     public static boolean isSky(Level level) {

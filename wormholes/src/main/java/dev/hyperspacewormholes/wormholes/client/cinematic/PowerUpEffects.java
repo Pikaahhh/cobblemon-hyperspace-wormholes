@@ -3,7 +3,6 @@ package dev.hyperspacewormholes.wormholes.client.cinematic;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.client.render.WarpTextures;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -12,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import static dev.hyperspacewormholes.wormholes.client.cinematic.Fx.ramp;
 import static dev.hyperspacewormholes.wormholes.client.cinematic.Fx.smooth;
@@ -88,8 +88,8 @@ final class PowerUpEffects {
                 SoundInstance.Attenuation.NONE, 0, 0, 0, true));
     }
 
-    static void collect(WorldRenderContext context, double f) {
-        GlowQuads q = new GlowQuads(context);
+    static void collect(RenderLevelStageEvent event, double f) {
+        GlowQuads q = new GlowQuads(event);
         Vec3 body = NecrozmaSceneCinematic.body(f);
         Vec3 chest = body.add(0, 1.6 * size, 0);
         float hot = window(f, 205, 250, 262, 272);

@@ -183,9 +183,9 @@ public final class WormholeDestinations {
         String pokemon = null;
         if (wormhole.type() == WormholeType.WHITE) {
             RandomSource random = RandomSource.create(seed ^ (wormhole.index() * 0x5851F42D4C957F2DL));
-            int missed = player.getAttachedOrElse(Wormholes.WHITE_WITHOUT_NECROZMA, 0);
+            int missed = player.getExistingData(Wormholes.WHITE_WITHOUT_NECROZMA).orElse(0);
             // no pity once this player has beaten Necrozma; its usual chance stays
-            boolean beaten = player.getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false);
+            boolean beaten = player.getExistingData(Wormholes.NECROZMA_BEATEN).orElse(false);
             int needed = GameplayConfig.get().necrozmaPity;
             if (needed > 0 && missed >= needed && !beaten) pokemon = WormholePokemon.ultraBeastNamed("necrozma", random);
             if (pokemon == null) {
@@ -193,7 +193,7 @@ public final class WormholeDestinations {
                         : WormholePokemon.pick(WormholeType.WHITE, wormhole.rings(), random);
             }
             boolean necrozma = UltraBeastWorlds.homeOf(pokemon) == Wormholes.ULTRA_MEGALOPOLIS;
-            player.setAttached(Wormholes.WHITE_WITHOUT_NECROZMA, necrozma ? 0 : missed + 1);
+            player.setData(Wormholes.WHITE_WITHOUT_NECROZMA, necrozma ? 0 : missed + 1);
         }
         ResourceKey<Level> home = UltraBeastWorlds.homeOf(pokemon);
         if (home != null) dimension = home;
@@ -569,7 +569,7 @@ public final class WormholeDestinations {
 
     static WormholeEntity open(ServerLevel level, Vec3 at, float yaw, float pitch, float scale,
                                        WormholeType type, int lifetimeTicks, boolean decorative) {
-        WormholeEntity wormhole = Wormholes.WORMHOLE.create(level);
+        WormholeEntity wormhole = Wormholes.WORMHOLE.get().create(level);
         wormhole.setDecorative(decorative);
         wormhole.setWormholeType(type);
         wormhole.setLifetime(lifetimeTicks);

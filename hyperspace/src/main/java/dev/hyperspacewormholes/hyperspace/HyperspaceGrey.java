@@ -4,10 +4,11 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.PostPass;
 import dev.hyperspacewormholes.hyperspace.mixin.PostChainAccessor;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -40,14 +40,9 @@ public class HyperspaceGrey {
     private static int width = -1, height;
     private static boolean failed;
 
-    public static void register() {
-        WorldRenderEvents.LAST.register(HyperspaceGrey::render);
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-            @Override
-            public ResourceLocation getFabricId() {
-                return Hyperspace.id("greyscale");
-            }
-
+    public static void register(IEventBus modBus) {
+        RenderStages.last(HyperspaceGrey::render);
+        modBus.addListener((RegisterClientReloadListenersEvent event) -> event.registerReloadListener(new ResourceManagerReloadListener() {
             @Override
             public void onResourceManagerReload(ResourceManager manager) {
                 if (chain != null) chain.close();
@@ -55,21 +50,21 @@ public class HyperspaceGrey {
                 failed = false;
                 width = -1;
             }
-        });
+        }));
     }
 
-    private static void render(WorldRenderContext context) {
-        HyperspaceEdge.prepare(context);
-        ClientLevel level = context.world();
+    private static void render(RenderLevelStageEvent event) {
+        HyperspaceEdge.prepare(event);
+        ClientLevel level = Minecraft.getInstance().level;
         if (level == null || !level.dimension().equals(Hyperspace.HYPERSPACE)) return;
         Minecraft client = Minecraft.getInstance();
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(false);
-        greyscale(client, context, partial);
-        HyperspaceEdge.render(context);
-        recolour(context, client, level, partial);
+        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        greyscale(client, event, partial);
+        HyperspaceEdge.render(event);
+        recolour(event, client, level, partial);
     }
 
-    private static void greyscale(Minecraft client, WorldRenderContext context, float partial) {
+    private static void greyscale(Minecraft client, RenderLevelStageEvent event, float partial) {
         RenderTarget main = client.getMainRenderTarget();
         if (chain == null && !failed) {
             try {
@@ -88,7 +83,7 @@ public class HyperspaceGrey {
         if (depth == null) depth = new TextureTarget(main.width, main.height, true, Minecraft.ON_OSX);
         if (depth.width != main.width || depth.height != main.height) depth.resize(main.width, main.height, Minecraft.ON_OSX);
         depth.copyDepthFrom(main);
-        for (PostPass pass : ((PostChainAccessor) chain).hyperspace_wormholes$passes()) HyperspaceEdge.uniforms(pass.getEffect(), context);
+        for (PostPass pass : ((PostChainAccessor) chain).hyperspace_wormholes$passes()) HyperspaceEdge.uniforms(pass.getEffect(), event);
         chain.process(partial);
         main.copyDepthFrom(depth);
         main.bindWrite(true);
@@ -115,21 +110,21 @@ public class HyperspaceGrey {
         return state.itemStack().is(ModItems.HOOPA_PORTAL) || state.itemStack().is(ModItems.HOOPA_PORTAL_CLOSED) || state.itemStack().is(ModItems.HOOPA_THROWN_RING);
     }
 
-    private static void recolour(WorldRenderContext context, Minecraft client, ClientLevel level, float partial) {
-        Vec3 cam = context.camera().getPosition();
+    private static void recolour(RenderLevelStageEvent event, Minecraft client, ClientLevel level, float partial) {
+        Vec3 cam = event.getCamera().getPosition();
         EntityRenderDispatcher dispatcher = client.getEntityRenderDispatcher();
         MultiBufferSource.BufferSource buffers = client.renderBuffers().bufferSource();
         PoseStack pose = new PoseStack();
 
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();
-        view.set(context.positionMatrix());
+        view.set(event.getModelViewMatrix());
         RenderSystem.applyModelViewMatrix();
         client.gameRenderer.lightTexture().turnOnLightLayer();
         drawing = true;
         for (Entity entity : level.entitiesForRendering()) {
-            if (!coloured(entity, context.camera())) continue;
-            if (context.frustum() != null && !dispatcher.shouldRender(entity, context.frustum(), cam.x, cam.y, cam.z)) continue;
+            if (!coloured(entity, event.getCamera())) continue;
+            if (event.getFrustum() != null && !dispatcher.shouldRender(entity, event.getFrustum(), cam.x, cam.y, cam.z)) continue;
             double x = Mth.lerp(partial, entity.xOld, entity.getX()) - cam.x;
             double y = Mth.lerp(partial, entity.yOld, entity.getY()) - cam.y;
             double z = Mth.lerp(partial, entity.zOld, entity.getZ()) - cam.z;
@@ -137,7 +132,7 @@ public class HyperspaceGrey {
             dispatcher.render(entity, x, y, z, yaw, partial, pose, buffers, dispatcher.getPackedLightCoords(entity, partial));
         }
         buffers.endBatch();
-        client.particleEngine.render(client.gameRenderer.lightTexture(), context.camera(), partial);
+        client.particleEngine.render(client.gameRenderer.lightTexture(), event.getCamera(), partial);
         drawing = false;
         client.gameRenderer.lightTexture().turnOffLightLayer();
         view.popMatrix();

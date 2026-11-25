@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -14,11 +13,15 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL20;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -102,9 +105,15 @@ public final class WarpRenderTypes {
 
     private WarpRenderTypes() {}
 
-    public static void register() {
-        CoreShaderRegistrationCallback.EVENT.register(context -> context.register(
-                Wormholes.id("burns_sky"), DefaultVertexFormat.POSITION_TEX_COLOR, shader -> burnsSkyShader = shader));
+    public static void register(IEventBus modBus) {
+        modBus.addListener(RegisterShadersEvent.class, event -> {
+            try {
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), Wormholes.id("burns_sky"),
+                        DefaultVertexFormat.POSITION_TEX_COLOR), shader -> burnsSkyShader = shader);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     public static RenderType additive(ResourceLocation texture) {

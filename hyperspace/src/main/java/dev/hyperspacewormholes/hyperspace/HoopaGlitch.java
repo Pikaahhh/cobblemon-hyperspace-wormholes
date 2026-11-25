@@ -1,10 +1,11 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.RandomSource;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The task list going wrong as the Hoopa event gives itself away: after HoopaEvent.Glitch, TasksHud asks how many of its
@@ -22,14 +23,14 @@ public final class HoopaGlitch {
     }
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(HoopaEvent.Glitch.TYPE, (payload, context) -> {
+        Packets.onClient(HoopaEvent.Glitch.TYPE, payload -> {
             HyperspaceMusic.glitch(payload.ticks());
             hidden = false;
             length = Math.max(1, payload.ticks());
             until = payload.ticks() > 0 ? System.currentTimeMillis() + length * 50L : -1;
             glitchEnd = until < 0 ? -1 : until + LINGER_MS;
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             until = -1;
             glitchEnd = -1;
             hidden = false;

@@ -1,8 +1,7 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -11,6 +10,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * Loot function hyperspace_wormholes:hoopa_stars_count. Scales item counts by your ring's stars, from a fifth at 1
@@ -18,10 +19,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
  */
 public record HoopaStarsCount() implements LootItemFunction {
     public static final MapCodec<HoopaStarsCount> CODEC = MapCodec.unit(new HoopaStarsCount());
+    private static final DeferredRegister<LootItemFunctionType<?>> FUNCTIONS = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, Hyperspace.MOD_ID);
     private static LootItemFunctionType<HoopaStarsCount> type;
 
-    public static void register() {
-        type = Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, Hyperspace.id("hoopa_stars_count"), new LootItemFunctionType<>(CODEC));
+    public static void register(IEventBus modBus) {
+        FUNCTIONS.register("hoopa_stars_count", () -> type = new LootItemFunctionType<>(CODEC));
+        FUNCTIONS.register(modBus);
     }
 
     public static float factor(int stars) {

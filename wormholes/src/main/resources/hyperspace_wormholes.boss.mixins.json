@@ -24,6 +24,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+  }
 }

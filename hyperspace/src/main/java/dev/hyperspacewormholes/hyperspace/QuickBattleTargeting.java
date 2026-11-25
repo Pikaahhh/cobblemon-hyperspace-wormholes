@@ -17,15 +17,18 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.hyperspacewormholes.Packets;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
 import org.joml.Matrix4fStack;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -35,6 +38,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -43,6 +47,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Method;
@@ -54,21 +59,18 @@ import java.util.UUID;
 /**
  * Client side of quick battles: aiming at a target with your crosshair, the four move tiles in the bottom right, the
  * move keys that fire them (their own controls, 1 to 4 by default), and the marker over whatever you're aiming at.
- * A move key is read off the keyboard as well as by its clicks, because on 1.21.1 a key shared with another control only
- * clicks that one (KeyMappingMixin). While aiming, a hotbar key on the same key as a move key doesn't change the slot.
+ * A move key is read off the keyboard as well as by its clicks. While aiming, a hotbar key on the same key as a move key doesn't change the slot.
  */
 public class QuickBattleTargeting {
-    public static final KeyMapping TARGET = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.target",
-            InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE, "key.categories.hyperspace_wormholes"));
+    public static final KeyMapping TARGET = new KeyMapping("key.hyperspace_wormholes.target",
+            InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE, "key.categories.hyperspace_wormholes");
     public static final KeyMapping[] MOVE_KEYS = new KeyMapping[4];
 
     static {
         for (int slot = 0; slot < MOVE_KEYS.length; slot++) {
-            MOVE_KEYS[slot] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.move" + (slot + 1),
-                    InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_1 + slot, "key.categories.hyperspace_wormholes"));
+            MOVE_KEYS[slot] = new KeyMapping("key.hyperspace_wormholes.move" + (slot + 1),
+                    InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_1 + slot, "key.categories.hyperspace_wormholes");
         }
-        MoveKeys.keys = MOVE_KEYS.clone();
-        KeyMapping.resetMapping();
     }
 
     private static final ResourceLocation TILE = ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/gui/battle/battle_move.png");
@@ -99,19 +101,28 @@ public class QuickBattleTargeting {
     private static final int[] cooldowns = new int[4];
     private static final boolean[] moveDown = new boolean[4];
 
-    public static void register() {
-        ClientTickEvents.START_CLIENT_TICK.register(QuickBattleTargeting::tick);
-        ClientPlayNetworking.registerGlobalReceiver(QuickBattles.Moves.TYPE, (payload, context) -> {
+    public static void register(IEventBus modBus) {
+        modBus.addListener((RegisterKeyMappingsEvent event) -> {
+            event.register(TARGET);
+            for (KeyMapping key : MOVE_KEYS) event.register(key);
+        });
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> tick(Minecraft.getInstance()));
+        Packets.onClient(QuickBattles.Moves.TYPE, payload -> {
             moves = payload.moves();
             busy = payload.busy();
             for (int slot = 0; slot < 4; slot++) cooldowns[slot] = slot < moves.size() ? moves.get(slot).cooldown() : 0;
         });
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
             moves = List.of();
             busy = false;
         });
-        HudRenderCallback.EVENT.register(QuickBattleTargeting::render);
-        WorldRenderEvents.AFTER_ENTITIES.register(QuickBattleTargeting::renderTarget);
+        NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post event) -> {
+            // the tiles are blitted straight, and the HUD still has depth testing on here
+            RenderSystem.disableDepthTest();
+            render(event.getGuiGraphics(), event.getPartialTick());
+            RenderSystem.enableDepthTest();
+        });
+        RenderStages.afterEntities(QuickBattleTargeting::renderTarget);
     }
 
     private static void tick(Minecraft mc) {
@@ -149,13 +160,13 @@ public class QuickBattleTargeting {
         if (!was || ++aimTicks % REFRESH == 0 || !chosen.equals(lastSelected)) {
             lastSelected = chosen;
             aimTicks = 0;
-            if (ClientPlayNetworking.canSend(QuickBattles.Aim.TYPE)) ClientPlayNetworking.send(new QuickBattles.Aim(chosen));
+            if (canSend(mc, QuickBattles.Aim.TYPE)) PacketDistributor.sendToServer(new QuickBattles.Aim(chosen));
         }
         monitor = aimedMonitor(mc);
         target = monitor != null ? -1 : pick(mc);
         for (int slot = 0; slot < 4; slot++) {
-            if (fired[slot] && (target >= 0 || monitor != null) && usable(slot) && ClientPlayNetworking.canSend(QuickBattles.Payload.TYPE)) {
-                ClientPlayNetworking.send(monitor != null ? new QuickBattles.Strike(monitor, slot, contact(mc, slot), chosen, runs(mc))
+            if (fired[slot] && (target >= 0 || monitor != null) && usable(slot) && canSend(mc, QuickBattles.Payload.TYPE)) {
+                PacketDistributor.sendToServer(monitor != null ? new QuickBattles.Strike(monitor, slot, contact(mc, slot), chosen, runs(mc))
                         : new QuickBattles.Payload(target, slot, contact(mc, slot), chosen, runs(mc)));
                 cooldowns[slot] = QuickBattles.cooldown(Moves.getByName(moves.get(slot).name()));
                 busy = true;
@@ -163,15 +174,29 @@ public class QuickBattleTargeting {
         }
     }
 
-    /** Whether this move key went down since the last tick: a click, or the key found down now and not before. */
+    private static boolean canSend(Minecraft mc, CustomPacketPayload.Type<?> type) {
+        return mc.getConnection() != null && mc.getConnection().hasChannel(type);
+    }
+
+    /**
+     * Whether this move key went down since the last tick: a click, or the key found down now and not before. On a key
+     * another control shares, clicks don't count, so holding a hotbar key doesn't keep using the move.
+     */
     private static boolean pressed(Minecraft mc, int slot) {
         KeyMapping key = MOVE_KEYS[slot];
         boolean clicked = false;
         while (key.consumeClick()) clicked = true;
-        boolean down = mc.screen == null && down(mc, KeyBindingHelper.getBoundKeyOf(key));
+        boolean down = mc.screen == null && down(mc, key.getKey());
         boolean edge = down && !moveDown[slot];
         moveDown[slot] = down;
-        return clicked || edge;
+        return edge || clicked && !shared(mc, key);
+    }
+
+    private static boolean shared(Minecraft mc, KeyMapping key) {
+        for (KeyMapping other : mc.options.keyMappings) {
+            if (other.same(key) && !ArrayUtils.contains(MOVE_KEYS, other)) return true;
+        }
+        return false;
     }
 
     private static boolean down(Minecraft mc, InputConstants.Key key) {
@@ -179,7 +204,6 @@ public class QuickBattleTargeting {
         if (key.getType() == InputConstants.Type.MOUSE) return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
         return key.getType() == InputConstants.Type.KEYSYM && key.getValue() >= 0 && InputConstants.isKeyDown(window, key.getValue());
     }
-
     private static int contact(Minecraft mc, int slot) {
         PokemonEntity pokemon = commander(mc);
         MoveTemplate move = Moves.getByName(moves.get(slot).name());
@@ -253,17 +277,17 @@ public class QuickBattleTargeting {
         return text.withStyle(s -> s.withFont(CobblemonResources.INSTANCE.getDEFAULT_LARGE()));
     }
 
-    private static void renderTarget(WorldRenderContext context) {
+    private static void renderTarget(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         Entity aimed = target < 0 || mc.level == null ? null : mc.level.getEntity(target);
         if (monitor == null && !(aimed instanceof PokemonEntity)) return;
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(false);
-        Vec3 cam = context.camera().getPosition();
+        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        Vec3 cam = event.getCamera().getPosition();
         Vec3 at = monitor != null ? Vec3.atCenterOf(monitor) : aimed.getPosition(partial).add(0, aimed.getBbHeight() / 2, 0);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();
-        view.set(context.positionMatrix());
+        view.set(event.getModelViewMatrix());
         RenderSystem.applyModelViewMatrix();
         PoseStack pose = new PoseStack();
         pose.translate(at.x - cam.x, at.y - cam.y, at.z - cam.z);
@@ -291,7 +315,7 @@ public class QuickBattleTargeting {
     }
 
     private static boolean held(Minecraft mc) {
-        return down(mc, KeyBindingHelper.getBoundKeyOf(TARGET));
+        return down(mc, TARGET.getKey());
     }
 
     private static Optional<UUID> selected() {

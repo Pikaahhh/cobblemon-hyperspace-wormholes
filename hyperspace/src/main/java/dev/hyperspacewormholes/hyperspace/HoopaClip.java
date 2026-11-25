@@ -3,13 +3,14 @@ package dev.hyperspacewormholes.hyperspace;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class HoopaClip {
     private static ClipSource source;
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(HoopaSummon.Clip.TYPE, (payload, context) -> {
+        Packets.onClient(HoopaSummon.Clip.TYPE, payload -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) return;
             if (!payload.on()) {
@@ -42,7 +43,8 @@ public class HoopaClip {
             planes.put(payload.entity(), new Plane(new Vec3(payload.x(), payload.y(), payload.z()), normal,
                     mc.level.getGameTime() + LONGEST));
         });
-        ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+            Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) {
                 planes.clear();
                 return;

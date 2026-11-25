@@ -1,10 +1,12 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import com.mojang.math.Transformation;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import dev.hyperspacewormholes.Packets;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -36,8 +38,9 @@ public final class HoopaTracks {
     }
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(HoopaSummon.Track.TYPE, (payload, context) -> playing.add(new Playing(payload.entity(), payload.poses())));
-        ClientTickEvents.START_CLIENT_TICK.register(mc -> {
+        Packets.onClient(HoopaSummon.Track.TYPE, payload -> playing.add(new Playing(payload.entity(), payload.poses())));
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> {
+            Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) {
                 playing.clear();
                 return;

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.audio.Channel;
 import dev.hyperspacewormholes.hyperspace.mixin.SoundEngineAccessor;
 import dev.hyperspacewormholes.hyperspace.mixin.SoundManagerAccessor;
 import dev.hyperspacewormholes.wormholes.client.SeamlessLoopStream;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -14,6 +13,8 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,7 @@ public class HyperspaceMusic {
     }
 
     public static void register() {
-        ClientTickEvents.END_CLIENT_TICK.register(HyperspaceMusic::tick);
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
     }
 
     /**

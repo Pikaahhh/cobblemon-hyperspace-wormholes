@@ -14,8 +14,6 @@ import com.cobblemon.mod.common.net.messages.client.sound.UnvalidatedPlaySoundS2
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.mixin.ChunkMapAccessor;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -27,6 +25,9 @@ import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.entity.XpOrbTargetingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -65,13 +66,16 @@ public final class OwnEncounters {
     private OwnEncounters() {}
 
     public static void register() {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            if (owner(entity) != null) LOADED.add(entity);
-        });
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> LOADED.remove(entity));
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             LOADED.clear();
             scope = null;
+        });
+        NeoForge.EVENT_BUS.addListener((XpOrbTargetingEvent event) -> {
+            UUID owner = owner(event.getXpOrb());
+            if (owner == null) return;
+            Player player = event.getXpOrb().level().getPlayerByUUID(owner);
+            boolean near = player != null && !player.isSpectator() && player.distanceToSqr(event.getXpOrb()) <= 64;
+            event.setFollowingPlayer(near ? player : null);
         });
         CobblemonEvents.BATTLE_STARTED_PRE.subscribe(Priority.HIGHEST, event -> {
             for (UUID player : event.getBattle().getPlayerUUIDs()) {
@@ -85,8 +89,17 @@ public final class OwnEncounters {
         });
     }
 
+    /** Once entity is tracked, and as it stops being (OwnTrackingMixin). */
+    public static void onLoad(Entity entity) {
+        if (owner(entity) != null) LOADED.add(entity);
+    }
+
+    public static void onUnload(Entity entity) {
+        LOADED.remove(entity);
+    }
+
     static void give(Entity entity, UUID owner) {
-        entity.setAttached(Wormholes.OWN_PLAYER, owner);
+        entity.setData(Wormholes.OWN_PLAYER, owner);
         if (entity instanceof ItemEntity item) item.setTarget(owner);
         if (entity instanceof PokemonEntity pokemon) pokemon.setCountsTowardsSpawnCap(false);
         if (entity.level() instanceof ServerLevel level && level.getEntity(entity.getId()) == entity) {
@@ -103,7 +116,7 @@ public final class OwnEncounters {
     }
 
     public static @Nullable UUID owner(Entity entity) {
-        return entity.getAttached(Wormholes.OWN_PLAYER);
+        return entity.getExistingDataOrNull(Wormholes.OWN_PLAYER);
     }
 
     private static boolean any() {

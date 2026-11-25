@@ -14,11 +14,13 @@ import com.cobblemon.mod.common.pokemon.FormData;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import com.cobblemon.mod.common.pokemon.properties.UncatchableProperty;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -124,10 +126,12 @@ public class Spawns {
             if (event.getEntity().level().dimension().equals(Hyperspace.HYPERSPACE)) event.cancel();
             return Unit.INSTANCE;
         });
-        ServerTickEvents.END_SERVER_TICK.register(Spawns::tick);
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> load(server.getResourceManager()));
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> load(server.getResourceManager()));
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> load(event.getServer().getResourceManager()));
+        NeoForge.EVENT_BUS.addListener((OnDatapackSyncEvent event) -> {
+            if (event.getPlayer() == null) load(event.getPlayerList().getServer().getResourceManager());
+        });
+        Wormholes.onEntityLoad((entity, level) -> {
             if (!level.dimension().equals(Hyperspace.HYPERSPACE) || !(entity instanceof PokemonEntity pokemon) || !pokemon.getPokemon().isWild()) return;
             // the Hoopa event's boss and the legendaries it rings in aren't island spawns (no BORN stamp)
             if (HoopaEvent.ours(entity)) return;
@@ -532,7 +536,7 @@ public class Spawns {
 
     public static List<Species> legendPool() {
         List<Species> pool = new ArrayList<>();
-        boolean monuments = GameplayConfig.get().leaveToMonuments() && FabricLoader.getInstance().isModLoaded("legendarymonuments");
+        boolean monuments = GameplayConfig.get().leaveToMonuments() && ModList.get().isLoaded("legendarymonuments");
         for (Species species : PokemonSpecies.getImplemented()) {
             String path = species.getResourceIdentifier().getPath();
             if (!legendTagged.contains(species) || NOT_SPAWNED.contains(path) || monuments && MONUMENT_LEGENDS.contains(path)) continue;

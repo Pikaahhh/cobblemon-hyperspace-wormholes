@@ -8,13 +8,14 @@ import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animatio
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.client.cinematic.Cinematics;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public final class NecrozmaWeakened {
     private NecrozmaWeakened() {}
 
     public static void register() {
-        ClientTickEvents.END_CLIENT_TICK.register(NecrozmaWeakened::tick);
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick(Minecraft.getInstance()));
     }
 
     public static void keepDown(PokemonEntity necrozma, Vec3 at, float yaw, double floor) {

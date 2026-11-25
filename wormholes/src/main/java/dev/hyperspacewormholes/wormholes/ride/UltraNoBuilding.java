@@ -1,10 +1,10 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -18,9 +18,12 @@ public final class UltraNoBuilding {
     private UltraNoBuilding() {}
 
     public static void register() {
-        AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
-                blocks(player, level) ? InteractionResult.FAIL : InteractionResult.PASS);
-        PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) -> !blocks(player, level));
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.LeftClickBlock event) -> {
+            if (blocks(event.getEntity(), event.getLevel())) event.setCanceled(true);
+        });
+        NeoForge.EVENT_BUS.addListener((BlockEvent.BreakEvent event) -> {
+            if (blocks(event.getPlayer(), (Level) event.getLevel())) event.setCanceled(true);
+        });
     }
 
     public static boolean blocks(@Nullable Player player, Level level) {

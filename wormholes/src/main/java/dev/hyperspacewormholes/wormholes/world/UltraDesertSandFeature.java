@@ -28,7 +28,7 @@ public class UltraDesertSandFeature extends CellFeature {
 
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos origin) {
-        BlockState sand = DesertBlocks.WHITE_SAND.defaultBlockState();
+        BlockState sand = DesertBlocks.WHITE_SAND.get().defaultBlockState();
         BlockState warm = mixIn(WARM_SAND, sand), pearl = mixIn(PEARL_SAND, sand);
         SimplexNoise drifts = noise(level.getSeed());
         ChunkPos chunk = new ChunkPos(origin);

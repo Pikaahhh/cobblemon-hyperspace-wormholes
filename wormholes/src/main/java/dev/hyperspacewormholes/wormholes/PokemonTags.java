@@ -3,12 +3,12 @@ package dev.hyperspacewormholes.wormholes;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -21,21 +21,16 @@ import java.util.Map;
  * Pokemon tags from datapacks (data/namespace/tags/pokemon/name.json). Same shape as vanilla tags, with forms or
  * aspects after each species. Datapacks can add to our defaults or replace them.
  */
-public final class PokemonTags implements SimpleSynchronousResourceReloadListener {
+public final class PokemonTags implements ResourceManagerReloadListener {
     private static final String DIRECTORY = "tags/pokemon";
     private static Map<ResourceLocation, List<String>> tags = Map.of();
 
     public static void register() {
-        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new PokemonTags());
+        NeoForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new PokemonTags()));
     }
 
     public static List<String> get(ResourceLocation tag) {
         return tags.getOrDefault(tag, List.of());
-    }
-
-    @Override
-    public ResourceLocation getFabricId() {
-        return Wormholes.id("pokemon_tags");
     }
 
     @Override

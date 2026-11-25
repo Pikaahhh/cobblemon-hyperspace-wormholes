@@ -1,7 +1,7 @@
 package dev.hyperspacewormholes.wormholes.client;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.ModList;
 
 /**
  * Hides Jade's tooltip during an Ultra Warp Ride and brings it back after. Done with reflection so Jade stays
@@ -44,7 +44,7 @@ final class JadeCompat {
     }
 
     private static Object general() {
-        if (failed || !FabricLoader.getInstance().isModLoaded("jade")) return null;
+        if (failed || !ModList.get().isLoaded("jade")) return null;
         try {
             Class<?> config = Class.forName("snownee.jade.api.config.IWailaConfig");
             Object instance = config.getMethod("get").invoke(null);

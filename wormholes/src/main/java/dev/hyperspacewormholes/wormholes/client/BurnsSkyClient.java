@@ -11,19 +11,15 @@ import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.wormholes.client.render.Domes;
 import dev.hyperspacewormholes.wormholes.client.render.OwnPass;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.client.render.WarpRenderTypes;
 import dev.hyperspacewormholes.wormholes.network.BurnsSkyPayload;
 import dev.hyperspacewormholes.wormholes.network.BurnsSkyStopPayload;
 import dev.hyperspacewormholes.wormholes.zmove.BurnsSkyTimeline;
 import dev.hyperspacewormholes.wormholes.zmove.LightThatBurnsTheSky;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,6 +28,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -188,19 +188,19 @@ public final class BurnsSkyClient {
     }
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(BurnsSkyPayload.TYPE, (payload, context) -> start(payload));
-        ClientPlayNetworking.registerGlobalReceiver(BurnsSkyStopPayload.TYPE, (payload, context) -> RUNS.remove(payload.userId()));
-        ClientTickEvents.END_CLIENT_TICK.register(BurnsSkyClient::tick);
+        Packets.onClient(BurnsSkyPayload.TYPE, payload -> start(payload));
+        Packets.onClient(BurnsSkyStopPayload.TYPE, payload -> RUNS.remove(payload.userId()));
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick(Minecraft.getInstance()));
         // With a shader pack on, what's drawn at LAST is lost under the pack's own passes (under BSL none of the move
         // showed but Necrozma's glow), so it's drawn after water instead, like the wormholes (WormholeEntityRenderer).
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            if (ShaderPacks.inUse()) renderWorld(context);
+        RenderStages.afterTranslucent(event -> {
+            if (ShaderPacks.inUse()) renderWorld(event);
         });
-        WorldRenderEvents.LAST.register(context -> {
-            if (!ShaderPacks.inUse()) renderWorld(context);
+        RenderStages.last(event -> {
+            if (!ShaderPacks.inUse()) renderWorld(event);
         });
-        HudRenderCallback.EVENT.register(BurnsSkyClient::renderHud);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> RUNS.clear());
+        WormholesClient.onHud(BurnsSkyClient::renderHud);
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> RUNS.clear());
     }
 
     private static void start(BurnsSkyPayload payload) {
@@ -297,8 +297,8 @@ public final class BurnsSkyClient {
         Vec3 at = entity.getPosition(state.getPartialTicks());
         List<Box> boxes = new ArrayList<>();
         for (Bone bone : model.getRootPart().getChildren().values()) {
-            if (!(bone instanceof ModelPart part) || !part.visible) continue;
-            boolean jawPart = bone == model.getRelevantPartsByName().get("jaw");
+            if (!((Object) bone instanceof ModelPart part) || !part.visible) continue;
+            boolean jawPart = part == model.getRelevantPartsByName().get("jaw");
             part.visit(pose, (cubePose, path, index, cube) -> {
                 float[] lo = {cube.minX / 16f, cube.minY / 16f, cube.minZ / 16f};
                 float[] hi = {cube.maxX / 16f, cube.maxY / 16f, cube.maxZ / 16f};
@@ -424,14 +424,14 @@ public final class BurnsSkyClient {
         }
     }
 
-    private static void renderWorld(WorldRenderContext context) {
-        viewCamera = context.camera().getPosition();
+    private static void renderWorld(RenderLevelStageEvent event) {
+        viewCamera = event.getCamera().getPosition();
         if (RUNS.isEmpty()) return;
-        VIEW.set(context.positionMatrix());
-        PROJECTION.set(context.projectionMatrix());
+        VIEW.set(event.getModelViewMatrix());
+        PROJECTION.set(event.getProjectionMatrix());
 
         Minecraft mc = Minecraft.getInstance();
-        float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         for (Run run : RUNS.values()) {
             if (run.release == null && age(run, partialTick) >= BurnsSkyTimeline.THROW) {
                 run.release = run.held(mc, BurnsSkyTimeline.THROW, partialTick);

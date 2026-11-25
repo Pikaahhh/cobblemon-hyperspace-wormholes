@@ -1,12 +1,7 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +9,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -45,18 +44,23 @@ public final class UltraStays {
     private UltraStays() {}
 
     public static void register() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> left(origin, player));
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            if (oldPlayer.serverLevel() != newPlayer.serverLevel()) left(oldPlayer.serverLevel(), oldPlayer);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
+            ServerLevel origin = player.server.getLevel(event.getFrom());
+            if (origin != null) left(origin, player);
         });
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            ServerPlayer player = handler.getPlayer();
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> {
+            ServerPlayer oldPlayer = (ServerPlayer) event.getOriginal();
+            if (oldPlayer.serverLevel() != event.getEntity().level()) left(oldPlayer.serverLevel(), oldPlayer);
+        });
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
             ServerLevel level = player.serverLevel();
-            server.execute(() -> left(level, player));
+            player.server.execute(() -> left(level, player));
         });
-        ServerEntityEvents.ENTITY_LOAD.register(UltraStays::onLoad);
-        ServerTickEvents.END_SERVER_TICK.register(UltraStays::sweep);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        Wormholes.onEntityLoad(UltraStays::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> sweep(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             VISITS.clear();
             OWN_VISITS.clear();
             OCCUPIED.clear();

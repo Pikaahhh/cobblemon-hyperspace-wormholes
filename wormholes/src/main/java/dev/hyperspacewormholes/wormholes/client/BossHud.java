@@ -8,7 +8,6 @@ import dev.hyperspacewormholes.wormholes.client.cinematic.Cinematics;
 import dev.hyperspacewormholes.wormholes.client.cinematic.UltraBurstCinematic;
 import dev.hyperspacewormholes.wormholes.network.BossHudPayload;
 import kotlin.Pair;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -19,6 +18,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -65,7 +66,7 @@ public final class BossHud {
     private BossHud() {}
 
     public static void register() {
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> reset());
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> reset());
     }
 
     public static void receive(BossHudPayload payload) {

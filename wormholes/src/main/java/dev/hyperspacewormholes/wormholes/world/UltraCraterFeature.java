@@ -185,7 +185,7 @@ public class UltraCraterFeature extends CellFeature {
         BlockState existing = level.getBlockState(pos);
         for (BlockPos vent : vents) {
             if (vent.getX() == pos.getX() && vent.getZ() == pos.getZ() && !existing.isAir() && existing.getFluidState().isEmpty()) {
-                level.setBlock(pos, SteamVent.BLOCK.defaultBlockState(), FLAGS);
+                level.setBlock(pos, SteamVent.BLOCK.get().defaultBlockState(), FLAGS);
                 return;
             }
         }
@@ -205,7 +205,7 @@ public class UltraCraterFeature extends CellFeature {
             case SPIRE -> LATTICE[(int) Math.floorMod(h + Math.floorMod(pos.getY(), 4), (long) LATTICE.length)];
             case ROOT -> (h & 3) == 0 ? ROOT_SMOOTH : ROOT_BLOCK;
             case GLOW -> LIGHT;
-            case VENT -> SteamVent.BLOCK.defaultBlockState();
+            case VENT -> SteamVent.BLOCK.get().defaultBlockState();
             default -> MOUND;
         };
     }

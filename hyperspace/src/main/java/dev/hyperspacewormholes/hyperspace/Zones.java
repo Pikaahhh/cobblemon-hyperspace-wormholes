@@ -1,6 +1,5 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -32,6 +31,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -129,9 +131,9 @@ public class Zones {
     }
 
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTING.register(Zones::wipe);
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            WorldData data = WorldData.get(server);
+        NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> wipe(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
+            WorldData data = WorldData.get(event.getServer());
             data.zones.clear();
             data.tasks.keySet().removeIf(island -> island >= BASE);
             data.setDirty();

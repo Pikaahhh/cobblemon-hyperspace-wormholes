@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(BattleGUI.class)
 public abstract class BossWaitHintMixin {
-    // render is Screen's method, so this mixin goes through the refmap
     @Inject(method = "render", at = @At("TAIL"))
     private void hyperspace_wormholes$waitHint(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MutableComponent hint = BossClient.waitHint();

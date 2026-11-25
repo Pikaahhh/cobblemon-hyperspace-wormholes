@@ -7,10 +7,8 @@ import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.hyperspacewormholes.wormholes.client.render.RenderStages;
 import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,6 +17,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -50,8 +51,9 @@ public final class UltraAura {
     public static void register() {
         if (registered) return;
         registered = true;
-        WorldRenderEvents.LAST.register(UltraAura::collect);
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        RenderStages.last(UltraAura::collect);
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> {
+            Minecraft client = Minecraft.getInstance();
             if (client.level == null) {
                 BODIES.clear();
                 POWERED.clear();
@@ -95,7 +97,7 @@ public final class UltraAura {
         float[] box = {Float.MAX_VALUE, -Float.MAX_VALUE};
         Vec3 at = entity.getPosition(state.getPartialTicks());
         for (Map.Entry<String, Bone> top : model.getRootPart().getChildren().entrySet()) {
-            if (!(top.getValue() instanceof ModelPart part)) continue;
+            if (!((Object) top.getValue() instanceof ModelPart part)) continue;
             part.visit(pose, (p, path, index, cube) -> {
                 if (count[0]++ % CUBE_STEP != 0) return;
                 p.pose().transformPosition((cube.minX + cube.maxX) / 32f, (cube.minY + cube.maxY) / 32f, (cube.minZ + cube.maxZ) / 32f, centre);
@@ -108,13 +110,13 @@ public final class UltraAura {
         BODIES.put(entity.getId(), new Body(points, Math.max(1, box[1] - box[0]), Minecraft.getInstance().level.getGameTime()));
     }
 
-    private static void collect(WorldRenderContext context) {
+    private static void collect(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || BODIES.isEmpty()) return;
-        Vec3 cam = context.camera().getPosition();
-        var orientation = context.camera().rotation();
+        Vec3 cam = event.getCamera().getPosition();
+        var orientation = event.getCamera().rotation();
         Vector3f right = orientation.transform(new Vector3f(1, 0, 0)), up = orientation.transform(new Vector3f(0, 1, 0));
-        double time = mc.level.getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false);
+        double time = mc.level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
         List<float[]> quads = new ArrayList<>();
         for (Map.Entry<Integer, Body> entry : BODIES.entrySet()) {
             Body body = entry.getValue();

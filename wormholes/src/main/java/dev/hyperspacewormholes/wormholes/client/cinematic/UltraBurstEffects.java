@@ -1,12 +1,12 @@
 package dev.hyperspacewormholes.wormholes.client.cinematic;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Vector3f;
 
 import static dev.hyperspacewormholes.wormholes.client.cinematic.Fx.ramp;
@@ -82,10 +82,10 @@ public final class UltraBurstEffects {
         }
     }
 
-    public static void collect(WorldRenderContext context) {
+    public static void collect(RenderLevelStageEvent event) {
         if (!UltraBurstCinematic.isPlaying()) return;
-        double f = UltraBurstCinematic.frame(context.tickCounter().getGameTimeDeltaPartialTick(false));
-        GlowQuads q = new GlowQuads(context);
+        double f = UltraBurstCinematic.frame(event.getPartialTick().getGameTimeDeltaPartialTick(false));
+        GlowQuads q = new GlowQuads(event);
         Vec3 boss = UltraBurstCinematic.boss();
         float height = UltraBurstCinematic.bossHeight();
         Vec3 centre = boss.add(0, height * 0.45, 0);

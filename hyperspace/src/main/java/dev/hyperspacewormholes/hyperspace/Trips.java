@@ -1,7 +1,9 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -43,9 +45,9 @@ public class Trips {
     private static final Map<Rift, Integer> remnants = new HashMap<>();
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(Trips::tick);
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (entity instanceof ServerPlayer player) leave(player, false);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, (LivingDeathEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) leave(player, false);
         });
     }
 

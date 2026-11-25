@@ -53,6 +53,7 @@
     "OwnTargetingMixin",
     "OwnTraceMixin",
     "OwnTrackedEntityMixin",
+    "OwnTrackingMixin",
     "WormholesAdvancementsMixin",
     "MsdDerivedPackMixin",
     "LodestoneBlockMixin"
@@ -108,6 +109,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+  }
 }

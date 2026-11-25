@@ -1,12 +1,13 @@
 package dev.hyperspacewormholes.usum;
 
 import com.google.gson.JsonParser;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.ModList;
 import org.slf4j.LoggerFactory;
 
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -26,8 +27,9 @@ public final class UsumSounds {
     public static synchronized Set<String> events() {
         if (events == null) {
             Set<String> found = new HashSet<>();
-            FabricLoader.getInstance().getModContainer(MoveFx.MOD_ID)
-                    .flatMap(mod -> mod.findPath("assets/" + NAMESPACE + "/sounds.json"))
+            Optional.ofNullable(ModList.get().getModFileById(MoveFx.MOD_ID))
+                    .map(mod -> mod.getFile().findResource("assets", NAMESPACE, "sounds.json"))
+                    .filter(Files::exists)
                     .ifPresent(file -> {
                         try (Reader reader = Files.newBufferedReader(file)) {
                             found.addAll(JsonParser.parseReader(reader).getAsJsonObject().keySet());

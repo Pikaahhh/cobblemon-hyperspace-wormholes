@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** Draws the boss screen transition (BossTransition) over everything and hides Cobblemon's battle screen meanwhile. */
 @Mixin(GameRenderer.class)
 public abstract class BossTransitionMixin {
-    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;renderWithTooltip(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;drawScreen(Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
     private void hyperspace_wormholes$hideBattleScreen(Screen screen, GuiGraphics graphics, int mouseX, int mouseY,
                                                        float delta, Operation<Void> original) {
         if (screen instanceof BattleGUI && BossTransition.hidesUi()) return;

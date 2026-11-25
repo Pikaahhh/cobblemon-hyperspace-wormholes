@@ -32,7 +32,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.network.BossHudPayload;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -46,6 +45,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -367,8 +367,8 @@ public final class Boss {
     }
 
     static boolean send(@Nullable ServerPlayer player, CustomPacketPayload payload) {
-        if (player == null || !ServerPlayNetworking.canSend(player, payload.type())) return false;
-        ServerPlayNetworking.send(player, payload);
+        if (player == null || !player.connection.hasChannel(payload.type())) return false;
+        PacketDistributor.sendToPlayer(player, payload);
         return true;
     }
 

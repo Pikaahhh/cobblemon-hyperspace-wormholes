@@ -9,11 +9,12 @@ import com.cobblemon.mod.common.battles.BattleSide;
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import kotlin.Unit;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
@@ -29,7 +30,7 @@ import java.util.Set;
  * (the wormholes part's Bosses.target, found by reflection so neither part needs the other), else the middle of its foes.
  * Ridden or riding bosses, the Megalopolis Necrozma and stays-put Pokemon are left as they are.
  */
-public final class BattleSpacing implements ModInitializer {
+public final class BattleSpacing {
     private static final String NECROZMA_BOSS = "hyperspace_wormholes.necrozma_boss";
     private static final String BOSS = "hyperspace_wormholes.boss";
     private static final String STAYS_PUT = "hyperspace_wormholes.stays_put";
@@ -40,13 +41,12 @@ public final class BattleSpacing implements ModInitializer {
     private static @Nullable Method targetMethod;
     private static boolean targetLooked;
 
-    @Override
-    public void onInitialize() {
+    public static void init(IEventBus modBus) {
         CobblemonEvents.BATTLE_STARTED_POST.subscribe(Priority.NORMAL, event -> {
             BATTLES.add(event.getBattle());
             return Unit.INSTANCE;
         });
-        ServerTickEvents.END_SERVER_TICK.register(server -> tick());
+        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, event -> tick());
     }
 
     private static void tick() {

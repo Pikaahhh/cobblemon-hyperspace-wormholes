@@ -69,7 +69,7 @@ public class LuminescentIceFeature extends CellFeature {
             }
         }
 
-        BlockState state = LuminescentIce.BLOCK.defaultBlockState();
+        BlockState state = LuminescentIce.BLOCK.get().defaultBlockState();
         for (BlockPos pos : ice) level.setBlock(pos, state, Block.UPDATE_CLIENTS);
         return true;
     }

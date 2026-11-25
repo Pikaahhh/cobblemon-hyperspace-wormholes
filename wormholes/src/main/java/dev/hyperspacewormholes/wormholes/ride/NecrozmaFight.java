@@ -27,11 +27,6 @@ import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
 import dev.hyperspacewormholes.wormholes.network.UltraBurstPayload;
 import dev.hyperspacewormholes.wormholes.world.Zone;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -48,6 +43,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -132,17 +132,18 @@ public final class NecrozmaFight {
     private NecrozmaFight() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(NecrozmaFight::tick);
-        ServerEntityEvents.ENTITY_LOAD.register(NecrozmaFight::onLoad);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> FIGHTS.clear());
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (world.isClientSide() || !(player instanceof ServerPlayer clicker)) return InteractionResult.PASS;
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad(NecrozmaFight::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> FIGHTS.clear());
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract event) -> {
+            if (event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer clicker)) return;
             for (Fight f : FIGHTS) {
-                if (f.boss != entity) continue;
-                if (hand == InteractionHand.MAIN_HAND) ready(f, clicker);
-                return InteractionResult.SUCCESS;
+                if (f.boss != event.getTarget()) continue;
+                if (event.getHand() == InteractionHand.MAIN_HAND) ready(f, clicker);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                return;
             }
-            return InteractionResult.PASS;
         });
         CobblemonEvents.THROWN_POKEBALL_HIT.subscribe(Priority.HIGHEST, event -> {
             UUID owner = PRIZES.get(event.getPokemon());
@@ -451,7 +452,7 @@ public final class NecrozmaFight {
         ResourceLocation music = music(def, f);
         for (ServerPlayer player : partyPlayers(f)) {
             if (music != null) new BattleMusicPacket(music, 1f, 1f, true).sendToPlayer(player);
-            ServerPlayNetworking.send(player, f.opening);
+            PacketDistributor.sendToPlayer(player, f.opening);
         }
         enter(f, Stage.OPENING);
     }
@@ -623,7 +624,7 @@ public final class NecrozmaFight {
         f.challenger = players.getFirst().getUUID();
         Boss boss = Bosses.adopt(f.boss, def(), f.variant(), new Rules(f));
         // hard mode when the challenger has beaten Necrozma before; whoever triggered it decides
-        if (!boss.hard() && (GameplayConfig.get().bossHardModeAlwaysOn || players.getFirst().getAttachedOrElse(Wormholes.NECROZMA_BEATEN, false))) Bosses.harden(boss);
+        if (!boss.hard() && (GameplayConfig.get().bossHardModeAlwaysOn || players.getFirst().getExistingData(Wormholes.NECROZMA_BEATEN).orElse(false))) Bosses.harden(boss);
         f.boss.setNoGravity(false);
         int joined = 0;
         for (ServerPlayer player : players) {
@@ -654,7 +655,7 @@ public final class NecrozmaFight {
         if (t == 0) {
             for (ServerPlayer player : partyPlayers(f)) {
                 new BattleMusicPacket(null, 1f, 1f, true).sendToPlayer(player);
-                ServerPlayNetworking.send(player, OUT.hidingUi(BACK_AT - OUT.length() + 2));
+                PacketDistributor.sendToPlayer(player, OUT.hidingUi(BACK_AT - OUT.length() + 2));
             }
         } else if (t == OUT.black()) {
             cutscene(f, true);
@@ -663,7 +664,7 @@ public final class NecrozmaFight {
         } else if (t == BURST_AT + ULTRA_FORM_TICKS) {
             boss.applyForm(f.form);
         } else if (t == BACK_AT) {
-            for (ServerPlayer player : partyPlayers(f)) ServerPlayNetworking.send(player, BACK.hidingUi(def.powerUpTicks));
+            for (ServerPlayer player : partyPlayers(f)) PacketDistributor.sendToPlayer(player, BACK.hidingUi(def.powerUpTicks));
         } else if (t == BACK_AT + BACK.black()) {
             unhide(f);
             arena(f);
@@ -690,7 +691,7 @@ public final class NecrozmaFight {
         @Override
         public boolean defeated(Boss boss) {
             boss.endAllAsWins();
-            for (ServerPlayer player : boss.players()) player.setAttached(Wormholes.NECROZMA_BEATEN, true);
+            for (ServerPlayer player : boss.players()) player.setData(Wormholes.NECROZMA_BEATEN, true);
             for (ServerPlayer player : boss.players()) dev.hyperspacewormholes.wormholes.WormholesAdvancements.ultraNecrozma(player);
             return true;
         }
@@ -761,7 +762,7 @@ public final class NecrozmaFight {
 
     private static void sendNear(Fight f, CustomPacketPayload payload) {
         for (ServerPlayer player : f.level.players()) {
-            if (near(f, player) && ServerPlayNetworking.canSend(player, payload.type())) ServerPlayNetworking.send(player, payload);
+            if (near(f, player) && player.connection.hasChannel(payload.type())) PacketDistributor.sendToPlayer(player, payload);
         }
     }
 

@@ -12,7 +12,6 @@ import dev.hyperspacewormholes.wormholes.ride.Stamina;
 import dev.hyperspacewormholes.wormholes.ride.TunnelLayout;
 import dev.hyperspacewormholes.wormholes.ride.WarpTunnel;
 import dev.hyperspacewormholes.wormholes.ride.WormholeType;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
@@ -27,6 +26,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
@@ -110,6 +110,7 @@ public final class RideClient {
         return ticks + partialTick;
     }
 
+    /** How far along the tunnel you are; during the opening shot it runs past at cruising speed up to its start. */
     public static double progress(float partialTick) {
         float time = time(partialTick);
         double at = WarpEntryClose.flying(time) ? WarpEntryClose.progress(time) : Mth.lerp(partialTick, prevProgress, progress);
@@ -154,6 +155,7 @@ public final class RideClient {
         boolean shrinks = size < 1f && (entity == body || entity.getVehicle() == body);
         boolean banks = Math.abs(roll) >= 0.05f && (entity == player || entity == mount);
         if (!shrinks && !banks) return;
+
         Vec3 pivot = body.getPosition(partialTick).add(0, body.getBbHeight() * 0.5, 0)
                 .subtract(entity.getPosition(partialTick));
         float yaw = facingYaw * Mth.DEG_TO_RAD;
@@ -380,7 +382,7 @@ public final class RideClient {
         tickStreaks();
         if (player.getRandom().nextFloat() < arrival(0f) * WarpEntryClose.trail(0f)) spawnTrail(player);
 
-        if (!passenger) ClientPlayNetworking.send(new RideStatePayload(progress, offX, offY));
+        if (!passenger) PacketDistributor.sendToServer(new RideStatePayload(progress, offX, offY));
     }
 
     private static void hush(Minecraft mc) {

@@ -29,14 +29,12 @@ This mod introduces its own method of getting Hoopa and Cosmog.
 
 # Requirements
 
-- [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric)
-- [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin) (Fabric)
-- [Kotlin for Forge](https://modrinth.com/mod/kotlin-for-forge) (NeoForge)
+- [Kotlin for Forge](https://modrinth.com/mod/kotlin-for-forge)
 - [Cobblemon](https://modrinth.com/mod/cobblemon) 1.8.4
 - [Cobblemon: Mega Showdown](https://modrinth.com/mod/cobblemon-mega-showdown)
 - [AllTheMons x Mega Showdown](https://modrinth.com/mod/allthemons-x-mega-showdown-legacy)
 
-This mod is for Fabric and NeoForge 1.21.1, and needs to be installed on both the client and the server.
+This mod is for NeoForge 1.21.1, and needs to be installed on both the client and the server.
 
 # Works with
 
@@ -45,7 +43,3 @@ This mod is for Fabric and NeoForge 1.21.1, and needs to be installed on both th
 - [Legendary Monuments](https://modrinth.com/mod/legendary-monuments): Some Wormholes can lead to Legendary Monument structures.
 - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) and [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map): Spatial Distortions show up on your maps.
 - [Waystones](https://modrinth.com/mod/waystones): Press , (comma) on your Warp Ride Pokemon and travel to your activated waystones in style.
-
-# Credits
-
-- [MixinSquared](https://github.com/Bawnorton/MixinSquared) by Bawnorton, included in the Fabric version under the MIT License.

@@ -23,9 +23,6 @@ import dev.hyperspacewormholes.wormholes.network.BurnsSkyPayload;
 import dev.hyperspacewormholes.wormholes.network.BurnsSkyStopPayload;
 import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
@@ -38,6 +35,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
 
     public static void register() {
         ActionEffectKeyframe.Companion.getTypes().put(TYPE, LightThatBurnsTheSky.class);
-        ServerTickEvents.END_SERVER_TICK.register(server -> tick());
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick());
         CobblemonEvents.ZPOWER_USED.subscribe(Priority.LOWEST, event -> {
             PokemonEntity entity = event.getPokemon().getEffectedPokemon().getEntity();
             if (entity == null) return Unit.INSTANCE;
@@ -140,7 +141,7 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
             }
             return Unit.INSTANCE;
         });
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> {
             for (Run run : RUNS) {
                 done(run);
                 run.future.complete(Unit.INSTANCE);
@@ -425,7 +426,7 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
 
     private static void send(Run run, CustomPacketPayload payload) {
         for (ServerPlayer player : run.viewers) {
-            if (!player.hasDisconnected() && player.level() == run.level) ServerPlayNetworking.send(player, payload);
+            if (!player.hasDisconnected() && player.level() == run.level) PacketDistributor.sendToPlayer(player, payload);
         }
     }
 }

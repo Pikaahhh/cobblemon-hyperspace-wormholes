@@ -1,9 +1,6 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +20,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** The Ultra Deep Sea: no drowning, walking on the sea floor with lighter gravity, nothing hostile, and dead coral. */
 public final class UltraDeepSea {
@@ -33,12 +33,12 @@ public final class UltraDeepSea {
     private UltraDeepSea() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(UltraDeepSea::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity instanceof Enemy && !entity.hasCustomName() && isDeepSea(level)) entity.discard();
         });
-        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
-            if (isDeepSea(level)) killCoral(chunk);
+        NeoForge.EVENT_BUS.addListener((ChunkEvent.Load event) -> {
+            if (event.getLevel() instanceof ServerLevel level && isDeepSea(level) && event.getChunk() instanceof LevelChunk chunk) killCoral(chunk);
         });
     }
 

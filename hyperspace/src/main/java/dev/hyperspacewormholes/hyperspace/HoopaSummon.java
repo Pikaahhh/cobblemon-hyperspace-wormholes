@@ -2,12 +2,10 @@ package dev.hyperspacewormholes.hyperspace;
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.math.Transformation;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.hyperspace.mixin.DisplayAccessor;
 import dev.hyperspacewormholes.hyperspace.mixin.ItemDisplayAccessor;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -28,6 +26,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
@@ -240,10 +241,10 @@ public class HoopaSummon {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Clip.TYPE, Clip.CODEC);
-        PayloadTypeRegistry.playS2C().register(Track.TYPE, Track.CODEC);
-        ServerTickEvents.END_SERVER_TICK.register(HoopaSummon::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        Packets.toClient(Clip.TYPE, Clip.CODEC);
+        Packets.toClient(Track.TYPE, Track.CODEC);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity.getTags().contains(TAG) && !ours.contains(entity.getUUID())) entity.discard();
         });
     }
@@ -350,7 +351,7 @@ public class HoopaSummon {
         int close = age - run.closeAt;
         if (close == 0) {
             if (run.flier) clip(run, false);
-            item(run.portal, ModItems.HOOPA_PORTAL_CLOSED);
+            item(run.portal, ModItems.HOOPA_PORTAL_CLOSED.get());
             resize(run.portal, run.scale, run.hoop, SHRINK, false, run.above ? FLAT : UPRIGHT);
             level.playSound(null, run.centre.x, run.centre.y, run.centre.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.NEUTRAL, 0.6f, 1.6f);
         }
@@ -406,7 +407,7 @@ public class HoopaSummon {
         Display.ItemDisplay ring = EntityType.ITEM_DISPLAY.create(level);
         if (ring == null) return null;
         ring.setPos(at.x, at.y, at.z);
-        ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_THROWN_RING));
+        ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_THROWN_RING.get()));
         ((DisplayAccessor) ring).hyperspace_wormholes$setBrightness(new Brightness(15, 15));
         ((DisplayAccessor) ring).hyperspace_wormholes$setTransformation(pose(turn, size));
         add(level, ring);
@@ -496,7 +497,7 @@ public class HoopaSummon {
         if (display == null) return;
         Track track = new Track(display.getId(), poses);
         for (ServerPlayer player : ((ServerLevel) display.level()).players()) {
-            if (player.distanceToSqr(display) < 160 * 160) ServerPlayNetworking.send(player, track);
+            if (player.distanceToSqr(display) < 160 * 160) PacketDistributor.sendToPlayer(player, track);
         }
     }
 
@@ -565,7 +566,7 @@ public class HoopaSummon {
         run.portal = null;
         run.backAt = run.age;
         if (run.hoopa == null) {
-            run.level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(ModItems.HOOPA_PORTAL_CLOSED)),
+            run.level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(ModItems.HOOPA_PORTAL_CLOSED.get())),
                     c.x, c.y, c.z, 30, 0.3, 0.3, 0.3, 0.12);
             run.level.sendParticles(dust(0xF3FF00, 1.2f), c.x, c.y, c.z, 12, 0.35, 0.35, 0.35, 0);
             run.level.playSound(null, c.x, c.y, c.z, SoundEvents.ITEM_BREAK, SoundSource.NEUTRAL, 0.8f, 1.2f);
@@ -622,7 +623,7 @@ public class HoopaSummon {
         if (portal == null) return;
         portal.setPos(run.centre.x, run.centre.y, run.centre.z);
         portal.setYRot(run.facing);
-        ((ItemDisplayAccessor) portal).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_PORTAL_CLOSED));
+        ((ItemDisplayAccessor) portal).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_PORTAL_CLOSED.get()));
         ((DisplayAccessor) portal).hyperspace_wormholes$setBrightness(new Brightness(15, 15));
         ((DisplayAccessor) portal).hyperspace_wormholes$setViewRange(4f);
         ((DisplayAccessor) portal).hyperspace_wormholes$setTransformation(pose(run.above ? FLAT : UPRIGHT, run.hoop));
@@ -636,7 +637,7 @@ public class HoopaSummon {
     }
 
     private static void fill(Run run) {
-        item(run.portal, ModItems.HOOPA_PORTAL);
+        item(run.portal, ModItems.HOOPA_PORTAL.get());
         Vec3 c = run.centre;
         double r = run.scale * INSIDE / 2;
         run.level.sendParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 24, r * 0.5, r * 0.5, r * 0.5, 0.06);
@@ -741,7 +742,7 @@ public class HoopaSummon {
     static void sendClip(ServerLevel level, net.minecraft.world.entity.Entity entity, Vec3 point, Vec3 normal, boolean on) {
         Clip clip = new Clip(entity.getId(), point.x, point.y, point.z, (float) normal.x, (float) normal.y, (float) normal.z, on);
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(point) < 160 * 160) ServerPlayNetworking.send(player, clip);
+            if (player.distanceToSqr(point) < 160 * 160) PacketDistributor.sendToPlayer(player, clip);
         }
     }
 

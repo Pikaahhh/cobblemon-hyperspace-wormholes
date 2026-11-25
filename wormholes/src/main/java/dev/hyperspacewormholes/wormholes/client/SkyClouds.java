@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.ride.UltraZones;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
@@ -20,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -83,16 +83,16 @@ public final class SkyClouds {
 
     private SkyClouds() {}
 
-    public static void render(WorldRenderContext context) {
+    public static void render(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         Deck deck = deckFor(mc.level);
         if (deck == null) return;
-        Vec3 cam = context.camera().getPosition();
+        Vec3 cam = event.getCamera().getPosition();
         float flash = deck.flashes && mc.level.getSkyFlashTime() > 0 ? FLASH_MIX : 0;
-        Vec3 colour = colour(deck.layerColour, mc.level, context, flash);
-        double drift = (mc.level.getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false)) * deck.drift;
-        Vec3 solidColour = deck.solidColour == null ? colour : colour(deck.solidColour, mc.level, context, flash);
+        Vec3 colour = colour(deck.layerColour, mc.level, event, flash);
+        double drift = (mc.level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false)) * deck.drift;
+        Vec3 solidColour = deck.solidColour == null ? colour : colour(deck.solidColour, mc.level, event, flash);
         Integer[] order = new Integer[deck.bases.length];
         for (int n = 0; n < order.length; n++) order[n] = n;
         Arrays.sort(order, Comparator.comparingDouble(n -> -Math.abs(deck.bases[n] + THICK / 2 - cam.y)));
@@ -128,8 +128,8 @@ public final class SkyClouds {
         return null;
     }
 
-    private static Vec3 colour(float[] fixed, ClientLevel level, WorldRenderContext context, float flash) {
-        Vec3 c = fixed == null ? level.getCloudColor(context.tickCounter().getGameTimeDeltaPartialTick(false))
+    private static Vec3 colour(float[] fixed, ClientLevel level, RenderLevelStageEvent event, float flash) {
+        Vec3 c = fixed == null ? level.getCloudColor(event.getPartialTick().getGameTimeDeltaPartialTick(false))
                 : new Vec3(fixed[0], fixed[1], fixed[2]);
         return new Vec3(Mth.lerp(flash, c.x, FLASH[0]), Mth.lerp(flash, c.y, FLASH[1]), Mth.lerp(flash, c.z, FLASH[2]));
     }

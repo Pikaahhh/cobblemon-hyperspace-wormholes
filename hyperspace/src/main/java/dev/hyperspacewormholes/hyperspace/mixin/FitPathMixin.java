@@ -15,11 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Cobblemon's pathfinder thinks every Pokemon is one block wide, so big ones walk into gaps they can't fit and get
  * stuck. For Pokemon we walk somewhere ourselves (quick-battle chases and herd followers, tagged
  * hyperspace_wormholes_fit_path), a step only counts if the whole hitbox fits, so they go around instead. Anything a
- * block wide or smaller is left alone. Uses intermediary names since that's how Cobblemon ships.
+ * block wide or smaller is left alone.
  */
 @Mixin(value = OmniPathNodeMaker.class, remap = false)
 public abstract class FitPathMixin extends NodeEvaluator {
-    @Inject(method = "findAcceptedNodeWalk(IIIIDLnet/minecraft/class_2350;Lnet/minecraft/class_7;)Lnet/minecraft/class_9;",
+    @Inject(method = "findAcceptedNodeWalk(IIIIDLnet/minecraft/core/Direction;Lnet/minecraft/world/level/pathfinder/PathType;)Lnet/minecraft/world/level/pathfinder/Node;",
             at = @At("RETURN"), cancellable = true, require = 0)
     private void hyperspace_wormholes$fits(int x, int y, int z, int step, double floor, Direction direction, PathType type, CallbackInfoReturnable<Node> cir) {
         Node node = cir.getReturnValue();

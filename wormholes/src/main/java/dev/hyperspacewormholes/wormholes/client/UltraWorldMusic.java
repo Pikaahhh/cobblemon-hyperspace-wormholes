@@ -6,12 +6,10 @@ import com.cobblemon.mod.common.client.sound.instances.BattleMusicInstance;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.client.cinematic.Cinematics;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.sound.v1.FabricSoundInstance;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.client.sounds.JOrbisAudioStream;
@@ -24,6 +22,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import javax.sound.sampled.AudioFormat;
@@ -40,7 +41,7 @@ import java.util.concurrent.CompletionException;
  * plays once first) and fades out over 2 s when you leave or a ride starts. It is held back during boss fights and
  * Necrozma's cutscenes, then fades in as the battle music fades out.
  */
-public final class UltraWorldMusic extends AbstractTickableSoundInstance implements FabricSoundInstance {
+public final class UltraWorldMusic extends AbstractTickableSoundInstance {
     private static final String INTRO = "_intro.ogg";
     private static final int RETRY_TICKS = 40;
     private static final float FADE_PER_TICK = 0.025f, ARRIVE_PER_TICK = 0.05f;
@@ -53,7 +54,6 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     private static boolean reactiveLooked;
 
     private final float rise;
-
     private boolean fading;
 
     private UltraWorldMusic(SoundEvent theme, boolean fadeIn, float rise) {
@@ -66,7 +66,7 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     }
 
     public static void register() {
-        ClientTickEvents.END_CLIENT_TICK.register(UltraWorldMusic::update);
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> update(Minecraft.getInstance()));
     }
 
     public static boolean isPlaying() {
@@ -142,7 +142,7 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     public static void holdReactiveMusic(SoundInstance sound) {
         if (!reactiveLooked) {
             reactiveLooked = true;
-            if (FabricLoader.getInstance().isModLoaded("reactivemusic")) {
+            if (ModList.get().isLoaded("reactivemusic")) {
                 try {
                     reactiveHold = Class.forName("circuitlord.reactivemusic.ReactiveMusic")
                             .getMethod("trackSoundMuteMusic", SoundInstance.class, boolean.class);
@@ -176,7 +176,8 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     }
 
     @Override
-    public CompletableFuture<AudioStream> getAudioStream(SoundBufferLibrary loader, ResourceLocation id, boolean repeatInstantly) {
+    public CompletableFuture<AudioStream> getStream(SoundBufferLibrary loader, Sound sound, boolean repeatInstantly) {
+        ResourceLocation id = sound.getPath();
         ResourceLocation intro = id.withPath(path -> path.replace(".ogg", INTRO));
         ResourceManager resources = Minecraft.getInstance().getResourceManager();
         if (resources.getResource(intro).isEmpty()) return loader.getStream(id, repeatInstantly);

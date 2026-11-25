@@ -3,10 +3,7 @@ package dev.hyperspacewormholes.hyperspace;
 import com.cobblemon.mod.common.client.CobblemonClient;
 import com.cobblemon.mod.common.client.gui.battle.BattleGUI;
 import com.cobblemon.mod.common.pokemon.Pokemon;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -14,6 +11,10 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.List;
 import java.util.Objects;
@@ -60,19 +61,20 @@ public class TasksHud {
     private static long ticks, lastHidden = -1000;
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(Tasks.Sync.TYPE, (payload, context) -> {
+        Packets.onClient(Tasks.Sync.TYPE, payload -> {
             tasks = payload.tasks();
             missions = payload.missions();
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             tasks = List.of();
             missions = List.of();
         });
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+            Minecraft mc = Minecraft.getInstance();
             ticks++;
-            if (client.player != null && hiddenNow(client)) lastHidden = ticks;
+            if (mc.player != null && hiddenNow(mc)) lastHidden = ticks;
         });
-        HudRenderCallback.EVENT.register(TasksHud::render);
+        NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post event) -> render(event.getGuiGraphics(), event.getPartialTick()));
     }
 
     private static boolean hiddenNow(Minecraft mc) {

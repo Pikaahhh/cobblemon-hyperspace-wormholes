@@ -4,9 +4,6 @@ import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.battles.BattleRegistry;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -16,12 +13,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,35 +45,51 @@ public class Feeding {
 
     public static void register() {
         HoopaFeed.register();
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> feeders = load(server.getResourceManager()));
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> feeders = load(server.getResourceManager()));
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            ItemStack stack = player.getItemInHand(hand);
-            if (!(stack.getItem() instanceof DonutItem) || !isHoopa(entity)) return InteractionResult.PASS;
-            if (world.isClientSide()) return InteractionResult.SUCCESS;
-            if (clickedTwice(player) || !(player instanceof ServerPlayer serverPlayer)) return InteractionResult.SUCCESS;
-            feedAt(serverPlayer, stack, (PokemonEntity) entity, null);
-            return InteractionResult.SUCCESS;
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> feeders = load(event.getServer().getResourceManager()));
+        NeoForge.EVENT_BUS.addListener((OnDatapackSyncEvent event) -> {
+            if (event.getPlayer() == null) feeders = load(event.getPlayerList().getServer().getResourceManager());
         });
-        UseItemCallback.EVENT.register((player, world, hand) -> {
-            ItemStack stack = player.getItemInHand(hand);
-            if (world.isClientSide() || !(stack.getItem() instanceof DonutItem) || !(player instanceof ServerPlayer serverPlayer)) {
-                return InteractionResultHolder.pass(stack);
-            }
-            if (clickedTwice(player)) return InteractionResultHolder.success(stack);
-            if (Distortions.near(serverPlayer) == null) {
-                Distortions.noneNearby(serverPlayer);
-                return InteractionResultHolder.success(stack);
-            }
-            PokemonEntity hoopa = hoopaOut(serverPlayer);
-            Pokemon party = hoopa == null ? partyHoopa(serverPlayer) : null;
-            if (hoopa == null && party == null) {
-                serverPlayer.displayClientMessage(Component.translatable("distortion.hyperspace_wormholes.no_hoopa").withStyle(ChatFormatting.RED), true);
-                return InteractionResultHolder.fail(stack);
-            }
-            feedAt(serverPlayer, stack, hoopa, party);
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract event) -> {
+            InteractionResult result = useOn(event.getEntity(), event.getLevel(), event.getHand(), event.getTarget());
+            if (result == InteractionResult.PASS) return;
+            event.setCancellationResult(result);
+            event.setCanceled(true);
+        });
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickItem event) -> {
+            InteractionResultHolder<ItemStack> result = use(event.getEntity(), event.getLevel(), event.getHand());
+            if (result.getResult() == InteractionResult.PASS) return;
+            event.setCancellationResult(result.getResult());
+            event.setCanceled(true);
+        });
+    }
+
+    private static InteractionResult useOn(Player player, Level world, InteractionHand hand, Entity entity) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof DonutItem) || !isHoopa(entity)) return InteractionResult.PASS;
+        if (world.isClientSide()) return InteractionResult.SUCCESS;
+        if (clickedTwice(player) || !(player instanceof ServerPlayer serverPlayer)) return InteractionResult.SUCCESS;
+        feedAt(serverPlayer, stack, (PokemonEntity) entity, null);
+        return InteractionResult.SUCCESS;
+    }
+
+    private static InteractionResultHolder<ItemStack> use(Player player, Level world, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (world.isClientSide() || !(stack.getItem() instanceof DonutItem) || !(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResultHolder.pass(stack);
+        }
+        if (clickedTwice(player)) return InteractionResultHolder.success(stack);
+        if (Distortions.near(serverPlayer) == null) {
+            Distortions.noneNearby(serverPlayer);
             return InteractionResultHolder.success(stack);
-        });
+        }
+        PokemonEntity hoopa = hoopaOut(serverPlayer);
+        Pokemon party = hoopa == null ? partyHoopa(serverPlayer) : null;
+        if (hoopa == null && party == null) {
+            serverPlayer.displayClientMessage(Component.translatable("distortion.hyperspace_wormholes.no_hoopa").withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
+        feedAt(serverPlayer, stack, hoopa, party);
+        return InteractionResultHolder.success(stack);
     }
 
     private static boolean clickedTwice(Player player) {

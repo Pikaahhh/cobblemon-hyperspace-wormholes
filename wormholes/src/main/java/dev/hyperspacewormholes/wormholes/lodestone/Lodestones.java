@@ -2,12 +2,9 @@ package dev.hyperspacewormholes.wormholes.lodestone;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.compat.WaystoneLinks;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -15,30 +12,48 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.FunctionReference;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Named lodestones as places waystone wormholes lead to. The name is the item's, given in an anvil
  * (LodestoneBlockEntity); dropped lodestones keep it through their loot table, whichever pack it comes from.
  */
 public final class Lodestones {
-    public static final BlockEntityType<LodestoneBlockEntity> BLOCK_ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
-            Wormholes.id("lodestone"), BlockEntityType.Builder.of(LodestoneBlockEntity::new, Blocks.LODESTONE).build(null));
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Wormholes.MOD_ID);
+    public static final Supplier<BlockEntityType<LodestoneBlockEntity>> BLOCK_ENTITY = BLOCK_ENTITIES.register("lodestone",
+            () -> BlockEntityType.Builder.of(LodestoneBlockEntity::new, Blocks.LODESTONE).build(null));
     private static final ResourceKey<LootItemFunction> KEEP_NAME =
             ResourceKey.create(Registries.ITEM_MODIFIER, Wormholes.id("keep_lodestone_name"));
 
     private Lodestones() {}
 
-    public static void register() {
-        LootTableEvents.MODIFY.register((key, table, source, registries) -> {
-            if (key == Blocks.LODESTONE.getLootTable()) table.apply(FunctionReference.functionReference(KEEP_NAME));
-        });
+    public static void register(IEventBus modBus) {
+        BLOCK_ENTITIES.register(modBus);
+        NeoForge.EVENT_BUS.addListener(Lodestones::keepName);
+    }
+
+    private static void keepName(LootTableLoadEvent event) {
+        if (event.getKey() != Blocks.LODESTONE.getLootTable()) return;
+        LootTable table = event.getTable();
+        List<LootItemFunction> functions = new ArrayList<>(table.functions);
+        functions.add(FunctionReference.functionReference(KEEP_NAME).build());
+        LootTable named = new LootTable(table.getParamSet(), table.randomSequence, table.pools, functions);
+        named.setLootTableId(event.getName());
+        event.setTable(named);
     }
 
     /** Every player can travel to every named lodestone. */

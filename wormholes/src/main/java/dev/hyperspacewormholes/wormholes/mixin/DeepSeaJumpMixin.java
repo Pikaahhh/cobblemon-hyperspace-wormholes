@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRules;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -20,6 +22,11 @@ public abstract class DeepSeaJumpMixin {
     @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInWater()Z"))
     private boolean hyperspace_wormholes$jumpFromGround(boolean inWater) {
         return inWater && !hyperspace_wormholes$onSeaFloor();
+    }
+
+    @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getMaxHeightFluidType()Lnet/neoforged/neoforge/fluids/FluidType;"))
+    private FluidType hyperspace_wormholes$noSwimUp(FluidType fluid) {
+        return hyperspace_wormholes$onSeaFloor() ? NeoForgeMod.EMPTY_TYPE.value() : fluid;
     }
 
     private boolean hyperspace_wormholes$onSeaFloor() {

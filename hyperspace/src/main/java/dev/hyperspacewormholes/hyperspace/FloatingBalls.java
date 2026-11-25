@@ -1,9 +1,7 @@
 package dev.hyperspacewormholes.hyperspace;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -13,6 +11,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,13 +23,12 @@ import java.util.UUID;
 
 /** Registers the floating ball entities and scatters them around an island when a trip starts, spread out and on open ground. Also places and clears the golden ball, and counts who pops what for the popping advancements: QuickBattles passes the popper through Tasks just before the ball pops, and once every ball scattered on an island is popped, whoever popped them, everyone on that island gets Professional Popper (islands are wiped on restart, so the counts only live in memory). */
 public class FloatingBalls {
-    public static final EntityType<FloatingBall> TYPE = Registry.register(BuiltInRegistries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "floating_poke_ball"),
-            EntityType.Builder.<FloatingBall>of(FloatingBall::new, MobCategory.MISC)
+    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, Hyperspace.MOD_ID);
+    public static final DeferredHolder<EntityType<?>, EntityType<FloatingBall>> TYPE = ENTITIES.register("floating_poke_ball",
+            () -> EntityType.Builder.<FloatingBall>of(FloatingBall::new, MobCategory.MISC)
                     .sized(FloatingBall.SIZE, FloatingBall.SIZE).fireImmune().clientTrackingRange(8).build("floating_poke_ball"));
-    public static final EntityType<FloatingBall> GOLDEN = Registry.register(BuiltInRegistries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath(Hyperspace.MOD_ID, "golden_floating_poke_ball"),
-            EntityType.Builder.<FloatingBall>of(FloatingBall::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<FloatingBall>> GOLDEN = ENTITIES.register("golden_floating_poke_ball",
+            () -> EntityType.Builder.<FloatingBall>of(FloatingBall::new, MobCategory.MISC)
                     .sized(FloatingBall.SIZE * FloatingBall.GOLDEN_SCALE, FloatingBall.SIZE * FloatingBall.GOLDEN_SCALE).fireImmune().clientTrackingRange(8)
                     .build("golden_floating_poke_ball"));
 
@@ -44,7 +44,8 @@ public class FloatingBalls {
     private static final Map<Integer, Integer> POPS = new HashMap<>();
     private static ServerPlayer popper;
 
-    public static void register() {
+    public static void register(IEventBus modBus) {
+        ENTITIES.register(modBus);
     }
 
     public static void scatter(ServerLevel level, BlockPos centre, int slot, Zones.Zone zone) {
@@ -54,7 +55,7 @@ public class FloatingBalls {
             for (int i = 0; i < TRIES && placed.size() < PER_ZONE; i++) {
                 Vec3 pos = spot(level, centre, slot, zone, strict);
                 if (pos == null || placed.stream().anyMatch(p -> p.distanceToSqr(pos) < APART * APART)) continue;
-                if (spawn(level, TYPE.create(level), pos)) spawned++;
+                if (spawn(level, TYPE.get().create(level), pos)) spawned++;
                 placed.add(pos);
             }
         }
@@ -102,7 +103,7 @@ public class FloatingBalls {
             for (int i = 0; i < TRIES; i++) {
                 Vec3 pos = spot(level, Zones.centre(island - Zones.BASE), island - Zones.BASE, Zones.get(island), strict);
                 if (pos == null) continue;
-                FloatingBall ball = GOLDEN.create(level);
+                FloatingBall ball = GOLDEN.get().create(level);
                 ball.setOwner(owner);
                 return spawn(level, ball, pos);
             }

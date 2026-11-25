@@ -12,10 +12,10 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.activestate.SentOutState;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.network.BossHudPayload;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -212,7 +212,7 @@ public final class LegendWave {
         for (int i = 0; i < legends.size(); i++) {
             BossHudPayload now = hud(i, true);
             if (i < last.size() && now.equals(last.get(i))) continue;
-            ServerPlayNetworking.send(player, now);
+            PacketDistributor.sendToPlayer(player, now);
             if (i < last.size()) last.set(i, now);
             else last.add(now);
         }
@@ -220,7 +220,7 @@ public final class LegendWave {
 
     private void hideHud(ServerPlayer player) {
         if (huds.remove(player.getUUID()) == null) return;
-        for (int i = 0; i < legends.size(); i++) ServerPlayNetworking.send(player, hud(i, false));
+        for (int i = 0; i < legends.size(); i++) PacketDistributor.sendToPlayer(player, hud(i, false));
     }
 
     private static void forget(Pokemon copy) {

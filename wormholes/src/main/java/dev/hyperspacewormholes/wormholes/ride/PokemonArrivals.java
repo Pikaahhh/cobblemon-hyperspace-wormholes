@@ -118,7 +118,7 @@ public final class PokemonArrivals {
         if (!portalClear(e.level, mouth)) clearPortal(e.level, mouth);
         e.from = e.landing.add(0, drop, 0);
 
-        WormholeEntity portal = Wormholes.WORMHOLE.create(e.level);
+        WormholeEntity portal = Wormholes.WORMHOLE.get().create(e.level);
         portal.setDecorative(true);
         portal.setWormholeType(e.type);
         portal.setRainbow(e.rainbow);

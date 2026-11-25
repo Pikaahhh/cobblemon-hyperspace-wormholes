@@ -12,15 +12,17 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.hyperspacewormholes.wormholes.Wormholes;
+import org.joml.Matrix4fStack;
+import org.lwjgl.opengl.GL11;
 import dev.hyperspacewormholes.wormholes.client.RideCamera;
 import dev.hyperspacewormholes.wormholes.client.RideClient;
 import dev.hyperspacewormholes.wormholes.client.RideOpening;
-import dev.hyperspacewormholes.wormholes.client.ShaderPacks;
 import dev.hyperspacewormholes.wormholes.client.WarpEntryCamera;
 import dev.hyperspacewormholes.wormholes.client.WarpEntryClose;
+import dev.hyperspacewormholes.wormholes.client.ShaderPacks;
 import dev.hyperspacewormholes.wormholes.ride.TunnelLayout;
 import dev.hyperspacewormholes.wormholes.ride.WarpTunnel;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
@@ -35,11 +37,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
@@ -51,6 +52,13 @@ public final class TunnelRenderer {
     private static final float Z_NEAR = -50f;
     private static final float MAX_LENGTH = 440f;
     private static float heldBack;
+
+    private static final float[][][] CLOUD_COLORS = {
+            {{0.08f, 0.12f, 0.40f}, {0.22f, 0.14f, 0.55f}, {0.50f, 0.16f, 0.50f}, {0.10f, 0.32f, 0.50f}},
+            {{0.10f, 0.10f, 0.38f}, {0.30f, 0.12f, 0.50f}, {0.60f, 0.20f, 0.40f}, {0.55f, 0.35f, 0.20f}},
+            {{0.08f, 0.10f, 0.42f}, {0.26f, 0.12f, 0.58f}, {0.55f, 0.14f, 0.55f}, {0.12f, 0.30f, 0.55f}},
+            {{0.10f, 0.08f, 0.36f}, {0.45f, 0.38f, 0.12f}, {0.55f, 0.50f, 0.60f}, {0.20f, 0.30f, 0.60f}},
+    };
     private static final float[][][] TRAIL_COLORS = {
             {{1f, 1f, 1f}, {0.5f, 0.9f, 1f}, {0.3f, 0.4f, 1f}},
             {{1f, 0.9f, 0.4f}, {1f, 0.55f, 0.25f}, {1f, 0.35f, 0.5f}},
@@ -137,9 +145,9 @@ public final class TunnelRenderer {
         return t * t * (3 - 2 * t);
     }
 
-    public static void renderSky(WorldRenderContext context) {
+    public static void renderSky(Matrix4f modelView, Camera camera, float pt) {
         if (Minecraft.getInstance().player == null || ShaderPacks.inUse()) return;
-        drawSky(context);
+        drawSky(modelView, camera, pt);
     }
 
     /**
@@ -148,7 +156,7 @@ public final class TunnelRenderer {
      * by day. Drawn at the very back (depth range 1) so the ride and everything else stay in front, then the tunnel on
      * top, as without a pack (renderWorld skips itself then).
      */
-    public static void renderAfterWater(WorldRenderContext context) {
+    public static void renderAfterWater(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (!ShaderPacks.inUse() || mc.player == null || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
@@ -157,22 +165,21 @@ public final class TunnelRenderer {
         RenderSystem.applyModelViewMatrix();
         GL11.glDepthRange(1, 1);
         try {
-            drawSky(context);
+            drawSky(event.getModelViewMatrix(), event.getCamera(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
         } finally {
             GL11.glDepthRange(0, 1);
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             modelView.popMatrix();
             RenderSystem.applyModelViewMatrix();
         }
-        drawWorld(context);
+        drawWorld(event);
     }
 
-    private static void drawSky(WorldRenderContext context) {
+    private static void drawSky(Matrix4f modelView, Camera camera, float pt) {
         boolean late = ShaderPacks.inUse();
         WarpTextures.ensureReady();
         UltraTunnelTextures.ensureReady();
 
-        float pt = context.tickCounter().getGameTimeDeltaPartialTick(false);
         heldBack = WarpEntryCamera.heldBack(pt);
         float time = RideClient.time(pt);
         RenderSystem.disableCull();
@@ -186,17 +193,18 @@ public final class TunnelRenderer {
         RenderSystem.enableBlend();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
-        Vec3 cam = context.camera().getPosition();
+
+        Vec3 cam = camera.getPosition();
         Vec3 center = rideCenter(pt);
         float shrink = Math.min(1f, Minecraft.getInstance().gameRenderer.getDepthFar() * 0.8f / (MAX_LENGTH + (float) center.distanceTo(cam)));
-        Matrix4f atRide = new Matrix4f(context.positionMatrix()).scale(shrink).translate((float) (center.x - cam.x), (float) (center.y - cam.y),
+        Matrix4f atRide = new Matrix4f(modelView).scale(shrink).translate((float) (center.x - cam.x), (float) (center.y - cam.y),
                 (float) (center.z - cam.z));
         boolean opening = RideOpening.playing(pt);
         if (!opening || RideOpening.frame(pt) >= RideOpening.HOLE_OPENS) {
             UltraTunnel.draw(TUNNEL, atRide, time, pt, MAX_LENGTH, heldBack);
         }
         if (opening) {
-            RideOpeningRenderer.render(OPENING, context.positionMatrix(), (float) (cam.x - center.x), (float) (cam.y - center.y),
+            RideOpeningRenderer.render(OPENING, modelView, (float) (cam.x - center.x), (float) (cam.y - center.y),
                     (float) (cam.z - center.z), RideCamera.unit(body()),
                     Minecraft.getInstance().gameRenderer.getDepthFar(), RideOpening.frame(pt),
                     UltraTunnel.CLOUDS);
@@ -209,25 +217,25 @@ public final class TunnelRenderer {
         RenderSystem.enableCull();
     }
 
-    public static void renderWorld(WorldRenderContext context) {
-        if (!ShaderPacks.inUse()) drawWorld(context);
+    public static void renderWorld(RenderLevelStageEvent event) {
+        if (!ShaderPacks.inUse()) drawWorld(event);
     }
 
-    private static void drawWorld(WorldRenderContext context) {
+    private static void drawWorld(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (!RideClient.isActive() || mc.player == null || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;
         WarpTextures.ensureReady();
         WarpCloseTextures.ensureReady();
 
-        float pt = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         heldBack = WarpEntryCamera.heldBack(pt);
         float time = RideClient.time(pt);
         double progress = RideClient.progress(pt);
         float offX = RideClient.offX(pt);
         float offY = RideClient.offY(pt);
         float length = length();
-        Quaternionf cameraRotation = context.camera().rotation();
-        Vec3 cam = context.camera().getPosition();
+        Quaternionf cameraRotation = event.getCamera().rotation();
+        Vec3 cam = event.getCamera().getPosition();
         Vec3 center = rideCenter(pt);
         PoseStack poseStack = new PoseStack();
         poseStack.translate(center.x - cam.x, center.y - cam.y, center.z - cam.z);
@@ -241,7 +249,7 @@ public final class TunnelRenderer {
         float arrival = RideClient.arrival(pt);
         if (arrival <= 0f) return;
         renderWormholes(buffers, poseStack, cameraRotation, time, progress, offX, offY, length, pt, arrival,
-                context.projectionMatrix().m11());
+                event.getProjectionMatrix().m11());
         renderGoldRings(buffers, poseStack, time, progress, offX, offY, length, pt, arrival);
         renderTrail(buffers, poseStack.last().pose(), toCamera, progress, offX, offY, arrival * WarpEntryClose.trail(pt));
 

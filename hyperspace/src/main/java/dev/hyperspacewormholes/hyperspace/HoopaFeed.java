@@ -4,15 +4,12 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.util.PlayerExtensionsKt;
 import com.mojang.math.Transformation;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.hyperspace.mixin.DisplayAccessor;
 import dev.hyperspacewormholes.hyperspace.mixin.ItemDisplayAccessor;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import io.netty.buffer.ByteBuf;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,13 +17,16 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -35,6 +35,9 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
@@ -103,9 +106,9 @@ public class HoopaFeed {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(Play.TYPE, Play.CODEC);
-        ServerTickEvents.END_SERVER_TICK.register(HoopaFeed::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        Packets.toClient(Play.TYPE, Play.CODEC);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity.getTags().contains(TAG) && !ours.contains(entity.getUUID())) entity.discard();
         });
     }
@@ -290,7 +293,7 @@ public class HoopaFeed {
         Display.ItemDisplay ring = EntityType.ITEM_DISPLAY.create(level);
         if (ring != null) {
             ring.setPos(run.ringFrom.x, run.ringFrom.y, run.ringFrom.z);
-            ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_THROWN_RING));
+            ((ItemDisplayAccessor) ring).hyperspace_wormholes$setItem(new ItemStack(ModItems.HOOPA_THROWN_RING.get()));
             ((DisplayAccessor) ring).hyperspace_wormholes$setBrightness(new Brightness(15, 15));
             ((DisplayAccessor) ring).hyperspace_wormholes$setTransformation(ringPose(Vec3.ZERO, run.yaw, RING_TURN, run.ringSize));
             ring.addTag(TAG);
@@ -396,12 +399,23 @@ public class HoopaFeed {
     }
 
     static void send(PokemonEntity hoopa, String motion, float yaw) {
-        Set<ServerPlayer> to = new HashSet<>(PlayerLookup.tracking(hoopa));
+        Set<ServerPlayer> to = new HashSet<>(tracking(hoopa));
         if (hoopa.level() instanceof ServerLevel level) {
             for (ServerPlayer player : level.players()) if (player.distanceToSqr(hoopa) < 64 * 64) to.add(player);
         }
         Play play = new Play(hoopa.getId(), motion, yaw);
-        for (ServerPlayer player : to) ServerPlayNetworking.send(player, play);
+        for (ServerPlayer player : to) PacketDistributor.sendToPlayer(player, play);
+    }
+
+    /** Who the server is showing this entity to. */
+    private static Set<ServerPlayer> tracking(Entity entity) {
+        Set<ServerPlayer> players = new HashSet<>();
+        if (!(entity.level() instanceof ServerLevel level)) return players;
+        ChunkMap.TrackedEntity tracked = level.getChunkSource().chunkMap.entityMap.get(entity.getId());
+        if (tracked != null) {
+            for (ServerPlayerConnection connection : tracked.seenBy) players.add(connection.getPlayer());
+        }
+        return players;
     }
 
     private static boolean nearBite(int age) {

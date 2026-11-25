@@ -30,7 +30,7 @@ public class LodestoneBlockEntity extends BlockEntity implements Nameable {
     public double labelAt;
 
     public LodestoneBlockEntity(BlockPos pos, BlockState state) {
-        super(Lodestones.BLOCK_ENTITY, pos, state);
+        super(Lodestones.BLOCK_ENTITY.get(), pos, state);
     }
 
     @Override

@@ -21,8 +21,7 @@ import java.util.Map;
  * Right after Cobblemon updates a model's locators, adds the body locators that follow the animated bones and the model
  * motion (client.BodyLocators: movefx_chest, movefx_centre, movefx_head, movefx_rim) to the state's locators for a
  * Pokemon in a battle. Each keeps its MatrixWrapper from frame to frame, as a running particle effect holds on to it.
- * The bare method name keeps Minecraft types out of the selector, which differ between dev and the intermediary jar;
- * the mixin is optional (require 0), and without it effects fall back to the next locator they list.
+ * The mixin is optional (require 0), and without it effects fall back to the next locator they list.
  */
 @Mixin(value = PosableModel.class, remap = false)
 public abstract class BodyLocatorMixin {

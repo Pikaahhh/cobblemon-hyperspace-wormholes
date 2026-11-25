@@ -1,9 +1,10 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.lang.reflect.Method;
 
@@ -15,7 +16,7 @@ public class IrisOff {
     private static boolean turnedOff;
 
     public static void register() {
-        if (!FabricLoader.getInstance().isModLoaded("iris")) return;
+        if (!ModList.get().isLoaded("iris")) return;
         try {
             Class<?> api = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
             Object instance = api.getMethod("getInstance").invoke(null);
@@ -27,8 +28,8 @@ public class IrisOff {
             Hyperspace.LOGGER.warn("Couldn't hook into Iris, shaders stay on in Hyperspace", e);
             return;
         }
-        ClientTickEvents.END_CLIENT_TICK.register(IrisOff::tick);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> restore());
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> restore());
     }
 
     private static void restore() {

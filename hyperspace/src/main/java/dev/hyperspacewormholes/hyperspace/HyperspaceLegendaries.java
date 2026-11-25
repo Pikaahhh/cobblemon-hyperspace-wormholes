@@ -12,7 +12,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,7 +51,7 @@ public class HyperspaceLegendaries {
     }
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(HyperspaceLegendaries::tick);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
 
         CobblemonEvents.BATTLE_STARTED_PRE.subscribe(Priority.NORMAL, event -> {
             for (BattleActor actor : event.getBattle().getActors()) {

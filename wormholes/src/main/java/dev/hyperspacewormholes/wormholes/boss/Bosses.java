@@ -9,15 +9,9 @@ import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.entity.pokeball.EmptyPokeBallEntity;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -29,6 +23,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,29 +63,29 @@ public final class Bosses {
     public static void register() {
         BossConfig.load();
         BossDefs.register();
-        PayloadTypeRegistry.playS2C().register(BossLinkPayload.TYPE, BossLinkPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(BossWaitPayload.TYPE, BossWaitPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(BossSlotsPayload.TYPE, BossSlotsPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(BossBanPayload.TYPE, BossBanPayload.CODEC);
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        Packets.toClient(BossLinkPayload.TYPE, BossLinkPayload.CODEC);
+        Packets.toClient(BossWaitPayload.TYPE, BossWaitPayload.CODEC);
+        Packets.toClient(BossSlotsPayload.TYPE, BossSlotsPayload.CODEC);
+        Packets.toClient(BossBanPayload.TYPE, BossBanPayload.CODEC);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
             for (Map.Entry<UUID, Entity> link : LINKS.entrySet()) {
-                send(handler.getPlayer(), new BossLinkPayload(link.getKey(), link.getValue().getId()));
+                send((ServerPlayer) event.getEntity(), new BossLinkPayload(link.getKey(), link.getValue().getId()));
             }
         });
-        ServerTickEvents.END_SERVER_TICK.register(server -> tick());
-        ServerEntityEvents.ENTITY_LOAD.register(Bosses::onLoad);
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick());
+        Wormholes.onEntityLoad(Bosses::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> {
             for (Boss boss : new ArrayList<>(BOSSES.values())) boss.close();
             BOSSES.clear();
             BALLS.clear();
             BATTLES.clear();
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             LINKS.clear();
             POKEMON.clear();
             tracked = 0;
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> BossCommand.register(dispatcher));
+        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> BossCommand.register(event.getDispatcher()));
         CobblemonEvents.POKE_BALL_CAPTURE_CALCULATED.subscribe(Priority.LOWEST, event -> {
             Boss boss = of(event.getPokemonEntity());
             if (boss == null) return Unit.INSTANCE;
@@ -182,7 +183,7 @@ public final class Bosses {
     }
 
     private static void send(ServerPlayer player, BossLinkPayload payload) {
-        if (ServerPlayNetworking.canSend(player, BossLinkPayload.TYPE)) ServerPlayNetworking.send(player, payload);
+        if (player.connection.hasChannel(BossLinkPayload.TYPE)) PacketDistributor.sendToPlayer(player, payload);
     }
 
     public static @Nullable Integer maxHealth(Pokemon pokemon) {

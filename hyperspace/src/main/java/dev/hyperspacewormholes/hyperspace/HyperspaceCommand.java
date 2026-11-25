@@ -12,7 +12,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.boss.BossDefs;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -45,8 +46,8 @@ public class HyperspaceCommand {
     private static final int CLEAR_RADIUS = 128, LOCATE_RANGE = 500;
 
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registries, env) -> {
-            dispatcher.register(Commands.literal("hyperspace")
+        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> {
+            event.getDispatcher().register(Commands.literal("hyperspace")
                     .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                     .then(Commands.literal("createDistortion")
                             .executes(ctx -> createDistortion(ctx.getSource(), ""))
@@ -186,14 +187,14 @@ public class HyperspaceCommand {
         if (amount < 0) return fail(source, "Cannot set pity to a negative number.");
         int most = GameplayConfig.get().hoopaPity;
         if (amount > most) return fail(source, "Cannot set pity above " + most + ".");
-        player.setAttached(Wormholes.SPLICES_WITHOUT_HOOPA, amount);
+        player.setData(Wormholes.SPLICES_WITHOUT_HOOPA, amount);
         source.sendSuccess(() -> Component.literal("Set your pity to " + amount + "."), false);
         return amount;
     }
     private static int showPity(CommandSourceStack source) {
         ServerPlayer player = source.getPlayer();
         if (player == null) return fail(source, PLAYERS_ONLY);
-        int pity = player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0);
+        int pity = player.getExistingData(Wormholes.SPLICES_WITHOUT_HOOPA).orElse(0);
         source.sendSuccess(() -> Component.literal("Your pity is " + pity + "."), false);
         return pity;
     }
@@ -201,7 +202,7 @@ public class HyperspaceCommand {
         ServerPlayer self = source.getPlayer();
         if (targets == null && self == null) return fail(source, PLAYERS_ONLY);
         Collection<ServerPlayer> players = targets == null ? List.of(self) : targets;
-        for (ServerPlayer player : players) player.setAttached(Wormholes.HOOPA_BEATEN, cleared);
+        for (ServerPlayer player : players) player.setData(Wormholes.HOOPA_BEATEN, cleared);
         String who = players.size() == 1 ? players.iterator().next().getScoreboardName() : players.size() + " players";
         source.sendSuccess(() -> Component.literal("Set boss cleared to " + cleared + " for " + who + "."), true);
         return players.size();
@@ -210,8 +211,8 @@ public class HyperspaceCommand {
     private static int clearPity(CommandSourceStack source) {
         ServerPlayer player = source.getPlayer();
         if (player == null) return fail(source, PLAYERS_ONLY);
-        if (player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0) == 0) return fail(source, "You have no pity to clear.");
-        player.setAttached(Wormholes.SPLICES_WITHOUT_HOOPA, 0);
+        if (player.getExistingData(Wormholes.SPLICES_WITHOUT_HOOPA).orElse(0) == 0) return fail(source, "You have no pity to clear.");
+        player.setData(Wormholes.SPLICES_WITHOUT_HOOPA, 0);
         source.sendSuccess(() -> Component.literal("Cleared your pity."), false);
         return 1;
     }

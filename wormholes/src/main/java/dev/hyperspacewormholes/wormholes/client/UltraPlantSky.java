@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
@@ -26,10 +26,9 @@ public final class UltraPlantSky {
 
     private UltraPlantSky() {}
 
-    public static void render(WorldRenderContext context) {
+    public static void render(ClientLevel level, Matrix4f pose) {
         float[] fog = RenderSystem.getShaderFogColor();
-        float flash = context.world().getSkyFlashTime() > 0 ? FLASH_MIX : 0;
-        Matrix4f pose = context.positionMatrix();
+        float flash = level.getSkyFlashTime() > 0 ? FLASH_MIX : 0;
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();

@@ -10,6 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 /** The ride HUD: distance (light-years in the game's colours, km otherwise), stamina bar, hint and vignette. */
 public final class RideHud {

@@ -10,9 +10,6 @@ import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.CellFeature;
 import dev.hyperspacewormholes.wormholes.world.UltraPlantFeature;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,6 +23,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -113,10 +114,12 @@ public final class PlantXurkitrees {
             if (!catchable(event.getPokemon())) event.cancel();
             return Unit.INSTANCE;
         });
-        ServerEntityEvents.ENTITY_LOAD.register(PlantXurkitrees::onLoad);
-        ServerTickEvents.END_SERVER_TICK.register(PlantXurkitrees::tick);
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> HELD.remove(entity));
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        Wormholes.onEntityLoad(PlantXurkitrees::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((EntityLeaveLevelEvent event) -> {
+            if (event.getEntity().isRemoved()) HELD.remove(event.getEntity());
+        });
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             SMALL.spots().clear();
             GIANT.spots().clear();
             WAITING.clear();

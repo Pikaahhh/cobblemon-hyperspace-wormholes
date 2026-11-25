@@ -21,8 +21,7 @@ import java.util.UUID;
  */
 @Mixin(BattleBuilder.class)
 public abstract class BossJoinMixin {
-    // the bare name is the full overload, first in the class, which the others end up in; a descriptor would name
-    // ServerPlayer, another class in production
+    // the bare name is the full overload, first in the class, which the others end up in
     @Inject(method = "pve", at = @At("HEAD"), cancellable = true, remap = false)
     private void hyperspace_wormholes$joinBoss(ServerPlayer player, PokemonEntity entity, UUID lead, BattleFormat format, boolean clone,
             boolean heal, float flee, PartyStore party, CallbackInfoReturnable<BattleStartResult> cir) {

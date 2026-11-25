@@ -6,9 +6,11 @@ import dev.hyperspacewormholes.wormholes.client.RideClient;
 import dev.hyperspacewormholes.wormholes.client.RiderArrivalClient;
 import dev.hyperspacewormholes.wormholes.client.RideHud;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,18 +25,37 @@ public abstract class GuiRideBarMixin {
         ci.cancel();
     }
 
-    @Inject(method = {"renderHotbarAndDecorations", "renderExperienceLevel", "renderCrosshair"}, at = @At("HEAD"),
-            cancellable = true)
+    @Inject(method = {"renderHotbar", "maybeRenderJumpMeter", "maybeRenderExperienceBar", "maybeRenderVehicleHealth",
+            "maybeRenderSelectedItemName", "maybeRenderSpectatorTooltip", "renderExperienceLevel", "renderCrosshair"},
+            at = @At("HEAD"), cancellable = true)
     private void hyperspace_wormholes$hideForRide(GuiGraphics graphics, DeltaTracker delta, CallbackInfo ci) {
         if (RideClient.isActive()) ci.cancel();
     }
 
-    @WrapMethod(method = "renderHotbarAndDecorations")
+    @Inject(method = {"renderHealthLevel", "renderArmorLevel", "renderFoodLevel", "renderAirLevel"}, at = @At("HEAD"),
+            cancellable = true)
+    private void hyperspace_wormholes$hideStatsForRide(GuiGraphics graphics, CallbackInfo ci) {
+        if (RideClient.isActive()) ci.cancel();
+    }
+
+    @WrapMethod(method = {"renderHotbar", "maybeRenderJumpMeter", "maybeRenderExperienceBar", "maybeRenderVehicleHealth",
+            "maybeRenderSelectedItemName", "maybeRenderSpectatorTooltip"})
     private void hyperspace_wormholes$slideBack(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
-        float away = RiderArrivalClient.hudAway(delta.getGameTimeDeltaPartialTick(false));
-        graphics.pose().pushPose();
-        graphics.pose().translate(0f, away * 60f, 0f);
+        slide(graphics, delta);
         original.call(graphics, delta);
         graphics.pose().popPose();
+    }
+
+    @WrapMethod(method = {"renderHealthLevel", "renderArmorLevel", "renderFoodLevel", "renderAirLevel"})
+    private void hyperspace_wormholes$slideStatsBack(GuiGraphics graphics, Operation<Void> original) {
+        slide(graphics, Minecraft.getInstance().getTimer());
+        original.call(graphics);
+        graphics.pose().popPose();
+    }
+
+    @Unique
+    private static void slide(GuiGraphics graphics, DeltaTracker delta) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0f, RiderArrivalClient.hudAway(delta.getGameTimeDeltaPartialTick(false)) * 60f, 0f);
     }
 }

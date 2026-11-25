@@ -3,7 +3,7 @@ package dev.hyperspacewormholes.wormholes.boss;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +33,7 @@ public final class BossConfig {
     }
 
     public static void load() {
-        Path path = FabricLoader.getInstance().getConfigDir().resolve(Wormholes.MOD_ID + "_boss.json");
+        Path path = FMLPaths.CONFIGDIR.get().resolve(Wormholes.MOD_ID + "_boss.json");
         try {
             if (Files.exists(path)) {
                 BossConfig loaded = GSON.fromJson(Files.readString(path), BossConfig.class);

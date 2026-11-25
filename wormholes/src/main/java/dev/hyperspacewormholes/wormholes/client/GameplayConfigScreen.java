@@ -23,7 +23,7 @@ import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 
 /**
- * The Mod Menu page for GameplayConfig: one row per setting, grouped under headings, with Done saving to the same file
+ * The config page for GameplayConfig: one row per setting, grouped under headings, with Done saving to the same file
  * server owners edit by hand. A box left empty, not a number or not changed keeps the value it opened with (decimals show
  * two places, so an untouched 1 in 5.26 stays exactly what the file had). Hovering a name shows what it does, with an
  * example. Ring rarity is file only, and the griefing toggle sets all three of the file's Data Monitor switches, showing

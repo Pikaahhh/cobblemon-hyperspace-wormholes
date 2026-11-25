@@ -80,13 +80,13 @@ public class DistortionSplicer extends Item {
     static boolean rollHoopa(ServerPlayer player, boolean forced) {
         if (forced) return true;
         int needed = GameplayConfig.get().hoopaPity;
-        boolean pity = needed > 0 && !player.getAttachedOrElse(Wormholes.HOOPA_BEATEN, false)
-                && player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0) >= needed;
+        boolean pity = needed > 0 && !player.getExistingData(Wormholes.HOOPA_BEATEN).orElse(false)
+                && player.getExistingData(Wormholes.SPLICES_WITHOUT_HOOPA).orElse(0) >= needed;
         return pity || player.getRandom().nextFloat() < HOOPA_CHANCE;
     }
 
     static void counted(ServerPlayer player, boolean hoopa) {
-        player.setAttached(Wormholes.SPLICES_WITHOUT_HOOPA, hoopa ? 0 : player.getAttachedOrElse(Wormholes.SPLICES_WITHOUT_HOOPA, 0) + 1);
+        player.setData(Wormholes.SPLICES_WITHOUT_HOOPA, hoopa ? 0 : player.getExistingData(Wormholes.SPLICES_WITHOUT_HOOPA).orElse(0) + 1);
     }
 
     static void collapse(ServerPlayer player) {

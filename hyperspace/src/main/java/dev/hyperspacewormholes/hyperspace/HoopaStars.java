@@ -3,8 +3,8 @@ package dev.hyperspacewormholes.hyperspace;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -14,6 +14,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 
@@ -24,10 +26,12 @@ public record HoopaStars(int min, int max) implements LootItemCondition {
             Codec.INT.optionalFieldOf("min", 1).forGetter(HoopaStars::min),
             Codec.INT.optionalFieldOf("max", MAX).forGetter(HoopaStars::max)).apply(instance, HoopaStars::new));
     private static final List<String> CANDIES = List.of("xs", "s", "m", "l", "xl");
+    private static final DeferredRegister<LootItemConditionType> CONDITIONS = DeferredRegister.create(Registries.LOOT_CONDITION_TYPE, Hyperspace.MOD_ID);
     private static LootItemConditionType type;
 
-    public static void register() {
-        type = Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, Hyperspace.id("hoopa_stars"), new LootItemConditionType(CODEC));
+    public static void register(IEventBus modBus) {
+        CONDITIONS.register("hoopa_stars", () -> type = new LootItemConditionType(CODEC));
+        CONDITIONS.register(modBus);
     }
 
     public static int of(ServerPlayer player) {

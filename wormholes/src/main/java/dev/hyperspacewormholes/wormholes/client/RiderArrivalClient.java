@@ -7,7 +7,6 @@ import dev.hyperspacewormholes.wormholes.network.RiderEmergeDonePayload;
 import dev.hyperspacewormholes.wormholes.network.RiderEmergePayload;
 import dev.hyperspacewormholes.wormholes.ride.RiderArrival;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRules;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
@@ -19,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
@@ -180,7 +180,7 @@ public final class RiderArrivalClient {
             mc.player.setYHeadRot(e.yaw);
         }
         if (tellServer && mc.player != null && mc.player.getId() == e.riderId && mc.getConnection() != null) {
-            ClientPlayNetworking.send(RiderEmergeDonePayload.INSTANCE);
+            PacketDistributor.sendToServer(RiderEmergeDonePayload.INSTANCE);
         }
     }
 

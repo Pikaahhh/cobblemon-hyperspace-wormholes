@@ -11,9 +11,11 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.EffectInstance;
@@ -33,6 +35,8 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -91,26 +95,33 @@ public class HyperspaceEdge {
     private record Line(float[][] points, boolean closed, AABB[] runs) {
     }
 
-    public static void register() {
-        CoreShaderRegistrationCallback.EVENT.register(context -> context.register(
-                Hyperspace.id("edge_curtain"), DefaultVertexFormat.POSITION,
-                shader -> curtainShader = shader));
-        ClientChunkEvents.CHUNK_LOAD.register((level, chunk) -> changed());
+    public static void register(IEventBus modBus) {
+        modBus.addListener((RegisterShadersEvent event) -> {
+            try {
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), Hyperspace.id("edge_curtain"), DefaultVertexFormat.POSITION),
+                        shader -> curtainShader = shader);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((ChunkEvent.Load event) -> {
+            if (event.getLevel().isClientSide()) changed();
+        });
     }
     public static void changed() {
         changes++;
     }
 
-    public static void prepare(WorldRenderContext context) {
-        ClientLevel level = context.world();
+    public static void prepare(RenderLevelStageEvent event) {
+        ClientLevel level = Minecraft.getInstance().level;
         if (level == null || !level.dimension().equals(Hyperspace.HYPERSPACE)) {
             edges.clear();
             current = null;
             missed = -1;
             return;
         }
-        Vec3 cam = context.camera().getPosition();
-        double cycle = (level.getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false)) / 20.0 / CREEP_SECONDS;
+        Vec3 cam = event.getCamera().getPosition();
+        double cycle = (level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false)) / 20.0 / CREEP_SECONDS;
         creep = (float) (cycle - Math.floor(cycle));
 
         Edge edge = null;
@@ -135,16 +146,16 @@ public class HyperspaceEdge {
         current = edge;
     }
 
-    public static void uniforms(EffectInstance effect, WorldRenderContext context) {
+    public static void uniforms(EffectInstance effect, RenderLevelStageEvent event) {
         Uniform info = effect.getUniform("MaskInfo");
         if (info == null) return;
         if (current == null) {
             info.set(0f, RES, 1f, 0f);
             return;
         }
-        Vec3 cam = context.camera().getPosition();
-        float ticks = context.world().getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false);
-        effect.getUniform("InverseView").set(new Matrix4f(context.projectionMatrix()).mul(context.positionMatrix()).invert());
+        Vec3 cam = event.getCamera().getPosition();
+        float ticks = Minecraft.getInstance().level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        effect.getUniform("InverseView").set(new Matrix4f(event.getProjectionMatrix()).mul(event.getModelViewMatrix()).invert());
         effect.getUniform("MaskOrigin").set((float) (current.x0 - cam.x), (float) -cam.y, (float) (current.z0 - cam.z));
         effect.getUniform("SkyAngle").set(HyperspaceSky.angle(ticks));
         info.set(1f, RES, SIZE * RES, creep);
@@ -239,15 +250,15 @@ public class HyperspaceEdge {
         return paths;
     }
 
-    public static void render(WorldRenderContext context) {
+    public static void render(RenderLevelStageEvent event) {
         if (current == null) return;
-        Vec3 cam = context.camera().getPosition();
-        float ticks = context.world().getGameTime() + context.tickCounter().getGameTimeDeltaPartialTick(false);
+        Vec3 cam = event.getCamera().getPosition();
+        float ticks = Minecraft.getInstance().level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float time = ticks / 20f;
 
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();
-        view.set(context.positionMatrix());
+        view.set(event.getModelViewMatrix());
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
@@ -255,7 +266,7 @@ public class HyperspaceEdge {
         RenderSystem.disableCull();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-        culling = context.frustum();
+        culling = event.getFrustum();
         if (meshed != current) {
             meshed = current;
             BufferBuilder space = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);

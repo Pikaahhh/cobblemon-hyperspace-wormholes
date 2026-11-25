@@ -7,13 +7,12 @@ import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore;
 import com.cobblemon.mod.common.net.messages.client.storage.party.SetPartyReferencePacket;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 
 import java.util.Random;
 import java.util.function.Consumer;
@@ -32,7 +31,7 @@ public class LevelScaling {
     private static final Random random = new Random();
 
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+        NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> {
             if (Cobblemon.INSTANCE.getConfig().getMaxPokemonLevel() < maxLevel) Cobblemon.INSTANCE.getConfig().setMaxPokemonLevel(maxLevel);
         });
 
@@ -69,17 +68,19 @@ public class LevelScaling {
             return Unit.INSTANCE;
         });
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            forAll(handler.getPlayer(), LevelScaling::restoreOld);
-            if (!Hyperspace.inHyperspace(handler.getPlayer())) unboostAll(handler.getPlayer());
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
+            forAll(player, LevelScaling::restoreOld);
+            if (!Hyperspace.inHyperspace(player)) unboostAll(player);
         });
 
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            if (origin.dimension().equals(Hyperspace.HYPERSPACE)) unboostAll(player);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            if (event.getFrom().equals(Hyperspace.HYPERSPACE)) unboostAll((ServerPlayer) event.getEntity());
         });
 
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            if (!Hyperspace.inHyperspace(newPlayer)) unboostAll(newPlayer);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
+            if (!Hyperspace.inHyperspace(player)) unboostAll(player);
         });
     }
 

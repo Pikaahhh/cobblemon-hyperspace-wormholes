@@ -4,8 +4,7 @@ import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import com.cobblemon.mod.common.pokemon.Species;
 import dev.hyperspacewormholes.hyperspace.mixin.DisplayAccessor;
 import dev.hyperspacewormholes.hyperspace.mixin.TextDisplayAccessor;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -20,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,8 +71,8 @@ public class Portals {
     }
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(Portals::tick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        Wormholes.onEntityLoad((entity, level) -> {
             if (entity.getTags().contains(TAG) && !ours.contains(entity.getUUID())) entity.discard();
         });
     }

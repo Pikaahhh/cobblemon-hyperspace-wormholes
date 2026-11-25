@@ -2,13 +2,14 @@ package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import dev.hyperspacewormholes.wormholes.world.Zone;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public final class MegaloKeepOut {
     private MegaloKeepOut() {}
 
     public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(MegaloKeepOut::tick);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
     }
 
     public static boolean inside(Zone zone, Vec3 pos) {

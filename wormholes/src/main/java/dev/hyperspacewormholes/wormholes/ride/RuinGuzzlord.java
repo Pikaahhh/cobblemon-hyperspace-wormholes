@@ -6,15 +6,15 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.hyperspacewormholes.wormholes.Wormholes;
 import kotlin.Unit;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -67,9 +67,9 @@ public final class RuinGuzzlord {
             stage(event.getPokemon(), null);
             return Unit.INSTANCE;
         });
-        ServerEntityEvents.ENTITY_LOAD.register(RuinGuzzlord::onLoad);
-        ServerTickEvents.END_SERVER_TICK.register(RuinGuzzlord::tick);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> MEALS.clear());
+        Wormholes.onEntityLoad(RuinGuzzlord::onLoad);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> MEALS.clear());
     }
 
     static boolean eats(Level level, PokemonEntity entity) {

@@ -3,15 +3,16 @@ package dev.hyperspacewormholes.wormholes;
 import com.cobblemon.mod.common.Cobblemon;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.hyperspacewormholes.Packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +20,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
- * The gameplay settings, config/hyperspace_wormholes_gameplay.json (written on first start), also shown in Mod Menu.
+ * The gameplay settings, config/hyperspace_wormholes_gameplay.json (written on first start), also shown under Config in the mods list.
  * Every default matches how the mod plays without the file. Pity of 0 turns that pity off. The ring lists run no rings,
  * one, two, top tier. wormholeRingWeights multiply the odds of each ring count. wormholeShinyOneIn is the shiny chance
  * of a regular wormhole Pokemon as "1 in N" for no rings up to three, the ring ones as they are after 5,000 light-years
@@ -139,9 +140,9 @@ public final class GameplayConfig {
 
     public static void register() {
         load();
-        PayloadTypeRegistry.playS2C().register(Sync.TYPE, Sync.CODEC);
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (ServerPlayNetworking.canSend(handler.getPlayer(), Sync.TYPE)) ServerPlayNetworking.send(handler.getPlayer(), new Sync(GSON.toJson(instance)));
+        Packets.toClient(Sync.TYPE, Sync.CODEC);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player && player.connection.hasChannel(Sync.TYPE)) PacketDistributor.sendToPlayer(player, new Sync(GSON.toJson(instance)));
         });
     }
 
@@ -173,7 +174,7 @@ public final class GameplayConfig {
     }
 
     private static Path path() {
-        return FabricLoader.getInstance().getConfigDir().resolve(FILE);
+        return FMLPaths.CONFIGDIR.get().resolve(FILE);
     }
 
     private static void load() {

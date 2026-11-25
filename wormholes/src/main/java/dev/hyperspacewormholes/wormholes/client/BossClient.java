@@ -10,17 +10,18 @@ import com.cobblemon.mod.common.client.battle.ClientBattlePokemon;
 import com.cobblemon.mod.common.client.battle.ClientBattleSide;
 import com.cobblemon.mod.common.client.battle.animations.MoveTileOffscreenAnimation;
 import com.cobblemon.mod.common.client.gui.battle.subscreen.BattleTargetSelection;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.wormholes.boss.BossBanPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossLinkPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossSlotsPayload;
 import dev.hyperspacewormholes.wormholes.boss.BossWaitPayload;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -41,17 +42,17 @@ public final class BossClient {
     private BossClient() {}
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(BossLinkPayload.TYPE, (payload, context) -> {
+        Packets.onClient(BossLinkPayload.TYPE, payload -> {
             if (payload.entityId() < 0) LINKS.remove(payload.pokemon());
             else LINKS.put(payload.pokemon(), payload.entityId());
         });
-        ClientPlayNetworking.registerGlobalReceiver(BossWaitPayload.TYPE, (payload, context) -> {
+        Packets.onClient(BossWaitPayload.TYPE, payload -> {
             waiting = payload.state();
         });
-        ClientPlayNetworking.registerGlobalReceiver(BossSlotsPayload.TYPE, (payload, context) -> wildSlots(payload.count()));
+        Packets.onClient(BossSlotsPayload.TYPE, payload -> wildSlots(payload.count()));
         // nothing on the client reads the bans, but the receiver stays registered so the server still sees the channel open
-        ClientPlayNetworking.registerGlobalReceiver(BossBanPayload.TYPE, (payload, context) -> {});
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+        Packets.onClient(BossBanPayload.TYPE, payload -> {});
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
             LINKS.clear();
             waiting = BossWaitPayload.NONE;
         });

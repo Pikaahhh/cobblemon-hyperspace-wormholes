@@ -6,6 +6,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;
+import snownee.jade.api.WailaPlugin;
 
 import java.lang.reflect.Method;
 
@@ -14,6 +15,7 @@ import java.lang.reflect.Method;
  * block of ours with no item, which are the ones only world generation and /setblock place. Jade's API is compiled
  * against stand-ins (src/jadeApi) and hideTarget is called by reflection, so building or running needs no Jade.
  */
+@WailaPlugin
 public final class JadePlugin implements IWailaPlugin {
     @Override
     public void registerClient(IWailaClientRegistration registration) {

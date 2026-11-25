@@ -12,9 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 
 /**
  * Tells HoopaClip which Pokemon Cobblemon is drawing (and from where the camera looks) and hands the rest of the draw its
- * clipping buffers, so a Pokemon coming out of a Hoopa ring has its part behind the ring cut away. render keeps its own
- * name in the intermediary jar (only its bridges are remapped) and it's the class's first render, so the bare name finds
- * it with no MC types in the selector.
+ * clipping buffers, so a Pokemon coming out of a Hoopa ring has its part behind the ring cut away. The typed render is
+ * the class's first render (the others are its bridges), so the bare name finds it.
  */
 @Mixin(value = PokemonRenderer.class, remap = false)
 public abstract class PokemonRendererClipMixin {

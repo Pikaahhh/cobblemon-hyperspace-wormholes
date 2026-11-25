@@ -5,11 +5,12 @@ import dev.hyperspacewormholes.wormholes.network.RoarRequestPayload;
 
 import dev.hyperspacewormholes.wormholes.ride.LegendRoar;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRules;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -22,11 +23,15 @@ public final class RoarClient {
 
     private RoarClient() {}
 
-    static void registerKey() {
-        key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.roar",
-                InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.hyperspace_wormholes"));
-        waystoneKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.waystone_roar",
-                InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_COMMA, "key.categories.hyperspace_wormholes"));
+    static void registerKey(IEventBus modBus) {
+        key = new KeyMapping("key.hyperspace_wormholes.roar",
+                InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.hyperspace_wormholes");
+        waystoneKey = new KeyMapping("key.hyperspace_wormholes.waystone_roar",
+                InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_COMMA, "key.categories.hyperspace_wormholes");
+        modBus.addListener(RegisterKeyMappingsEvent.class, event -> {
+            event.register(key);
+            event.register(waystoneKey);
+        });
     }
 
     static void tick(Minecraft mc) {
@@ -38,7 +43,7 @@ public final class RoarClient {
 
     private static void request(Minecraft mc, boolean waystones) {
         if (mc.player != null && mc.player.getVehicle() != null && !UltraWarpRules.inWarp(mc.player)) {
-            ClientPlayNetworking.send(new RoarRequestPayload(waystones));
+            PacketDistributor.sendToServer(new RoarRequestPayload(waystones));
         }
     }
 

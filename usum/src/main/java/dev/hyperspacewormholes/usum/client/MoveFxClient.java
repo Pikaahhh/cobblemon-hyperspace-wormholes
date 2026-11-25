@@ -4,17 +4,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.usum.CameraShakePayload;
 import dev.hyperspacewormholes.usum.ModelMotionPayload;
 import dev.hyperspacewormholes.usum.MoveFx;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.util.List;
  * Plays the camera shakes the server sends for move animations (MoveFx): a small turn of the camera from smooth noise (mixin.CameraShakeMixin) at Ultra Sun's strength times {@value #SHAKE_DEGREES} degrees, full within {@value #SHAKE_NEAR} blocks of the battle and gone at {@value #SHAKE_FAR}. Times run on the level's game time, so they pause with the game.
  * It has a toggle in config/horizons_movefx.json (cameraShake, on by default), written with the default when missing.
  */
-public final class MoveFxClient implements ClientModInitializer {
+public final class MoveFxClient {
     private static final float SHAKE_DEGREES = 0.035f;
     private static final float SHAKE_RATE = 0.12f;
     private static final double SHAKE_NEAR = 24;
@@ -43,23 +44,22 @@ public final class MoveFxClient implements ClientModInitializer {
         }
     }
 
-    @Override
-    public void onInitializeClient() {
+    public static void init(IEventBus modBus) {
         loadConfig();
-        ClientPlayNetworking.registerGlobalReceiver(CameraShakePayload.TYPE, (payload, context) -> {
+        Packets.onClient(CameraShakePayload.TYPE, payload -> {
             double now = now(0);
             if (cameraShake && now >= 0) {
                 SHAKES.add(new Shake(now + payload.delay() * 20, payload.centre(), payload.duration(), payload.from(),
                         payload.to(), payload.rate()));
             }
         });
-        ClientPlayNetworking.registerGlobalReceiver(ModelMotionPayload.TYPE, (payload, context) -> ModelMotion.add(payload));
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        Packets.onClient(ModelMotionPayload.TYPE, payload -> ModelMotion.add(payload));
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> {
             ModelMotion.tick();
             double now = now(0);
             SHAKES.removeIf(shake -> now < 0 || shake.over(now));
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
             SHAKES.clear();
             ModelMotion.clear();
         });
@@ -113,7 +113,7 @@ public final class MoveFxClient implements ClientModInitializer {
     }
 
     private static void loadConfig() {
-        Path file = FabricLoader.getInstance().getConfigDir().resolve(MoveFx.NAMESPACE + ".json");
+        Path file = FMLPaths.CONFIGDIR.get().resolve(MoveFx.NAMESPACE + ".json");
         JsonObject json = new JsonObject();
         if (Files.exists(file)) {
             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {

@@ -16,6 +16,9 @@ import com.cobblemon.mod.common.api.moves.animations.keyframes.ActionEffectKeyfr
 import com.cobblemon.mod.common.api.moves.animations.keyframes.AnimationActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.EntityConditionalActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.EntityParticlesActionEffectKeyframe;
+import com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket;
+import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
+import net.minecraft.core.particles.ParticleTypes;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.PauseActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.RemoveHoldsActionEffectKeyframe;
 import com.cobblemon.mod.common.api.moves.categories.DamageCategories;
@@ -24,21 +27,13 @@ import com.cobblemon.mod.common.api.types.ElementalType;
 import com.cobblemon.mod.common.battles.BattleRegistry;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.net.messages.client.animation.PlayPosableAnimationPacket;
-import com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonParser;
+import dev.hyperspacewormholes.Packets;
 import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
-import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -61,6 +56,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforgespi.language.IModFileInfo;
 import org.joml.Vector3f;
 
 import java.io.Reader;
@@ -160,11 +161,13 @@ public class QuickBattles {
             return TYPE;
         }
     }
+
     public record Strike(BlockPos monitor, int slot, int contact, Optional<UUID> pokemon, boolean runs) implements CustomPacketPayload {
         public static final Type<Strike> TYPE = new Type<>(Hyperspace.id("monitor_attack"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Strike> CODEC =
                 StreamCodec.composite(BlockPos.STREAM_CODEC, Strike::monitor, ByteBufCodecs.VAR_INT, Strike::slot, ByteBufCodecs.VAR_INT, Strike::contact,
                         ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), Strike::pokemon, ByteBufCodecs.BOOL, Strike::runs, Strike::new);
+
         @Override
         public Type<? extends CustomPacketPayload> type() {
             return TYPE;
@@ -200,15 +203,12 @@ public class QuickBattles {
     }
 
     public static void register() {
-        PayloadTypeRegistry.playC2S().register(Payload.TYPE, Payload.CODEC);
-        PayloadTypeRegistry.playC2S().register(Strike.TYPE, Strike.CODEC);
-        PayloadTypeRegistry.playC2S().register(Aim.TYPE, Aim.CODEC);
-        PayloadTypeRegistry.playS2C().register(Moves.TYPE, Moves.CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(Payload.TYPE, (payload, context) -> order(context.player(), payload));
-        ServerPlayNetworking.registerGlobalReceiver(Strike.TYPE, (payload, context) -> strike(context.player(), payload));
-        ServerPlayNetworking.registerGlobalReceiver(Aim.TYPE, (payload, context) -> sendMoves(context.player(), payload.pokemon()));
-        ServerTickEvents.END_SERVER_TICK.register(QuickBattles::tick);
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+        Packets.toServer(Payload.TYPE, Payload.CODEC, (payload, player) -> order(player, payload));
+        Packets.toServer(Strike.TYPE, Strike.CODEC, (payload, player) -> strike(player, payload));
+        Packets.toServer(Aim.TYPE, Aim.CODEC, (payload, player) -> sendMoves(player, payload.pokemon()));
+        Packets.toClient(Moves.TYPE, Moves.CODEC);
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> {
             attacks.values().forEach(QuickBattles::clearMark);
             attacks.clear();
             cooldowns.clear();
@@ -238,7 +238,7 @@ public class QuickBattles {
         List<MoveInfo> moves = pokemon == null ? List.of() : pokemon.getPokemon().getMoveSet().getMoves().stream()
                 .map(move -> new MoveInfo(move.getName(), move.getCurrentPp(), move.getMaxPp(), cooldown(player.server, pokemon, move)))
                 .toList();
-        ServerPlayNetworking.send(player, new Moves(moves, pokemon != null && attacks.containsKey(pokemon)));
+        PacketDistributor.sendToPlayer(player, new Moves(moves, pokemon != null && attacks.containsKey(pokemon)));
     }
 
     private static void order(ServerPlayer player, Payload order) {
@@ -252,6 +252,7 @@ public class QuickBattles {
         if (move == null) return;
         begin(player, pokemon, move, target, null, order.contact(), order.runs(), order.pokemon());
     }
+
     private static void strike(ServerPlayer player, Strike order) {
         if (BattleRegistry.getBattleByParticipatingPlayer(player) != null) return;
         ServerLevel level = player.serverLevel();
@@ -267,12 +268,14 @@ public class QuickBattles {
         level.addFreshEntity(mark);
         begin(player, pokemon, move, mark, at, order.contact(), order.runs(), order.pokemon());
     }
+
     private static Move chosen(ServerPlayer player, PokemonEntity pokemon, int slot) {
         List<Move> moves = pokemon.getPokemon().getMoveSet().getMoves();
         if (slot < 0 || slot >= moves.size()) return null;
         Move move = moves.get(slot);
         return quickUsable(move.getTemplate()) && move.getCurrentPp() > 0 && cooldown(player.server, pokemon, move) <= 0 ? move : null;
     }
+
     private static void begin(ServerPlayer player, PokemonEntity pokemon, Move move, Entity target, BlockPos monitor, int contact, boolean runs, Optional<UUID> selected) {
         move.setCurrentPp(move.getCurrentPp() - 1);
         cooldowns.computeIfAbsent(pokemon.getPokemon().getUuid(), u -> new HashMap<>())
@@ -281,6 +284,7 @@ public class QuickBattles {
         attacks.put(pokemon, new Attack(player.getUUID(), target, monitor, move, physical, contact, runs));
         sendMoves(player, selected);
     }
+
     private static void clearMark(Attack attack) {
         if (attack.monitor != null) attack.target.discard();
     }
@@ -288,7 +292,8 @@ public class QuickBattles {
     private static void tick(MinecraftServer server) {
         bursts.removeIf(burst -> {
             if (burst.at > server.getTickCount()) return false;
-            new SpawnSnowstormParticlePacket(ResourceLocation.parse(burst.effect), burst.where).sendToPlayers(PlayerLookup.around(burst.level, burst.where, BURST_RANGE));
+            new SpawnSnowstormParticlePacket(ResourceLocation.parse(burst.effect), burst.where).sendToPlayers(burst.level.players().stream()
+                    .filter(player -> player.distanceToSqr(burst.where) <= BURST_RANGE * BURST_RANGE).toList());
             return true;
         });
         for (Iterator<Map.Entry<PokemonEntity, Attack>> it = attacks.entrySet().iterator(); it.hasNext(); ) {
@@ -420,8 +425,8 @@ public class QuickBattles {
         attack.ran = attack.timeline != null && run(attack.timeline, pokemon, attack.target);
         if (attack.ran && attack.monitor != null) landOnMonitor(server, pokemon, attack);
         if (!attack.ran) {
-            new PlayPosableAnimationPacket(pokemon.getId(), new LinkedHashSet<>(animations(attack.move.getName(), attack.physical)), List.of())
-                    .sendToPlayers(PlayerLookup.tracking(pokemon));
+            PacketDistributor.sendToPlayersTrackingEntity(pokemon,
+                    new PlayPosableAnimationPacket(pokemon.getId(), new LinkedHashSet<>(animations(attack.move.getName(), attack.physical)), List.of()));
             String actor = "move." + attack.move.getName().toLowerCase(Locale.ROOT) + ".actor";
             if (!has(actor)) actor += "_1";
             if (has(actor)) play((ServerLevel) pokemon.level(), pokemon.position(), actor);
@@ -623,13 +628,14 @@ public class QuickBattles {
     private static boolean has(String sound) {
         if (sounds == null) {
             sounds = new HashSet<>();
-            FabricLoader.getInstance().getModContainer("cobblemon").flatMap(mod -> mod.findPath("assets/cobblemon/sounds.json"))
-                    .ifPresent(file -> {
-                        try (Reader reader = Files.newBufferedReader(file)) {
-                            sounds.addAll(JsonParser.parseReader(reader).getAsJsonObject().keySet());
-                        } catch (Exception ignored) {
-                        }
-                    });
+            IModFileInfo cobblemon = ModList.get().getModFileById("cobblemon");
+            java.nio.file.Path file = cobblemon == null ? null : cobblemon.getFile().findResource("assets", "cobblemon", "sounds.json");
+            if (file != null && Files.exists(file)) {
+                try (Reader reader = Files.newBufferedReader(file)) {
+                    sounds.addAll(JsonParser.parseReader(reader).getAsJsonObject().keySet());
+                } catch (Exception ignored) {
+                }
+            }
         }
         return sounds.contains(sound);
     }

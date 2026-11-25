@@ -1,9 +1,11 @@
 package dev.hyperspacewormholes.hyperspace;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.hyperspacewormholes.Packets;
+import net.minecraft.client.Minecraft;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -27,9 +29,9 @@ public final class MapIcons {
     private MapIcons() {}
 
     public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(MapDistortions.Marks.TYPE, (payload, context) -> marks = List.copyOf(payload.marks()));
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> marks = List.of());
-        if (FabricLoader.getInstance().isModLoaded("journeymap")) ClientTickEvents.END_CLIENT_TICK.register(JourneyMapIcons::tick);
+        Packets.onClient(MapDistortions.Marks.TYPE, payload -> marks = List.copyOf(payload.marks()));
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> marks = List.of());
+        if (ModList.get().isLoaded("journeymap")) NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> JourneyMapIcons.tick(Minecraft.getInstance()));
     }
 
     public static List<MapDistortions.Mark> marks(ResourceKey<Level> shown) {

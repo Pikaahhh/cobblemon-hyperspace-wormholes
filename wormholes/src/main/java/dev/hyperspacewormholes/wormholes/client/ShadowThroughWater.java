@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.hyperspacewormholes.wormholes.ride.UltraZones;
 import dev.hyperspacewormholes.wormholes.ride.WildsShadows;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -19,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -46,12 +46,12 @@ public final class ShadowThroughWater {
 
     private ShadowThroughWater() {}
 
-    public static void keepDrawn(WorldRenderContext context) {
+    public static void keepDrawn(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null && UltraZones.isZone(mc.level)) shadows(mc).forEach(entity -> entity.noCulling = true);
     }
 
-    public static void saveTerrainDepth(WorldRenderContext context) {
+    public static void saveTerrainDepth(RenderLevelStageEvent event) {
         saved = false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || ShaderPacks.inUse() || !UltraZones.isZone(mc.level) || shadows(mc).isEmpty()) return;
@@ -62,18 +62,18 @@ public final class ShadowThroughWater {
         saved = true;
     }
 
-    public static void drawAfterWater(WorldRenderContext context) {
-        if (ShaderPacks.inUse()) drawOver(context);
+    public static void drawAfterWater(RenderLevelStageEvent event) {
+        if (ShaderPacks.inUse()) drawOver(event);
     }
 
-    public static void drawLast(WorldRenderContext context) {
-        if (!ShaderPacks.inUse() && saved) ShaderPacks.inCameraView(context, () -> drawBehind(context));
+    public static void drawLast(RenderLevelStageEvent event) {
+        if (!ShaderPacks.inUse() && saved) ShaderPacks.inCameraView(event, () -> drawBehind(event));
         saved = false;
     }
 
-    private static void drawBehind(WorldRenderContext context) {
+    private static void drawBehind(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        Vec3 cam = context.camera().getPosition();
+        Vec3 cam = event.getCamera().getPosition();
         List<Entity> shown = shadows(mc).stream().filter(e -> behindWater(mc, cam, e, false)).toList();
         if (shown.isEmpty() || terrainDepth == null) return;
         RenderTarget main = mc.getMainRenderTarget();
@@ -81,7 +81,7 @@ public final class ShadowThroughWater {
         frameDepth.copyDepthFrom(main);
         main.copyDepthFrom(terrainDepth);
         main.bindWrite(false);
-        float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         for (Entity entity : shown) {
             render(mc, entity, cam, partialTick, DEPTH);
             render(mc, entity, cam, partialTick, COLOUR);
@@ -90,11 +90,11 @@ public final class ShadowThroughWater {
         main.bindWrite(false);
     }
 
-    private static void drawOver(WorldRenderContext context) {
+    private static void drawOver(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !UltraZones.isZone(mc.level)) return;
-        Vec3 cam = context.camera().getPosition();
-        float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        Vec3 cam = event.getCamera().getPosition();
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         for (Entity entity : shadows(mc)) {
             if (!behindWater(mc, cam, entity, true)) continue;
             render(mc, entity, cam, partialTick, DEPTH_OVER);

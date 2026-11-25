@@ -25,8 +25,7 @@
     "PlayerAdvancementsMixin"
   ],
   "client": [
-    "KeyMappingMixin",
-    "KeyMappingKeyAccessor",
+    "ClientPacketListenerMixin",
     "PostChainAccessor",
     "EntityRenderDispatcherMixin",
     "PosableStateMixin",
@@ -44,6 +43,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "cobblemon-hyperspace-wormholes-refmap.json"
+  }
 }
