@@ -98,7 +98,7 @@ public final class ZoneLeaps {
         entity.setNoAi(true);
         entity.addTag(TAG);
         level.addFreshEntity(entity);
-        WAITING.add(new Leap(level, entity, spot));
+        if (WAITING.stream().noneMatch(l -> l.entity == entity)) WAITING.add(new Leap(level, entity, spot));
     }
 
     private static void onLoad(Entity entity, ServerLevel level) {
@@ -121,12 +121,12 @@ public final class ZoneLeaps {
                 continue;
             }
             if (l.leap < 0) {
-                Player near = l.level.getNearestPlayer(l.spot.x, l.spot.y, l.spot.z, REVEAL, false);
+                Player near = OwnEncounters.nearest(l.entity, l.level, l.spot, REVEAL);
                 if (near == null) continue;
                 l.leap = 0;
                 l.from = l.entity.position();
                 l.spot = landing(l.level, l.spot, l.from);
-                WormholeSounds.rumble(l.level, l.from);
+                OwnEncounters.only(l.entity, () -> WormholeSounds.rumble(l.level, l.from));
             }
             l.leap++;
             if (l.leap == RUMBLE_TICKS) WormholeSounds.cry(l.entity);
@@ -175,9 +175,11 @@ public final class ZoneLeaps {
     }
 
     private static void land(Leap l) {
-        l.level.playSound(null, l.spot.x, l.spot.y, l.spot.z, SoundEvents.GENERIC_BIG_FALL, SoundSource.NEUTRAL, 2f, 0.7f);
-        l.level.sendParticles(ParticleTypes.POOF, l.spot.x, l.spot.y + 0.2, l.spot.z, 24, 0.9, 0.1, 0.9, 0.06);
-        Player look = l.level.getNearestPlayer(l.spot.x, l.spot.y, l.spot.z, -1, false);
+        OwnEncounters.only(l.entity, () -> {
+            l.level.playSound(null, l.spot.x, l.spot.y, l.spot.z, SoundEvents.GENERIC_BIG_FALL, SoundSource.NEUTRAL, 2f, 0.7f);
+            l.level.sendParticles(ParticleTypes.POOF, l.spot.x, l.spot.y + 0.2, l.spot.z, 24, 0.9, 0.1, 0.9, 0.06);
+        });
+        Player look = OwnEncounters.nearest(l.entity, l.level, l.spot, -1);
         WildsShadows.place(l.entity, l.spot, look != null ? WildsShadows.facing(l.spot, look.position()) : l.entity.getYRot());
         l.entity.setNoGravity(false);
         l.entity.removeTag(TAG);

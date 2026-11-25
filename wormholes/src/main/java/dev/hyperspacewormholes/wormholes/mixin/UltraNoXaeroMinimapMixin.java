@@ -9,16 +9,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Hides Xaero's Minimap in the Ultra Space Wilds, as the game shows no map there and the minimap's radar would give away
- * the Pokemon waiting as a shadow (WildsShadows). Hooks both of its renderer's render methods (the typed one and its
- * bridge).
+ * Hides Xaero's Minimap on the Ultra Warp Ride and in the Ultra worlds, as the game shows no map there and the minimap's
+ * radar would give away the Pokemon waiting as a shadow (WildsShadows). Hooks both of its renderer's render methods (the
+ * typed one and its bridge).
  */
 @Pseudo
 @Mixin(targets = "xaero.hud.minimap.module.MinimapRenderer", remap = false)
-public class XaeroMinimapWildsMixin {
-    @Inject(method = "render*", at = @At("HEAD"), cancellable = true)
-    private void hyperspace_wormholes$notInWilds(CallbackInfo ci) {
+public class UltraNoXaeroMinimapMixin {
+    @Inject(method = "render*", at = @At("HEAD"), cancellable = true, require = 0)
+    private void hyperspace_wormholes$notInUltraSpace(CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level != null && UltraZones.isZone(mc.level)) ci.cancel();
+        if (mc.level != null && UltraZones.isUltraSpace(mc.level)) ci.cancel();
     }
 }

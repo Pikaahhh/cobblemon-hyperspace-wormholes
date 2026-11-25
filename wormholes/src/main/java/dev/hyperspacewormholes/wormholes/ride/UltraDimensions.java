@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -104,6 +106,7 @@ public final class UltraDimensions {
             home = HomePoint.worldSpawn(player.server);
             level = player.server.overworld();
         }
-        player.teleportTo(level, home.pos().x, home.pos().y, home.pos().z, home.yRot(), 0f);
+        Vec3 at = PassengerLandings.around(level, home.pos(), home.yRot(), 1, List.of(player), null, false).getFirst();
+        player.teleportTo(level, at.x, at.y, at.z, home.yRot(), 0f);
     }
 }

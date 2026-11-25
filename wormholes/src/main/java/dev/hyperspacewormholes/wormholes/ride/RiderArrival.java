@@ -26,7 +26,7 @@ public final class RiderArrival {
     private static final int SETTLE_TICKS = 15;
     static final int TICKS = EMERGE_TICKS + SETTLE_TICKS;
     public static final float EXIT_PITCH = 8f;
-    private static final int TIMEOUT_TICKS = TICKS + 20 * 20;
+    private static final int TIMEOUT_TICKS = TICKS + 25 * 20;
     private static final double VIEW_RANGE = 128;
     private static final int GUARD_TICKS = 5 * 20;
 

@@ -25,12 +25,15 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Where a /wormhole create wormhole goes and what waits there, written the way vanilla writes block states and selector
  * options: destination[key=value,...], e.g. cliff[rings=3,category=legendary] or ultra_jungle[pokemon=buzzwole]. The
- * destination is an Ultra Beast world by its id or a Wilds world by its short name (WormholeDestinations.named). Keys: rings,
- * pokemon (not together with category), and for the Wilds only category (WormholePokemon.categories()) and ride (true starts
- * an Ultra Warp Ride whose wormholes all lead there). Argument parses it with vanilla's errors and suggests as you type.
+ * destination is an Ultra Beast world by its id or a Wilds world by its short name (WormholeDestinations.named). Keys:
+ * rings, pokemon (not together with category), and for the Wilds only category (WormholePokemon.categories()) and ride
+ * (true starts an Ultra Warp Ride whose wormholes all lead there). Argument parses it with vanilla's errors and
+ * suggests as you type. WAYSTONES isn't written: it's a legend's wormhole whose ride leads to waystones and lodestones
+ * (LegendRoar).
  */
-public record WormholeOrder(String destination, ResourceKey<Level> world, int rings, @Nullable String category,
+public record WormholeOrder(String destination, @Nullable ResourceKey<Level> world, int rings, @Nullable String category,
                             @Nullable String pokemon, boolean ride) {
+    public static final WormholeOrder WAYSTONES = new WormholeOrder("waystones", null, 0, null, null, true);
     private static final List<String> KEYS = List.of("rings", "category", "pokemon", "ride");
     private static final DynamicCommandExceptionType BAD_RIDE = new DynamicCommandExceptionType(
             value -> Component.translatable("hyperspace_wormholes.msg.bad_ride", value));

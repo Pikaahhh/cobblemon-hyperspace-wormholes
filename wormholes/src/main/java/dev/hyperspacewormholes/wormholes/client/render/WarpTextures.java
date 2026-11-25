@@ -10,15 +10,15 @@ import net.minecraft.util.Mth;
 import java.util.Random;
 
 /**
- * Pixel-art textures made in code the first time they're needed (glows, clouds, stars, nebulae, the wormhole funnel grid
- * and rings), greyscale with the shape in alpha so they can be tinted. The funnel grid keeps only pixels wholly inside
- * the funnel's mesh (FUNNEL_SEGMENTS sides, open at the throat), so its rim is a stepped circle of whole pixels.
+ * Pixel-art textures made in code the first time they're needed (glows, clouds, stars, the opening corridor's wall, the
+ * wormhole funnel grid and rings), greyscale with the shape in alpha so they can be tinted, but for the corridor's. The
+ * funnel grid keeps only pixels wholly inside the funnel's mesh (FUNNEL_SEGMENTS sides, open at the throat), so its rim
+ * is a stepped circle of whole pixels.
  */
 public final class WarpTextures {
     public static final ResourceLocation GLOW = Wormholes.id("dynamic/glow");
     public static final ResourceLocation CLOUD = Wormholes.id("dynamic/cloud");
     public static final ResourceLocation STARFIELD = Wormholes.id("dynamic/starfield");
-    public static final ResourceLocation NEBULA = Wormholes.id("dynamic/nebula");
     public static final ResourceLocation FUNNEL = Wormholes.id("dynamic/funnel");
     public static final int FUNNEL_FRAMES = 12;
     public static final float FUNNEL_THROAT = 0.16f / 1.7f;
@@ -29,6 +29,12 @@ public final class WarpTextures {
     public static final ResourceLocation THIN_RING = Wormholes.id("dynamic/thin_ring");
     public static final ResourceLocation THIN_RING_GLOW = Wormholes.id("dynamic/thin_ring_glow");
     public static final ResourceLocation STAR = Wormholes.id("dynamic/star");
+    public static final ResourceLocation WALL = Wormholes.id("dynamic/wall");
+    public static final ResourceLocation RUSH_WALL = Wormholes.id("dynamic/rush_wall");
+    public static final ResourceLocation BANDS = Wormholes.id("dynamic/bands");
+    public static final ResourceLocation CURTAINS = Wormholes.id("dynamic/curtains");
+    public static final ResourceLocation SPARKLES = Wormholes.id("dynamic/sparkles");
+    public static final ResourceLocation SMOKE = Wormholes.id("dynamic/smoke");
 
     private static boolean ready;
 
@@ -42,13 +48,18 @@ public final class WarpTextures {
         register(GLOW, glow(16));
         register(CLOUD, cloud(64));
         register(STARFIELD, starfield(64));
-        register(NEBULA, nebula(64));
         register(STAR, star());
         register(FUNNEL, funnel(48, FUNNEL_FRAMES));
         register(RING, ring(48));
         register(RING_GLOW, ringGlow(48, 0.2f));
         register(THIN_RING, ring(96));
         register(THIN_RING_GLOW, ringGlow(96, 0.1f));
+        register(WALL, wall(RideOpeningRenderer.COLUMNS, RideOpeningRenderer.ROWS, 0.7f, 0.94f));
+        register(RUSH_WALL, wall(RideOpeningRenderer.COLUMNS, RideOpeningRenderer.ROWS, 0.25f, 1.04f));
+        register(BANDS, bands(20));
+        register(CURTAINS, curtains(RideOpeningRenderer.COLUMNS * 2, 64));
+        register(SPARKLES, sparkles(RideOpeningRenderer.COLUMNS * 2));
+        register(SMOKE, smoke(RideOpeningRenderer.COLUMNS, 64));
     }
 
     private static void register(ResourceLocation id, NativeImage image) {
@@ -64,7 +75,11 @@ public final class WarpTextures {
     private static void put(NativeImage img, int x, int y, float grey, float alpha) {
         int a = Mth.clamp((int) (alpha * 255f), 0, 255);
         int g = Mth.clamp((int) (grey * 255f), 0, 255);
-        img.setPixelRGBA(x, y, (a << 24) | (g << 16) | (g << 8) | g);
+        pixel(img, x, y, (a << 24) | (g << 16) | (g << 8) | g);
+    }
+
+    private static void pixel(NativeImage img, int x, int y, int abgr) {
+        img.setPixelRGBA(x, y, abgr);
     }
 
     private static float radius(int x, int y, int size) {
@@ -118,15 +133,6 @@ public final class WarpTextures {
         return img;
     }
 
-    private static NativeImage nebula(int size) {
-        Noise noise = new Noise(23, 4);
-        return white(size, (x, y) -> {
-            float n = noise.sample((float) x / size, (float) y / size);
-            float edge = Mth.clamp((1 - radius(x, y, size)) * 2.5f, 0, 1);
-            return step((float) Math.pow(n, 1.6) * 1.4f * edge, 4);
-        });
-    }
-
     private static NativeImage funnel(int size, int frames) {
         int rings = 7, spokes = 16;
         double twist = 0.12, minGap = 3;
@@ -158,6 +164,81 @@ public final class WarpTextures {
                     }
                     put(img, x, f * size + y, 1, alpha);
                 }
+            }
+        }
+        return img;
+    }
+
+    private static NativeImage wall(int width, int height, float near, float bright) {
+        Noise edges = new Noise(31, 8), patches = new Noise(77, 16), shades = new Noise(5, 24);
+        Random random = new Random(808);
+        NativeImage img = new NativeImage(width, height, false);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float u = (float) x / width, v = (float) y / height, s = (y + 0.5f) / height;
+                float[] rgb = flat(s + (edges.sample(u, v) - 0.5f) * 0.1f);
+                float patch = patches.sample(u, v) - 0.5f;
+                if (patch > 0) {
+                    float[] other = flat(s >= 0.3f ? s + 0.64f : s < 0.06f ? 0.13f : 0f);
+                    float much = (s > 0.74f ? 0.6f : s < 0.24f ? near : 0.2f) * (patch > 0.07f ? 1f : 0.5f);
+                    for (int k = 0; k < 3; k++) rgb[k] = Mth.lerp(much, rgb[k], other[k]);
+                }
+                float light = bright + 0.05f * Mth.clamp((int) (shades.sample(u, v) * 5) - 1, 0, 2)
+                        + 0.015f * (random.nextInt(3) - 1);
+                pixel(img, x, y, 0xFF000000 | channel(rgb[2] * light) << 16 | channel(rgb[1] * light) << 8
+                        | channel(rgb[0] * light));
+            }
+        }
+        return img;
+    }
+
+    private static float[] flat(float s) {
+        return RideOpeningRenderer.wall((Mth.floor(s * 20) + 0.5f) / 20f);
+    }
+
+    private static int channel(float v) {
+        return Mth.clamp((int) (v * 255f), 0, 255);
+    }
+
+    private static NativeImage bands(int rows) {
+        return white(rows, (x, y) -> y == 0 ? 1f : y <= 2 ? 0.5f : 0f);
+    }
+
+    private static NativeImage curtains(int width, int height) {
+        Noise strands = new Noise(5, 8), folds = new Noise(61, 4);
+        NativeImage img = new NativeImage(width, height, false);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float u = (float) x / width * 2, v = (float) y / height;
+                float strand = Mth.clamp((strands.sample(u, v * 2) - 0.42f) * 2.4f, 0, 1);
+                float fold = Mth.clamp((folds.sample(u * 2, v) - 0.36f) * 3.4f, 0, 1);
+                put(img, x, y, 1, step(strand * fold, 3));
+            }
+        }
+        return img;
+    }
+
+    private static NativeImage sparkles(int size) {
+        int[] colours = {0xFFFFFF, 0xFFD0FF, 0xB0FF60, 0xF060FF, 0x7050FF, 0xFFD050, 0xFF90A0};
+        NativeImage img = white(size, (x, y) -> 0);
+        Random random = new Random(318);
+        for (int i = 0; i < 2400; i++) {
+            int x = random.nextInt(size), y = random.nextInt(size), length = 1 + random.nextInt(3);
+            int colour = colours[random.nextInt(colours.length)];
+            int alpha = 85 * (1 + random.nextInt(3));
+            for (int k = 0; k < length; k++) pixel(img, x, (y + k) % size, (alpha << 24) | colour);
+        }
+        return img;
+    }
+
+    private static NativeImage smoke(int width, int height) {
+        Noise shape = new Noise(907, 8), shade = new Noise(13, 8);
+        NativeImage img = new NativeImage(width, height, false);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float u = (float) x / width * 2, v = (float) y / height;
+                float alpha = step((shape.sample(u, v) - 0.36f) * 4f, 3);
+                put(img, x, y, 0.5f + 0.5f * step(shade.sample(u, v) * 2.2f - 0.6f, 3), alpha);
             }
         }
         return img;

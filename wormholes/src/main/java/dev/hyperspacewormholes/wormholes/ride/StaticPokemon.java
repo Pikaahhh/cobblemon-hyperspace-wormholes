@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
  * with no AI (an Ultra Beast at its zone's spot, the Megalopolis Necrozma, bosses, a Wilds shadow) or holding a statue's
  * pose (PlantXurkitrees.STATUE). The server tracks them out to its view distance (trackingRange, StatueTrackingMixin), and
  * the client draws them at any distance it has them (StaticPokemonRenderMixin, ZonePlayerVisibleMixin) and never lets a
- * culling mod drop them (EntityCullingMixin).
+ * culling mod drop them (EntityCullingMixin). The Ultra Ruin's Guzzlord is tracked as far once it has its AI too.
  */
 public final class StaticPokemon {
     private StaticPokemon() {}
@@ -22,7 +22,7 @@ public final class StaticPokemon {
 
     public static int trackingRange(Entity entity) {
         MinecraftServer server = entity.level().getServer();
-        if (server == null || !is(entity)) return 0;
+        if (server == null || !is(entity) && !RuinGuzzlord.met(entity)) return 0;
         return server.getPlayerList().getViewDistance() * 16;
     }
 }

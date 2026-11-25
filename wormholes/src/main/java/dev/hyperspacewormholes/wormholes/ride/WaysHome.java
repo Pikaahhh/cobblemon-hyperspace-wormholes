@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -60,12 +59,6 @@ public final class WaysHome {
         if (open.untilEmpty()) open.level().getChunkSource().removeRegionTicket(KEEP_OPEN, open.chunk(), 2, open.chunk());
     }
 
-    private static void close(ServerLevel level, WormholeEntity wormhole) {
-        Vec3 c = wormhole.center();
-        level.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.NEUTRAL, 1.5f, 1.4f);
-        wormhole.discard();
-    }
-
     public static void closeFor(ServerPlayer player) {
         for (Iterator<Open> it = OPEN.iterator(); it.hasNext(); ) {
             Open open = it.next();
@@ -73,7 +66,7 @@ public final class WaysHome {
             it.remove();
             forget(open);
             Entity entity = open.level().getEntity(open.entity());
-            if (entity instanceof WormholeEntity wormhole && !wormhole.isRemoved()) close(open.level(), wormhole);
+            if (entity instanceof WormholeEntity wormhole && !wormhole.isRemoved()) wormhole.close();
         }
     }
 
@@ -91,7 +84,7 @@ public final class WaysHome {
             boolean abandoned = open.untilEmpty() ? open.level().players().isEmpty()
                     : !open.level().hasNearbyAlivePlayer(entity.getX(), entity.getY(), entity.getZ(), CLOSE_RANGE);
             if (expired || abandoned) {
-                close(open.level(), (WormholeEntity) entity);
+                ((WormholeEntity) entity).close();
                 it.remove();
                 forget(open);
             }

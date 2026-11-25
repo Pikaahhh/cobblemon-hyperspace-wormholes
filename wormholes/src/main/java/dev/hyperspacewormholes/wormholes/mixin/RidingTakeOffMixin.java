@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.api.riding.behaviour.RidingController;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.ride.Mounts;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRules;
+import dev.hyperspacewormholes.wormholes.ride.UltraZones;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +24,14 @@ public abstract class RidingTakeOffMixin {
     @Inject(method = "checkForNewTransition", at = @At("HEAD"), cancellable = true)
     private void hyperspace_wormholes$startFlyingInMidAir(LivingEntity driver, CallbackInfoReturnable<RidingStyle> cir) {
         if (context != null || driver == null || UltraWarpRules.isPinned(entity)) return;
+        if (UltraZones.noFlying(entity.level(), entity.getX(), entity.getZ())) return;
         if (entity.onGround() || entity.isInWater() || entity.isInLava()) return;
         if (Mounts.isAllowed(entity.getPokemon()) && Mounts.canFly(entity.getPokemon())) cir.setReturnValue(RidingStyle.AIR);
+    }
+
+    /** Nothing takes off where the Ultra Ruin has to be walked. */
+    @Inject(method = "canTransitionToAir", at = @At("HEAD"), cancellable = true)
+    private void hyperspace_wormholes$noTakingOff(LivingEntity driver, CallbackInfoReturnable<Boolean> cir) {
+        if (UltraZones.noFlying(entity.level(), entity.getX(), entity.getZ())) cir.setReturnValue(false);
     }
 }

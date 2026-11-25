@@ -1,0 +1,24 @@
+{
+  "species": "cobblemon:guzzlord",
+  "order": 1,
+  "variations": [
+    {
+      "aspects": [
+        "hyperspace_eating"
+      ],
+      "poser": "cobblemon:guzzlord_eating"
+    },
+    {
+      "aspects": [
+        "hyperspace_turning"
+      ],
+      "poser": "cobblemon:guzzlord_eating"
+    },
+    {
+      "aspects": [
+        "hyperspace_roaring"
+      ],
+      "poser": "cobblemon:guzzlord_eating"
+    }
+  ]
+}

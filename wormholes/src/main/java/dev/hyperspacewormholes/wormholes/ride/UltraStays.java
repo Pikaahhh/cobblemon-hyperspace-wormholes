@@ -20,14 +20,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Pokemon that come out of a wormhole into Ultra Space stay until the area is left: keep marks them persistent so
- * Cobblemon's despawner never takes them, and tags them with TAG, VISIT and the world's visit number.
- * A visit ends when no player (spectators count) is left in the world, checked every SWEEP_EVERY ticks; the visit
- * number goes up and every tagged wild Pokemon there that isn't in a battle is removed, as is any in an unloaded chunk
- * when it loads. A disconnect can come in on the network thread, where C2ME refuses to unload entities, so it's looked
- * at on the server thread.
+ * Cobblemon's despawner never takes them, and tags them with TAG, VISIT and the world's visit number (a player's own,
+ * OwnEncounters, with that player's number too). A visit ends when no player (spectators count) is left in the world,
+ * checked every SWEEP_EVERY ticks, and for a player's own when that player leaves; the number goes up and every tagged
+ * wild Pokemon of it that isn't in a battle is removed, as is any in an unloaded chunk when it loads. A disconnect can
+ * come in on the network thread, where C2ME refuses to unload entities, so it's looked at on the server thread.
  */
 public final class UltraStays {
     private static final String TAG = "hyperspace_wormholes.ultra_space";
@@ -36,6 +37,10 @@ public final class UltraStays {
 
     private static final Map<ResourceKey<Level>, Integer> VISITS = new HashMap<>();
     private static final Set<ResourceKey<Level>> OCCUPIED = new HashSet<>();
+
+    private record Stay(ResourceKey<Level> world, UUID player) {}
+
+    private static final Map<Stay, Integer> OWN_VISITS = new HashMap<>();
 
     private UltraStays() {}
 
@@ -53,6 +58,7 @@ public final class UltraStays {
         ServerTickEvents.END_SERVER_TICK.register(UltraStays::sweep);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             VISITS.clear();
+            OWN_VISITS.clear();
             OCCUPIED.clear();
         });
     }
@@ -61,11 +67,19 @@ public final class UltraStays {
         if (!UltraDimensions.isUltra(level)) return;
         entity.setPersistenceRequired();
         entity.addTag(TAG);
-        entity.addTag(VISIT + visit(level));
+        entity.addTag(visit(level, OwnEncounters.owner(entity)));
     }
 
-    private static int visit(ServerLevel level) {
-        return VISITS.getOrDefault(level.dimension(), 0);
+    private static String visit(ServerLevel level, @Nullable UUID owner) {
+        String visit = VISIT + VISITS.getOrDefault(level.dimension(), 0);
+        return owner == null ? visit : visit + "." + OWN_VISITS.getOrDefault(new Stay(level.dimension(), owner), 0);
+    }
+
+    static void again(ServerLevel level, UUID owner) {
+        OWN_VISITS.merge(new Stay(level.dimension(), owner), 1, Integer::sum);
+        for (PokemonEntity pokemon : OwnEncounters.loaded()) {
+            if (pokemon.level() == level && owner.equals(OwnEncounters.owner(pokemon)) && stale(pokemon)) pokemon.discard();
+        }
     }
 
     private static boolean empty(ServerLevel level, @Nullable ServerPlayer leaving) {
@@ -73,18 +87,21 @@ public final class UltraStays {
     }
 
     private static void left(ServerLevel level, ServerPlayer leaving) {
-        if (UltraDimensions.isUltra(level) && empty(level, leaving)) emptied(level);
+        if (!UltraDimensions.isUltra(level)) return;
+        again(level, leaving.getUUID());
+        if (empty(level, leaving)) emptied(level);
     }
 
     private static void emptied(ServerLevel level) {
         VISITS.merge(level.dimension(), 1, Integer::sum);
+        OWN_VISITS.keySet().removeIf(stay -> stay.world() == level.dimension());
         OCCUPIED.remove(level.dimension());
         level.getEntities(EntityTypeTest.forClass(PokemonEntity.class), UltraStays::stale).forEach(Entity::discard);
     }
 
     private static boolean stale(PokemonEntity pokemon) {
         if (!pokemon.getTags().contains(TAG) || pokemon.getOwnerUUID() != null || pokemon.isBattling()) return false;
-        return !pokemon.getTags().contains(VISIT + visit((ServerLevel) pokemon.level()));
+        return !pokemon.getTags().contains(visit((ServerLevel) pokemon.level(), OwnEncounters.owner(pokemon)));
     }
 
     private static void onLoad(Entity entity, ServerLevel level) {
@@ -93,6 +110,12 @@ public final class UltraStays {
 
     private static void sweep(MinecraftServer server) {
         if (server.getTickCount() % SWEEP_EVERY != 0) return;
+        for (PokemonEntity pokemon : OwnEncounters.loaded()) {
+            if (!(pokemon.level() instanceof ServerLevel level) || !UltraDimensions.isUltra(level)) continue;
+            UUID owner = OwnEncounters.owner(pokemon);
+            if (owner != null && level.getPlayerByUUID(owner) == null && !pokemon.isBattling()) again(level, owner);
+            if (!pokemon.isRemoved() && stale(pokemon)) pokemon.discard();
+        }
         for (ServerLevel level : server.getAllLevels()) {
             if (!UltraDimensions.isUltra(level)) continue;
             if (!empty(level, null)) {

@@ -2,6 +2,7 @@ package dev.hyperspacewormholes.wormholes.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import dev.hyperspacewormholes.wormholes.client.RideClient;
+import dev.hyperspacewormholes.wormholes.client.render.WarpWhite;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +36,18 @@ public abstract class FlashOverlayMixin {
     }
 
     private static void draw(GuiGraphics graphics, DeltaTracker delta, float z) {
-        float flash = RideClient.flash(delta.getGameTimeDeltaPartialTick(false));
+        float pt = delta.getGameTimeDeltaPartialTick(false);
+        if (RideClient.isActive() && WarpWhite.swelling(pt)) {
+            float scale = 1f / (float) Minecraft.getInstance().getWindow().getGuiScale();
+            int x = WarpWhite.middleX(), y = WarpWhite.middleY(), cell = WarpWhite.cellPixels();
+            graphics.pose().pushPose();
+            graphics.pose().translate(0, 0, z);
+            graphics.pose().scale(scale, scale, 1f);
+            WarpWhite.draw((x0, y0, x1, y1, part) -> graphics.fill(x + x0 * cell, y - y1 * cell, x + x1 * cell, y - y0 * cell,
+                    WarpWhite.colour(part)), pt);
+            graphics.pose().popPose();
+        }
+        float flash = RideClient.flash(pt);
         if (flash <= 0.001f) return;
         int alpha = (int) (Mth.clamp(flash, 0f, 1f) * 255);
         graphics.pose().pushPose();

@@ -21,6 +21,7 @@ import dev.hyperspacewormholes.wormholes.boss.Boss;
 import dev.hyperspacewormholes.wormholes.boss.Bosses;
 import dev.hyperspacewormholes.wormholes.network.BurnsSkyPayload;
 import dev.hyperspacewormholes.wormholes.network.BurnsSkyStopPayload;
+import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
 import kotlin.Unit;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -175,7 +176,9 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
 
         List<ServerPlayer> viewers = new ArrayList<>();
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(user) < VIEW_RANGE * VIEW_RANGE) viewers.add(player);
+            if (player.distanceToSqr(user) < VIEW_RANGE * VIEW_RANGE && targets.stream().allMatch(t -> t.broadcastToPlayer(player))) {
+                viewers.add(player);
+            }
         }
         Run run = new Run(pokemon, targets.getFirst().getId(), centre, feet, level, dir, viewers,
                 clearWay(pokemon, level, dir, battles), activationLeft(pokemon));
@@ -414,9 +417,9 @@ public final class LightThatBurnsTheSky implements ActionEffectKeyframe {
             if (cue.at() != run.age) continue;
             Vec3 at = run.age < BurnsSkyTimeline.BALL ? run.user.position()
                     : run.age < BurnsSkyTimeline.HIT ? ball(run) : run.targetFeet;
-            run.level.playSound(null, at.x, at.y, at.z,
+            OwnEncounters.only(run.level.getEntity(run.targetId), () -> run.level.playSound(null, at.x, at.y, at.z,
                     SoundEvent.createFixedRangeEvent(Wormholes.id("usum.se." + cue.sound()), SOUND_RANGE), SoundSource.NEUTRAL,
-                    1f, cue.pitch());
+                    1f, cue.pitch()));
         }
     }
 

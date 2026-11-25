@@ -10973,6 +10973,14 @@
       }
     ]
   },
+  "music.ultra_ruin": {
+    "sounds": [
+      {
+        "name": "hyperspace_wormholes:music/ultra_ruin",
+        "stream": true
+      }
+    ]
+  },
   "usum.necrozma_defeat": {
     "sounds": [
       {

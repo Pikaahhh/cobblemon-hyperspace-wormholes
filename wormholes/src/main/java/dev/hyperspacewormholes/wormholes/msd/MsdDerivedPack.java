@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * The in-memory pack on top of every resource manager, building Mega Showdown-derived assets at runtime from the
  * player's own files, with no copies shipped (MsdTransforms' results: burst models and glow, dimmed Ultra textures,
  * power-down particles, the Necrozma poser and Hoopa model, the power-down effect as server data, and the Xurkitree
- * statue pose from ATM x MSD's idle).
+ * statue and eating Guzzlord from ATM x MSD's).
  * A missing or changed source skips its whole piece with one log line; a piece named by a shipped resolver also blanks
  * that resolver, since Cobblemon refuses to start on a resolver whose model doesn't load.
  */

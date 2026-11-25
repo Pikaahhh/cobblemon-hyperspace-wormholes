@@ -19,7 +19,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
@@ -245,12 +244,13 @@ public final class PlantXurkitrees {
                 continue;
             }
             if (w.getValue() < 0) {
-                Player near = level.getNearestPlayer(e.getX(), e.getY(), e.getZ(), WAKE, EntitySelector.NO_SPECTATORS);
+                Player near = OwnEncounters.nearest(e, level, e.position(), WAKE);
                 if (near == null) continue;
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
                 if (bolt != null) {
                     bolt.moveTo(e.position());
                     bolt.setVisualOnly(true);
+                    OwnEncounters.share(bolt, e);
                     level.addFreshEntity(bolt);
                 }
                 w.setValue(0);

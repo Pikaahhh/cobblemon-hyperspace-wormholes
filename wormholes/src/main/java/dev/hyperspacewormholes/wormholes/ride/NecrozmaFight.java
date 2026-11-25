@@ -209,10 +209,9 @@ public final class NecrozmaFight {
         PRIZES.remove(copy);
     }
 
-    public static boolean hiddenFrom(Entity entity, @Nullable Entity viewer) {
-        if (PRIZES.isEmpty() || !(entity instanceof PokemonEntity)) return false;
-        UUID owner = PRIZES.get(entity);
-        return owner != null && (viewer == null || !owner.equals(viewer.getUUID()));
+    /** Whose catchable copy it is, or null (OwnEncounters.hiddenFrom). */
+    static @Nullable UUID prizeOwner(Entity entity) {
+        return PRIZES.isEmpty() || !(entity instanceof PokemonEntity) ? null : PRIZES.get(entity);
     }
 
     private static void onLoad(Entity entity, ServerLevel level) {

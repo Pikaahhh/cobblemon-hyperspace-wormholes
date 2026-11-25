@@ -2,6 +2,7 @@ package dev.hyperspacewormholes.wormholes.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.hyperspacewormholes.wormholes.client.UltraWorldMusic;
 import dev.hyperspacewormholes.wormholes.client.UltraWormholeMusic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -12,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.ArrayList;
 
 /**
- * Keeps the Ultra Wormhole theme playing through a dimension change and stops every other sound instead.
+ * Keeps the Ultra Wormhole theme and an Ultra world's own playing through a dimension change during a ride, and stops
+ * every other sound instead.
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftLevelChangeSoundMixin {
@@ -24,10 +26,12 @@ public abstract class MinecraftLevelChangeSoundMixin {
             original.call(soundManager);
             return;
         }
+        UltraWormholeMusic.stopVanilla();
+        SoundInstance theme = UltraWorldMusic.current();
         var channels = ((SoundEngineAccessor) ((SoundManagerAccessor) soundManager)
                 .hyperspace_wormholes$getSoundEngine()).hyperspace_wormholes$getInstanceToChannel();
         for (SoundInstance sound : new ArrayList<>(channels.keySet())) {
-            if (sound != music) soundManager.stop(sound);
+            if (sound != music && sound != theme) soundManager.stop(sound);
         }
     }
 }

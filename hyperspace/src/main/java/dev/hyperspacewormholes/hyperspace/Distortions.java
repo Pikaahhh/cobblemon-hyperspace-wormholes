@@ -37,9 +37,15 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Spatial distortions, the Legends Z-A way into Hyperspace. One or two hang around every player in the Overworld, 64 to 160 blocks away and always flat against a wall (a cliff, hillside or building face at least 3x3 with a clear 3x3 space in front), each with a 1 to 5 star rank and one to three types from its biome, lasting 60 minutes while new ones form.
- * A Rift is drawn flat on its wall in pixel art, with its name, stars and types as a label that RiftRenderer draws just above it; stir() makes it throb while Hoopa charges up.
- * Feeding Hoopa a donut there opens a portal to a Hyperspace of that rank and types, the donut's calories buying the time; a Distortion Splicer splices it open instead (see DistortionSplicer). Saved with the world; nothing is placed in the terrain.
+ * Spatial distortions, the Legends Z-A way into Hyperspace. One or two hang around every player in the Overworld, 64 to
+ * 160 blocks away and always flat against a wall (a cliff, hillside or building face at least 3x3 with a clear 3x3
+ * space in front), each with a 1 to 5 star rank and one to three types from its biome, lasting
+ * GameplayConfig.distortionMinutes while new ones form.
+ * A Rift is drawn flat on its wall in pixel art, with its name, stars and types as a label that RiftRenderer draws just
+ * above it; stir() makes it throb while Hoopa charges up.
+ * Feeding Hoopa a donut there opens a portal to a Hyperspace of that rank and types, the donut's calories buying the
+ * time; a Distortion Splicer splices it open instead (see DistortionSplicer). Saved with the world; nothing is placed
+ * in the terrain.
  */
 public class Distortions {
     public static final int REACH = 8;
@@ -49,12 +55,14 @@ public class Distortions {
     private static final int AROUND = 192;
     private static final int SPACING = 48;
     private static final int KEEP_CLEAR = 32;
+    private static final long LIVED_IN = 60 * 60 * 20;
     private static final int TRIES = 8;
     private static final int WALL_SEARCH = 16;
     private static final int WALL_HEIGHT = 3;
     private static final double PLACE_REACH = 6;
     private static final double WALL_GAP = 0.3;
-    private static final long LIFETIME = 60 * 60 * 20;
+    /** How long distortions saved without a born time were made for. */
+    private static final long OLD_LIFETIME = 60 * 60 * 20;
     private static final int FADE = 100;
     private static final int[] TYPE_COUNT_WEIGHTS = {40, 40, 20};
     private static final double RIFT_HEIGHT = 1.5;
@@ -66,7 +74,7 @@ public class Distortions {
     public static class Distortion {
         int x, y, z, stars;
         Direction facing;
-        long ends;
+        long born, ends;
         List<String> types = new ArrayList<>();
         UUID rift, label;
         boolean fading, hoopa;
@@ -91,6 +99,7 @@ public class Distortions {
             t.putInt("z", z);
             t.putInt("stars", stars);
             if (facing != null) t.putString("facing", facing.getSerializedName());
+            t.putLong("born", born);
             t.putLong("ends", ends);
             ListTag list = new ListTag();
             for (String type : types) list.add(StringTag.valueOf(type));
@@ -110,6 +119,7 @@ public class Distortions {
             distortion.stars = t.contains("stars") ? t.getInt("stars") : 1;
             distortion.facing = Direction.byName(t.getString("facing"));
             distortion.ends = t.getLong("ends");
+            distortion.born = t.contains("born") ? t.getLong("born") : distortion.ends - OLD_LIFETIME;
             ListTag list = t.getList("types", Tag.TAG_STRING);
             for (int i = 0; i < list.size(); i++) distortion.types.add(list.getString(i));
             distortion.rift = t.hasUUID("rift") ? t.getUUID("rift") : null;
@@ -186,7 +196,7 @@ public class Distortions {
             double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
             Wall wall = findWall(level, Mth.floor(player.getX() + Math.cos(angle) * distance),
                     Mth.floor(player.getZ() + Math.sin(angle) * distance), random);
-            if (wall == null || crowded(data, wall.spot(), players)) continue;
+            if (wall == null || crowded(data, wall.spot(), players) || nearBase(level, wall.spot())) continue;
             add(level, wall, rollStars(random), rollTypes(level, wall.spot(), random));
             return;
         }
@@ -245,6 +255,19 @@ public class Distortions {
         return false;
     }
 
+    /** Near where an online player respawns, or in a chunk players have spent an hour around (distortionsAvoidBases). */
+    private static boolean nearBase(ServerLevel level, BlockPos spot) {
+        GameplayConfig config = GameplayConfig.get();
+        if (!config.distortionsAvoidBases) return false;
+        if (level.getChunk(spot).getInhabitedTime() >= LIVED_IN) return true;
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            BlockPos home = player.getRespawnPosition();
+            if (home == null || player.getRespawnDimension() != level.dimension()) continue;
+            if (Mth.square(home.getX() - spot.getX()) + Mth.square(home.getZ() - spot.getZ()) < Mth.square(config.distortionBaseDistance)) return true;
+        }
+        return false;
+    }
+
     private static int rollStars(RandomSource random) {
         return pick(random, GameplayConfig.get().distortionStarWeights) + 1;
     }
@@ -281,7 +304,8 @@ public class Distortions {
         distortion.facing = wall.facing();
         distortion.stars = stars;
         distortion.types = new ArrayList<>(types);
-        distortion.ends = level.getGameTime() + LIFETIME;
+        distortion.born = level.getGameTime();
+        distortion.ends = distortion.born + GameplayConfig.get().distortionMinutes * 1200L;
         WorldData data = WorldData.get(level.getServer());
         data.distortions.add(distortion);
         show(level, distortion);
@@ -336,7 +360,7 @@ public class Distortions {
         if (distortion.fading || !level.isPositionEntityTicking(BlockPos.containing(distortion.base()))) return false;
         boolean changed = dropLabel(level, distortion);
         if (distortion.rift == null || !(level.getEntity(distortion.rift) instanceof Rift)) {
-            distortion.rift = Rift.distortion(level, distortion.base(), distortion.normal(), distortion.ends - LIFETIME,
+            distortion.rift = Rift.distortion(level, distortion.base(), distortion.normal(), distortion.born,
                     Component.translatable("distortion.hyperspace_wormholes.label", stars(distortion.stars))
                             .withStyle(ChatFormatting.LIGHT_PURPLE).append("\n").append(typeList(distortion.types))).getUUID();
             changed = true;

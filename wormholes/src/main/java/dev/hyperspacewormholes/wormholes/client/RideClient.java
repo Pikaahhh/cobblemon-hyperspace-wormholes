@@ -3,11 +3,10 @@ package dev.hyperspacewormholes.wormholes.client;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import dev.hyperspacewormholes.wormholes.mixin.SoundEngineAccessor;
-import dev.hyperspacewormholes.wormholes.mixin.SoundManagerAccessor;
 import dev.hyperspacewormholes.wormholes.network.RideFollowPayload;
 import dev.hyperspacewormholes.wormholes.network.RideStartPayload;
 import dev.hyperspacewormholes.wormholes.network.RideStatePayload;
+import dev.hyperspacewormholes.wormholes.ride.Mounts;
 import dev.hyperspacewormholes.wormholes.ride.RideLegend;
 import dev.hyperspacewormholes.wormholes.ride.Stamina;
 import dev.hyperspacewormholes.wormholes.ride.TunnelLayout;
@@ -23,7 +22,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -44,6 +42,12 @@ public final class RideClient {
     private static final float STEER_ACCEL = 0.17f;
     private static final float STEER_DRAG = 0.85f;
     private static final float STREAK_SPAWN_Z = 420f;
+    private static final float COVER_FADE_TICKS = 13f, CLEAR_TICKS = 20f;
+    private static final int COVER_LIMIT_TICKS = 400;
+    private static final int SEAT_WAIT_TICKS = 40;
+    private static final float ARRIVAL_TICKS = 28f;
+    private static final float STEER_EASE_TICKS = 20f;
+    private static final int LONG_WHITE_OUT = 20, LAST_WHITE_TICKS = 13;
     private static final SoundEvent STAT_UP = SoundEvent.createVariableRangeEvent(
             ResourceLocation.fromNamespaceAndPath("cobblemon", "status.up.actor"));
 
@@ -69,7 +73,10 @@ public final class RideClient {
     private static CameraType previousCamera;
     private static float flash, prevFlash;
     private static float whiteOutRate;
-    private static boolean muted;
+    private static int whiteTicks;
+    private static int whiteWait;
+    private static int seatWait;
+    private static boolean arriving;
     private static final Map<Integer, Integer> COLLECTED_RINGS = new HashMap<>();
     private static final Map<Integer, Integer> TOUCHED = new HashMap<>();
     private static final List<Streak> STREAKS = new ArrayList<>();
@@ -104,7 +111,19 @@ public final class RideClient {
     }
 
     public static double progress(float partialTick) {
-        return Mth.lerp(partialTick, prevProgress, progress);
+        float time = time(partialTick);
+        double at = WarpEntryClose.flying(time) ? WarpEntryClose.progress(time) : Mth.lerp(partialTick, prevProgress, progress);
+        return at - lead(time);
+    }
+
+    private static double lead(float time) {
+        return Math.max(0f, WarpTunnel.OPENING_TICKS + 1 - time) * WarpTunnel.CRUISE_SPEED;
+    }
+
+    /** How far the ride's own things (the HUD, trail, rings and wormholes) have come in after the opening shot, 0 to 1. */
+    public static float arrival(float partialTick) {
+        float x = Mth.clamp((time(partialTick) - WarpTunnel.OPENING_TICKS + 8) / ARRIVAL_TICKS, 0f, 1f);
+        return x * x * (3 - 2 * x);
     }
 
     public static double warpDistance(float partialTick) {
@@ -112,33 +131,48 @@ public final class RideClient {
     }
 
     public static float offX(float partialTick) {
-        return Mth.lerp(partialTick, prevOffX, offX);
+        float time = time(partialTick);
+        return WarpEntryClose.flying(time) ? WarpEntryClose.offX(time) : Mth.lerp(partialTick, prevOffX, offX);
     }
 
     public static float offY(float partialTick) {
-        return Mth.lerp(partialTick, prevOffY, offY);
+        float time = time(partialTick);
+        return WarpEntryClose.flying(time) ? WarpEntryClose.offY(time) : Mth.lerp(partialTick, prevOffY, offY);
     }
 
     public static float roll(float partialTick) {
-        return Mth.lerp(partialTick, prevRoll, roll);
+        float time = time(partialTick);
+        return WarpEntryClose.flying(time) ? WarpEntryClose.roll(time) : Mth.lerp(partialTick, prevRoll, roll);
     }
 
     public static void bank(Entity entity, PoseStack poseStack, float partialTick) {
         if (!active) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-        Entity mount = player.getVehicle();
-        if (entity != player && entity != mount) return;
-        float roll = roll(partialTick);
-        if (Math.abs(roll) < 0.05f) return;
-
-        Entity body = mount != null ? mount : player;
+        Entity mount = player.getVehicle(), body = mount != null ? mount : player;
+        float size = Math.max(WarpEntryClose.legendScale(partialTick), 1e-4f), roll = roll(partialTick);
+        boolean shrinks = size < 1f && (entity == body || entity.getVehicle() == body);
+        boolean banks = Math.abs(roll) >= 0.05f && (entity == player || entity == mount);
+        if (!shrinks && !banks) return;
         Vec3 pivot = body.getPosition(partialTick).add(0, body.getBbHeight() * 0.5, 0)
                 .subtract(entity.getPosition(partialTick));
         float yaw = facingYaw * Mth.DEG_TO_RAD;
         poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(new Quaternionf().rotationAxis(roll * Mth.DEG_TO_RAD, -Mth.sin(yaw), 0, Mth.cos(yaw)));
+        if (banks) poseStack.mulPose(new Quaternionf().rotationAxis(roll * Mth.DEG_TO_RAD, -Mth.sin(yaw), 0, Mth.cos(yaw)));
+        if (shrinks) poseStack.scale(size, size, size);
         poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
+    }
+
+    /** How much of this tick's way along the tunnel is behind you. */
+    public static float travelled(float partialTick) {
+        double step = progress - prevProgress;
+        if (!WarpEntryClose.flying(time(partialTick)) || step < 1e-4) return partialTick;
+        return Mth.clamp((float) ((progress(partialTick) - prevProgress) / step), 0f, 1f);
+    }
+
+    public static float speed(float partialTick) {
+        float time = time(partialTick);
+        return WarpEntryClose.flying(time) ? WarpEntryClose.speed(time) : speed;
     }
 
     public static float speed() {
@@ -146,7 +180,13 @@ public final class RideClient {
     }
 
     public static float flash(float partialTick) {
-        return Mth.lerp(partialTick, prevFlash, flash);
+        float f = Mth.lerp(partialTick, prevFlash, flash);
+        return Math.max(f * f * (3 - 2 * f), WarpEntryClose.white(partialTick));
+    }
+
+    /** Whether the white is staying up over the world a ride comes out in, until it can be seen. */
+    public static boolean isCovered() {
+        return arriving;
     }
 
     public static int staminaHalves() {
@@ -212,7 +252,12 @@ public final class RideClient {
         Arrays.fill(TRAIL_Y, 0f);
         for (int i = 0; i < TRAIL_LENGTH; i++) TRAIL_PROGRESS[i] = -i * WarpTunnel.CRUISE_SPEED;
         flash = prevFlash = 1f;
+        arriving = false;
         whiteOutRate = 0f;
+        seatWait = 0;
+        WarpEntryCamera.reset();
+        WarpEntryClose.reset();
+        whiteWait = 0;
 
         previousCamera = mc.options.getCameraType();
         mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
@@ -225,21 +270,30 @@ public final class RideClient {
         if (active || whiteOutRate > 0) {
             flash = prevFlash = 1f;
             whiteOutRate = 0f;
+            arriving = true;
+            ArrivalView.reset();
         }
+        UltraWormholeMusic.fadeOut();
         if (!active) return;
         active = false;
+        WarpEntryCamera.reset();
+        WarpEntryClose.reset();
+        whiteWait = 0;
         Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
         previousCamera = null;
         JadeCompat.restore();
-        UltraWormholeMusic.fadeOut();
         play(SoundEvents.BEACON_DEACTIVATE, 1.4f, 0.9f);
     }
 
     public static void reset() {
         Minecraft mc = Minecraft.getInstance();
         active = false;
+        WarpEntryCamera.reset();
+        WarpEntryClose.reset();
+        whiteWait = 0;
         flash = prevFlash = 0f;
-        muteWithFlash(mc);
+        arriving = false;
+        hush(mc);
         whiteOutRate = 0f;
         if (previousCamera != null) mc.options.setCameraType(previousCamera);
         previousCamera = null;
@@ -248,7 +302,10 @@ public final class RideClient {
     }
 
     public static void whiteOut(int ticks) {
-        whiteOutRate = 1f / Math.max(1, ticks);
+        int ramp = ticks > LONG_WHITE_OUT ? LAST_WHITE_TICKS : Math.max(1, ticks);
+        whiteOutRate = 1f / ramp;
+        whiteWait = Math.max(0, ticks - ramp);
+        whiteTicks = 0;
         play(SoundEvents.BEACON_POWER_SELECT, 0.7f, 1f);
     }
 
@@ -261,12 +318,24 @@ public final class RideClient {
 
     public static void tick(Minecraft mc) {
         prevFlash = flash;
-        if (flash > 0 && mc.screen instanceof ReceivingLevelScreen) {
+        boolean loading = mc.screen instanceof ReceivingLevelScreen;
+        if (flash > 0 && loading) {
             flash = prevFlash = 1f;
-        } else {
-            flash = whiteOutRate > 0 ? Math.min(1f, flash + whiteOutRate) : Math.max(0f, flash - 0.05f);
+            if (arriving) ArrivalView.reset();
+        } else if (arriving && !ArrivalView.ready(mc)) {
+            flash = 1f;
+        } else if (whiteOutRate > 0) {
+            arriving = false;
+            if (whiteWait > 0) whiteWait--;
+            else if (!WarpEntryClose.playing()) flash = Math.min(1f, flash + whiteOutRate);
+            if (active) flash = Math.max(flash, WarpEntryClose.white(1f));
+            if (!active && ++whiteTicks > COVER_LIMIT_TICKS) whiteOutRate = 0f;
+        } else if (!active || ticks > 0) {
+            arriving = false;
+            boolean opening = active && ticks <= WarpTunnel.OPENING_TICKS;
+            flash = Math.max(0f, flash - 1f / (opening ? COVER_FADE_TICKS : CLEAR_TICKS));
         }
-        muteWithFlash(mc);
+        hush(mc);
         if (!active) return;
 
         LocalPlayer player = mc.player;
@@ -275,11 +344,23 @@ public final class RideClient {
             return;
         }
         if (player.level().dimension() != Wormholes.ULTRA_WARP) return;
+        if (ticks == 0) {
+            if (loading) return;
+            keepSeated(player);
+            if (!onLegend(player) && seatWait++ < SEAT_WAIT_TICKS) return;
+        }
 
         ticks++;
         if (ticks % 40 == 0 && !UltraWormholeMusic.isPlayingForRide()) UltraWormholeMusic.start();
-        stamina.tick(ticks);
-        if (passenger) {
+        boolean opening = ticks <= WarpTunnel.OPENING_TICKS;
+        if (!opening) stamina.tick(ticks - WarpTunnel.OPENING_TICKS);
+        if (opening) {
+            prevProgress = progress;
+            prevOffX = offX;
+            prevOffY = offY;
+        } else if (WarpEntryClose.playing()) {
+            drawnIn();
+        } else if (passenger) {
             follow();
         } else {
             if (stamina.exhausted() && dragTarget < 0) {
@@ -289,23 +370,21 @@ public final class RideClient {
             steer(player);
             advance();
         }
+        WarpEntryClose.tick(ticks, whiteOutRate > 0 ? whiteWait + (1f - flash) / whiteOutRate : -1f);
         recordTrail();
+        if (!opening && !WarpEntryClose.playing()) foresee();
+        WarpEntryCamera.tick(ticks, whiteOutRate > 0);
         keepSeated(player);
         if (ticks % 10 == 0) clearGhosts(mc, player);
         aim(mc, player);
         tickStreaks();
-        spawnTrail(player);
+        if (player.getRandom().nextFloat() < arrival(0f) * WarpEntryClose.trail(0f)) spawnTrail(player);
 
         if (!passenger) ClientPlayNetworking.send(new RideStatePayload(progress, offX, offY));
     }
 
-    private static void muteWithFlash(Minecraft mc) {
-        if (flash <= 0 && !muted) return;
-        var engine = (SoundEngineAccessor) ((SoundManagerAccessor) mc.getSoundManager()).hyperspace_wormholes$getSoundEngine();
-        if (!engine.hyperspace_wormholes$isLoaded()) return;
-        float master = mc.options.getSoundSourceVolume(SoundSource.MASTER);
-        engine.hyperspace_wormholes$getListener().setGain(master * (1 - flash));
-        muted = flash > 0;
+    private static void hush(Minecraft mc) {
+        RideHush.set(mc, Math.max(flash(1f), active ? WarpEntryClose.quiet(1f) : 0f));
     }
 
     private static void recordTrail() {
@@ -314,7 +393,7 @@ public final class RideClient {
         System.arraycopy(TRAIL_PROGRESS, 0, TRAIL_PROGRESS, 1, TRAIL_LENGTH - 1);
         TRAIL_X[0] = offX;
         TRAIL_Y[0] = offY;
-        TRAIL_PROGRESS[0] = progress;
+        TRAIL_PROGRESS[0] = progress - lead(ticks + 1);
     }
 
     private static void steer(LocalPlayer player) {
@@ -322,8 +401,9 @@ public final class RideClient {
             dragged();
             return;
         }
-        velX = (velX + player.input.leftImpulse * STEER_ACCEL) * STEER_DRAG;
-        velY = (velY + player.input.forwardImpulse * STEER_ACCEL) * STEER_DRAG;
+        float accel = STEER_ACCEL * Math.min(1f, (ticks - WarpTunnel.OPENING_TICKS) / STEER_EASE_TICKS);
+        velX = (velX + player.input.leftImpulse * accel) * STEER_DRAG;
+        velY = (velY + player.input.forwardImpulse * accel) * STEER_DRAG;
         move();
         float len = Mth.sqrt(offX * offX + offY * offY);
         if (len > WarpTunnel.MAX_OFFSET) {
@@ -351,6 +431,23 @@ public final class RideClient {
         move();
         bank();
         speed = Mth.lerp(0.06f, speed, WarpTunnel.BOOST_SPEED);
+    }
+
+    /** Drawn into the wormhole that's closing: where WarpEntryClose says, at the end of this tick. */
+    private static void drawnIn() {
+        prevProgress = WarpEntryClose.progress(ticks);
+        progress = WarpEntryClose.progress(ticks + 1);
+        prevOffX = WarpEntryClose.offX(ticks);
+        prevOffY = WarpEntryClose.offY(ticks);
+        offX = WarpEntryClose.offX(ticks + 1);
+        offY = WarpEntryClose.offY(ticks + 1);
+        velX = offX - prevOffX;
+        velY = offY - prevOffY;
+        prevRoll = WarpEntryClose.roll(ticks);
+        roll = WarpEntryClose.roll(ticks + 1);
+        speed = (float) (progress - prevProgress);
+        prevWarp = warp;
+        warp = Math.min(WarpTunnel.MAX_WARP_DISTANCE, warp + layout.warpDistance(speed));
     }
 
     private static void follow() {
@@ -387,6 +484,28 @@ public final class RideClient {
         crossings();
     }
 
+    /** Tells the camera once the next wormhole is so near that no steering could miss it. */
+    private static void foresee() {
+        WarpTunnel.Wormhole w = layout.wormhole(nextWormhole);
+        float left = (float) (w.distance() - progress) / Math.max(speed, 0.1f);
+        if (left > WarpEntryCamera.LEAD_TICKS) return;
+        boolean certain = layout.isUncharted(w.index()) || !passenger && dragTarget == nextWormhole;
+        if (!certain) {
+            float x = offX, y = offY, vx = velX, vy = velY, steered = 0, reach = 0;
+            for (int i = passenger ? -3 : 0; i < left; i++) {
+                vx *= STEER_DRAG;
+                vy *= STEER_DRAG;
+                x += vx;
+                y += vy;
+                steered = (steered + STEER_ACCEL * Mth.SQRT_OF_TWO) * STEER_DRAG;
+                reach += steered;
+            }
+            float dx = x - w.x(), dy = y - w.y(), off = Math.max(Mth.sqrt(dx * dx + dy * dy), 1e-3f);
+            certain = WarpTunnel.touches(w, x + dx / off * reach, y + dy / off * reach);
+        }
+        if (certain) WarpEntryCamera.approach(ticks, ticks + 1 + left);
+    }
+
     private static void crossings() {
         for (; WarpTunnel.goldRingPassedAt(seed, nextGoldRing) <= progress; nextGoldRing++) {
             WarpTunnel.GoldRing ring = WarpTunnel.goldRing(seed, nextGoldRing);
@@ -402,7 +521,13 @@ public final class RideClient {
             if (w.distance() > progress) return;
             if (layout.isUncharted(w.index()) || WarpTunnel.touches(w, offX, offY)) {
                 TOUCHED.put(w.index(), ticks);
-                flash = Math.max(flash, 0.3f);
+                double moved = progress - prevProgress;
+                float at = moved > 0 ? (float) Mth.clamp((w.distance() - prevProgress) / moved, 0, 1) : 1f;
+                float x = Mth.lerp(at, prevOffX, offX), y = Mth.lerp(at, prevOffY, offY);
+                WarpEntryCamera.enter(ticks + at, w.x(), w.y(), w.distance(), x, y, (float) moved, offX - prevOffX,
+                        offY - prevOffY);
+                WarpEntryClose.touch(w.index(), ticks + at, w.x(), w.y(), w.distance(), (float) moved, x, y, offX - prevOffX,
+                        offY - prevOffY, Mth.lerp(at, prevRoll, roll), roll - prevRoll);
                 play(SoundEvents.BEACON_POWER_SELECT, 1.5f + 0.1f * w.rings(), 1f);
                 play(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 1f);
             } else if (Mth.square(w.x() - offX) + Mth.square(w.y() - offY) < 16 * 16) {
@@ -410,6 +535,12 @@ public final class RideClient {
             }
             nextWormhole++;
         }
+    }
+
+    /** Whether the legend has arrived under the player and says which legend it is. */
+    private static boolean onLegend(LocalPlayer player) {
+        return mount == RideLegend.NONE || player.getVehicle() instanceof PokemonEntity legend
+                && Mounts.kindOf(legend.getPokemon()) == mount;
     }
 
     private static void keepSeated(LocalPlayer player) {

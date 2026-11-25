@@ -62,6 +62,9 @@ public final class GameplayConfigScreen extends Screen {
         to.encounterPowerMultiplier = from.encounterPowerMultiplier;
         to.catchingPowerMultiplier = from.catchingPowerMultiplier;
         to.maxDistortionsPerPlayer = from.maxDistortionsPerPlayer;
+        to.distortionMinutes = from.distortionMinutes;
+        to.distortionsAvoidBases = from.distortionsAvoidBases;
+        to.distortionBaseDistance = from.distortionBaseDistance;
         to.distortionStarWeights = from.distortionStarWeights.clone();
         to.bossHardModeAlwaysOn = from.bossHardModeAlwaysOn;
         to.monitorBreaksFromLightning = from.monitorBreaksFromLightning;
@@ -100,6 +103,9 @@ public final class GameplayConfigScreen extends Screen {
         monuments(c);
         heading("hyperspace", null);
         whole("maxDistortions", c.maxDistortionsPerPlayer, value -> shown.maxDistortionsPerPlayer = value);
+        whole("distortionMinutes", c.distortionMinutes, value -> shown.distortionMinutes = value);
+        toggle("distortionsAvoidBases", c.distortionsAvoidBases, value -> shown.distortionsAvoidBases = value);
+        whole("distortionBaseDistance", c.distortionBaseDistance, value -> shown.distortionBaseDistance = value);
         decimal("hyperspaceLegendaryShiny", c.hyperspaceLegendaryShinyOneIn, value -> shown.hyperspaceLegendaryShinyOneIn = value);
         heading("stars", tip("stars"));
         for (int i = 0; i < GameplayConfig.STARS; i++) {

@@ -43,7 +43,7 @@ import java.util.concurrent.CompletionException;
 public final class UltraWorldMusic extends AbstractTickableSoundInstance implements FabricSoundInstance {
     private static final String INTRO = "_intro.ogg";
     private static final int RETRY_TICKS = 40;
-    private static final float FADE_PER_TICK = 0.025f;
+    private static final float FADE_PER_TICK = 0.025f, ARRIVE_PER_TICK = 0.05f;
     private static final int AFTER_HOLD = 20, FIGHT_HOLD = 200;
     private static final double FIGHT_RANGE = 64;
     private static final Set<String> FUSED = Set.of("dusk-fusion", "dawn-fusion", "ultra-fusion");
@@ -52,14 +52,17 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     private static @Nullable Method reactiveHold;
     private static boolean reactiveLooked;
 
+    private final float rise;
+
     private boolean fading;
 
-    private UltraWorldMusic(SoundEvent theme, boolean fadeIn) {
+    private UltraWorldMusic(SoundEvent theme, boolean fadeIn, float rise) {
         super(theme, SoundSource.MUSIC, RandomSource.create());
         this.looping = true;
         this.relative = true;
         this.attenuation = SoundInstance.Attenuation.NONE;
         if (fadeIn) this.volume = 0;
+        this.rise = rise;
     }
 
     public static void register() {
@@ -68,6 +71,15 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
 
     public static boolean isPlaying() {
         return current != null && Minecraft.getInstance().getSoundManager().isActive(current);
+    }
+
+    /** Playing and staying, not fading out. */
+    static boolean isPlayingHere() {
+        return isPlaying() && !current.fading;
+    }
+
+    public static @Nullable UltraWorldMusic current() {
+        return current;
     }
 
     private static void update(Minecraft mc) {
@@ -85,7 +97,7 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
             mc.getSoundManager().stop(current);
             current = null;
         }
-        SoundEvent theme = mc.player == null || mc.level == null || UltraWormholeMusic.isPlaying() || held ? null : themeAt(mc);
+        SoundEvent theme = mc.player == null || mc.level == null || UltraWormholeMusic.isPlayingForRide() || held ? null : themeAt(mc);
         if (current != null && !mc.getSoundManager().isActive(current)) current = null;
         if (current != null) {
             current.fading = theme == null || !theme.getLocation().equals(current.getLocation());
@@ -94,7 +106,8 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
         if (theme == null || wait > 0) return;
         wait = RETRY_TICKS;
         mc.getMusicManager().stopPlaying();
-        current = new UltraWorldMusic(theme, sinceHold < Integer.MAX_VALUE);
+        boolean arriving = UltraWormholeMusic.isPlaying();
+        current = new UltraWorldMusic(theme, arriving || sinceHold < Integer.MAX_VALUE, arriving ? ARRIVE_PER_TICK : FADE_PER_TICK);
         sinceHold = Integer.MAX_VALUE;
         mc.getSoundManager().play(current);
         holdReactiveMusic(current);
@@ -115,7 +128,7 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
 
     public static boolean keepsThemeOver(SoundInstance battleMusic) {
         Minecraft mc = Minecraft.getInstance();
-        return mc.player != null && mc.level != null && !UltraWormholeMusic.isPlaying()
+        return mc.player != null && mc.level != null && !UltraWormholeMusic.isPlayingForRide()
                 && !battleMusic.getLocation().getNamespace().equals(Wormholes.MOD_ID) && themeAt(mc) != null;
     }
 
@@ -150,7 +163,7 @@ public final class UltraWorldMusic extends AbstractTickableSoundInstance impleme
     @Override
     public void tick() {
         if (!fading) {
-            volume = Math.min(1f, volume + FADE_PER_TICK);
+            volume = Math.min(1f, volume + rise);
             return;
         }
         volume -= FADE_PER_TICK;

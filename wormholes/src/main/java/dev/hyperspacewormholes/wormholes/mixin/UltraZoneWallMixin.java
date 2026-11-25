@@ -23,12 +23,12 @@ public abstract class UltraZoneWallMixin {
         Zone zone = UltraZones.of(self.level());
         if (zone == null || !UltraZones.walled(self)) return;
         Vec3 pos = self.position(), move = cir.getReturnValue();
-        if (!zone.allows(pos.x, pos.y, pos.z) || zone.allows(pos.x + move.x, pos.y + move.y, pos.z + move.z)) return;
+        if (!UltraZones.allows(zone, self, pos.x, pos.y, pos.z) || UltraZones.allows(zone, self, pos.x + move.x, pos.y + move.y, pos.z + move.z)) return;
         double dy = move.y > 0 ? Math.min(move.y, Math.max(0, zone.ceiling() - pos.y)) : move.y;
         double y = pos.y + dy;
-        double dx = zone.allows(pos.x + move.x, y, pos.z) ? move.x : 0;
-        double dz = zone.allows(pos.x, y, pos.z + move.z) ? move.z : 0;
-        if (!zone.allows(pos.x + dx, y, pos.z + dz)) dz = 0;
+        double dx = UltraZones.allows(zone, self, pos.x + move.x, y, pos.z) ? move.x : 0;
+        double dz = UltraZones.allows(zone, self, pos.x, y, pos.z + move.z) ? move.z : 0;
+        if (!UltraZones.allows(zone, self, pos.x + dx, y, pos.z + dz)) dz = 0;
         cir.setReturnValue(new Vec3(dx, dy, dz));
     }
 }

@@ -3,6 +3,7 @@ package dev.hyperspacewormholes.usum;
 import com.cobblemon.mod.common.api.moves.animations.ActionEffectContext;
 import com.cobblemon.mod.common.api.moves.animations.EntityProvider;
 import com.cobblemon.mod.common.api.moves.animations.keyframes.ActionEffectKeyframe;
+import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -60,6 +61,7 @@ public final class MoveFx implements ModInitializer {
     static void sendNear(List<Entity> battlers, CustomPacketPayload payload) {
         if (battlers.isEmpty() || !(battlers.getFirst().level() instanceof ServerLevel level)) return;
         for (ServerPlayer player : level.players()) {
+            if (battlers.stream().anyMatch(b -> b instanceof PokemonEntity && !b.broadcastToPlayer(player))) continue;
             for (Entity entity : battlers) {
                 if (entity.level() == level && player.distanceToSqr(entity) < RANGE * RANGE) {
                     ServerPlayNetworking.send(player, payload);

@@ -28,6 +28,7 @@ import com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticl
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonParser;
 import dev.hyperspacewormholes.wormholes.ride.ItemAnalyser;
+import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -243,7 +244,7 @@ public class QuickBattles {
     private static void order(ServerPlayer player, Payload order) {
         if (BattleRegistry.getBattleByParticipatingPlayer(player) != null) return;
         Entity target = player.level().getEntity(order.ball());
-        if (target == null || !target.isAlive() || target.distanceTo(player) > TARGET_RANGE) return;
+        if (target == null || !target.isAlive() || target.distanceTo(player) > TARGET_RANGE || !target.broadcastToPlayer(player)) return;
         PokemonEntity pokemon = sentOut(player, order.pokemon());
         if (pokemon == null || attacks.containsKey(pokemon)) return;
         if (!(target instanceof FloatingBall ball && ball.belongsTo(player) || wild(target))) return;
@@ -292,7 +293,9 @@ public class QuickBattles {
         });
         for (Iterator<Map.Entry<PokemonEntity, Attack>> it = attacks.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<PokemonEntity, Attack> entry = it.next();
-            if (!step(server, entry.getKey(), entry.getValue())) continue;
+            boolean[] over = {false};
+            OwnEncounters.only(entry.getValue().target, () -> over[0] = step(server, entry.getKey(), entry.getValue()));
+            if (!over[0]) continue;
             it.remove();
             freed(server, entry.getKey(), entry.getValue());
         }

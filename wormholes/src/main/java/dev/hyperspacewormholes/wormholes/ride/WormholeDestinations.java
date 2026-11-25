@@ -18,6 +18,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -29,12 +30,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Where tunnel wormholes take you: a Pokemon wormhole in the game's colours leads to its Ultra Space Wilds world, the
  * older difficulty colours to the Overworld, the End or now and then a Wilds world. It finds and clears a landing and
  * opens a way home (at the zone's exit hole where it has one), and in an Ultra Beast's home the beast stands at the
- * zone's spot and never moves. After GameplayConfig.necrozmaPity white wormholes in a row the next white one is Necrozma's.
+ * zone's spot and never moves. Everyone on the trip gets their own Pokemon (OwnEncounters). After GameplayConfig.necrozmaPity white wormholes in a row the next white one is Necrozma's.
  */
 public final class WormholeDestinations {
     private static final int MIN_DISTANCE = 64;
@@ -62,6 +64,11 @@ public final class WormholeDestinations {
     public static final String STAYS_PUT = "hyperspace_wormholes.stays_put";
 
     private WormholeDestinations() {}
+
+    /** Whether it is a Pokemon met through a wormhole, in Ultra Space: nothing moves it sideways there. */
+    public static boolean held(Entity entity) {
+        return entity.getTags().contains(STAYS_PUT) && entity.level() instanceof ServerLevel level && UltraDimensions.isUltra(level);
+    }
 
     public record Plan(ResourceKey<Level> dimension, int x, int z, int dirX, int dirZ, WormholeType type, int rings,
                        double lightYears, @Nullable String pokemon) {
@@ -118,8 +125,8 @@ public final class WormholeDestinations {
                     new Plan(level.dimension(), 0, 0, 1, 0, type, order.rings(), VISIT_LIGHT_YEARS, pokemon)));
         }
         WormholeEntity exit = openReturnWormhole(arrival, home, type, RETURN_WORMHOLE_TICKS, player);
-        UltraWarpRide.travel(player, arrival, exit);
-        spawnWild(arrival, false, player);
+        List<ServerPlayer> passengers = UltraWarpRide.travel(player, arrival, exit);
+        spawnWild(arrival, false, player, passengers);
     }
 
     static Plan orderPlan(ServerPlayer player, WormholeOrder order, @Nullable HomePoint start, double lightYears) {
@@ -343,7 +350,7 @@ public final class WormholeDestinations {
         return level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, centre);
     }
 
-    static void spawnWild(Arrival arrival, boolean rainbow, @Nullable ServerPlayer player) {
+    static void spawnWild(Arrival arrival, boolean rainbow, @Nullable ServerPlayer player, List<ServerPlayer> passengers) {
         ServerLevel level = arrival.level();
         Plan plan = arrival.plan();
         Zone zone = UltraZones.of(level);
@@ -362,44 +369,73 @@ public final class WormholeDestinations {
         if (!WormholeConfig.get().gameWormholeColours && plan.rings() >= WarpTunnel.SHINY_RINGS) {
             properties = properties.replace("shiny=false", "shiny=true");
         }
-        try {
-            PokemonEntity entity = PokemonProperties.Companion.parse(properties).createEntity(level);
-            WormholePokemon.atLeastAverageSize(entity.getPokemon());
-            boolean atSpot = zone != null && zone.spot() != null;
-            boolean giant = atSpot && CraterGiants.fillsCrater(level, entity);
-            if (!giant && level.getRandom().nextFloat() < WormholePokemon.alphaChance(plan.rings())) entity.getPokemon().setAlpha(true);
-            if (giant) CraterGiants.fitCrater(entity);
-            entity.refreshDimensions();
-            entity.addTag(STAYS_PUT);
-            UltraStays.keep(level, entity);
-            if (wilds && atSpot) {
-                WildsShadows.hide(level, entity, arrival.pos());
-                return;
-            }
-            if (atSpot && ZoneLeaps.waits(level)) {
-                ZoneLeaps.hide(level, entity, zone, arrival.pos());
-                return;
-            }
-            if (atSpot) {
-                Vec3 at = zone.standOn(zone.spot());
-                if (giant) at = CraterGiants.onFloor(level, at);
-                Vec3 faced = giant ? CraterGiants.walkEnd(zone, at) : null;
-                if (faced == null) faced = arrival.pos();
-                float facing = (float) (Mth.atan2(-(faced.x - at.x), faced.z - at.z) * Mth.RAD_TO_DEG);
-                entity.moveTo(at.x, at.y, at.z, facing, 0f);
-                entity.setYHeadRot(facing);
-                entity.setYBodyRot(facing);
-                entity.getEntityData().set(PokemonEntity.getSPAWN_DIRECTION(), Mth.wrapDegrees(facing));
-                entity.setNoAi(true);
-                if (UltraPlantLightning.isUltraPlant(level)) PlantXurkitrees.sleep(entity);
-                level.addFreshEntity(entity);
-                return;
-            }
-            placeInOpenAir(entity, arrival);
-            PokemonArrivals.start(level, entity, entity.position(), arrival.yaw() + 180f, plan.type(), rainbow);
-        } catch (RuntimeException e) {
-            Wormholes.LOGGER.error("Couldn't spawn the wormhole Pokémon '{}'", properties, e);
+        List<UUID> owners = new ArrayList<>();
+        if (UltraDimensions.isUltra(level)) {
+            if (player != null) owners.add(player.getUUID());
+            passengers.stream().filter(p -> !p.isSpectator()).forEach(p -> owners.add(p.getUUID()));
         }
+        if (owners.isEmpty()) owners.add(null);
+        boolean alpha = level.getRandom().nextFloat() < WormholePokemon.alphaChance(plan.rings());
+        PokemonEntity first = null;
+        for (UUID owner : owners) {
+            try {
+                PokemonEntity entity = PokemonProperties.Companion.parse(properties).createEntity(level);
+                if (first == null) {
+                    first = entity;
+                } else {
+                    entity.getPokemon().setLevel(first.getPokemon().getLevel());
+                    entity.getPokemon().setShiny(first.getPokemon().getShiny());
+                }
+                if (owner != null) {
+                    OwnEncounters.give(entity, owner);
+                    if (!wilds) UltraStays.again(level, owner);
+                }
+                place(arrival, rainbow, zone, wilds, alpha, entity);
+            } catch (RuntimeException e) {
+                Wormholes.LOGGER.error("Couldn't spawn the wormhole Pokémon '{}'", properties, e);
+            }
+        }
+    }
+
+    private static void place(Arrival arrival, boolean rainbow, @Nullable Zone zone, boolean wilds, boolean alpha,
+                              PokemonEntity entity) {
+        ServerLevel level = arrival.level();
+        Plan plan = arrival.plan();
+        WormholePokemon.atLeastAverageSize(entity.getPokemon());
+        boolean atSpot = zone != null && zone.spot() != null;
+        boolean giant = atSpot && CraterGiants.fillsCrater(level, entity);
+        if (alpha && !giant) entity.getPokemon().setAlpha(true);
+        if (giant) CraterGiants.fitCrater(entity);
+        entity.refreshDimensions();
+        entity.addTag(STAYS_PUT);
+        UltraStays.keep(level, entity);
+        if (wilds && atSpot) {
+            WildsShadows.hide(level, entity, arrival.pos());
+            return;
+        }
+        if (atSpot && ZoneLeaps.waits(level)) {
+            ZoneLeaps.hide(level, entity, zone, arrival.pos());
+            return;
+        }
+        if (atSpot) {
+            Vec3 at = zone.standOn(zone.spot());
+            if (giant) at = CraterGiants.onFloor(level, at);
+            Vec3 faced = giant ? CraterGiants.walkEnd(zone, at) : null;
+            if (faced == null) faced = arrival.pos();
+            float facing = (float) (Mth.atan2(-(faced.x - at.x), faced.z - at.z) * Mth.RAD_TO_DEG);
+            if (RuinGuzzlord.eats(level, entity)) facing += 180f;
+            entity.moveTo(at.x, at.y, at.z, facing, 0f);
+            entity.setYHeadRot(facing);
+            entity.setYBodyRot(facing);
+            entity.getEntityData().set(PokemonEntity.getSPAWN_DIRECTION(), Mth.wrapDegrees(facing));
+            entity.setNoAi(true);
+            if (UltraPlantLightning.isUltraPlant(level)) PlantXurkitrees.sleep(entity);
+            if (RuinGuzzlord.eats(level, entity)) RuinGuzzlord.eat(entity);
+            level.addFreshEntity(entity);
+            return;
+        }
+        placeInOpenAir(entity, arrival);
+        PokemonArrivals.start(level, entity, entity.position(), arrival.yaw() + 180f, plan.type(), rainbow);
     }
 
     private static void placeInOpenAir(PokemonEntity entity, Arrival arrival) {

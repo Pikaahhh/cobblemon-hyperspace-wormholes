@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "hyperspace_wormholes:ruin_288_south",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "hyperspace_wormholes:zone_spot",
+    "salt": 577,
+    "chunk_x": 2,
+    "chunk_z": 11,
+    "repeat": 625
+  }
+}

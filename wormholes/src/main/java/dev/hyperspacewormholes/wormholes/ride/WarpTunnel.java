@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
  * odds go by.
  */
 public final class WarpTunnel {
+    public static final int OPENING_TICKS = 141;
+    private static final int BEND_EASE_TICKS = 60;
     public static final float TUNNEL_RADIUS = 34f;
     public static final float MAX_OFFSET = 21f;
     public static final float CRUISE_SPEED = 1.6f;
@@ -172,12 +174,17 @@ public final class WarpTunnel {
 
     public static float bendX(float z, float time) {
         float a = (float) (Math.sin(time * 0.0091) * 0.22 + Math.sin(time * 0.0233 + 1.3) * 0.12);
-        return a * z * z / 200f;
+        return bent(time) * a * z * z / 200f;
     }
 
     public static float bendY(float z, float time) {
         float a = (float) (Math.sin(time * 0.0127 + 2.1) * 0.16 + Math.sin(time * 0.0301 + 0.4) * 0.08);
-        return a * z * z / 200f;
+        return bent(time) * a * z * z / 200f;
+    }
+
+    private static float bent(float time) {
+        float x = Math.max(0f, Math.min(1f, (time - OPENING_TICKS + 15) / BEND_EASE_TICKS));
+        return x * x * (3 - 2 * x);
     }
 
     private static long mix(long z) {

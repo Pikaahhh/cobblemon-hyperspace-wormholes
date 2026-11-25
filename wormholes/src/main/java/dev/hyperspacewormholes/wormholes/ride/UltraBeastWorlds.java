@@ -27,9 +27,9 @@ public final class UltraBeastWorlds {
             Map.entry("xurkitree", Wormholes.ULTRA_PLANT),
             Map.entry("pheromosa", Wormholes.ULTRA_DESERT),
             Map.entry("celesteela", Wormholes.ULTRA_CRATER),
-            Map.entry("necrozma", Wormholes.ULTRA_MEGALOPOLIS));
+            Map.entry("necrozma", Wormholes.ULTRA_MEGALOPOLIS),
+            Map.entry("guzzlord", Wormholes.ULTRA_RUIN));
     public static final Map<String, ResourceKey<Level>> WILDS_HOMES = Map.of(
-            "guzzlord", Wormholes.WILDS_CRAG,
             "stakataka", Wormholes.WILDS_CRAG,
             "kartana", Wormholes.WILDS_CRAG,
             "blacephalon", Wormholes.WILDS_CAVE,

@@ -1,0 +1,15 @@
+{
+  "type": "hyperspace_wormholes:zone",
+  "biomes": "#hyperspace_wormholes:has_structure/ruin_288",
+  "step": "local_modifications",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "zone": "ruin_288",
+  "processors": "hyperspace_wormholes:ruin_288",
+  "tiles": [
+    0,
+    4,
+    3,
+    7
+  ]
+}

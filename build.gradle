@@ -18,6 +18,10 @@ repositories {
         forRepository { maven { url = 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }
     }
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.bawnorton.com/releases' } }
+        filter { includeGroup 'com.github.bawnorton.mixinsquared' }
+    }
 }
 
 dependencies {
@@ -31,6 +35,9 @@ dependencies {
     modCompileOnly("maven.modrinth:cobblemon-pokenav:BV5KiAcY") { transitive = false }  // CobbleNav 2.4.1
     modCompileOnly("maven.modrinth:modmenu:11.0.3") { transitive = false }
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
+
+    // Lets VeilShaderFix skip a Veil mixin that can't apply; bundled inside our jar (MIT).
+    include(implementation("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}"))
 
     // Dev-only runtime so runServer/runClient boot with Cobblemon; never bundled.
     modLocalRuntime("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }

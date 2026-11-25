@@ -1,6 +1,9 @@
 package dev.hyperspacewormholes.wormholes.entity;
 
+import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import dev.hyperspacewormholes.wormholes.ride.HomePoint;
+import dev.hyperspacewormholes.wormholes.ride.Mounts;
+import dev.hyperspacewormholes.wormholes.ride.RideLegend;
 import dev.hyperspacewormholes.wormholes.ride.WaysHome;
 import dev.hyperspacewormholes.wormholes.ride.UltraDimensions;
 import dev.hyperspacewormholes.wormholes.ride.UltraWarpRide;
@@ -14,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -37,13 +41,18 @@ import java.util.UUID;
  * The wormhole itself, opened by a command or a legend's roar. Fly into one on a legend to start an Ultra Warp Ride, or
  * walk into a way home to go back to where your ride started. One from /wormhole create (setCommanded) lets anyone in
  * and takes them straight to its destination (WormholeDestinations.visit), or with ride=true starts a ride whose
- * wormholes all lead there. It's never culled (noCulling), since Entity Culling hides ways home set into rock.
+ * wormholes all lead there. When it's done it closes (close) over CLOSING_TICKS, which the server keeps the clients in
+ * step with. It's never culled (noCulling), since Entity Culling hides ways home set into rock.
  */
 public class WormholeEntity extends Entity {
     public static final float SIZE = 7f;
     public static final float RADIUS = 2.6f;
     public static final float RIM = RADIUS * 1.7f;
     public static final int CLOSE_TICKS = 20;
+    private static final int CLOSING_TICKS = 34;
+    private static final int BURST_TICKS = 9;
+    private static final int CLOSING_SENT_EVERY = 5;
+    private static final double CLOSE_SEEN_FROM = 192;
     private static final EntityDataAccessor<Integer> RINGS =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> TYPE =
@@ -54,6 +63,10 @@ public class WormholeEntity extends Entity {
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> SCALE =
             SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> CLOSING =
+            SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ENTERED_BY =
+            SynchedEntityData.defineId(WormholeEntity.class, EntityDataSerializers.INT);
     private static final int WATER_REACH = 5;
     private static final double MOUTH_RADIUS = RIM * 0.8;
     private static final double WELL_DEPTH = RADIUS * 1.8 * 0.6;
@@ -66,6 +79,8 @@ public class WormholeEntity extends Entity {
     private boolean nearWater;
     private boolean submerged;
     private boolean commanded;
+    private int closesAt;
+    private int closingFor = -1;
     private @Nullable WormholeOrder order;
 
     public WormholeEntity(EntityType<? extends WormholeEntity> type, Level level) {
@@ -81,6 +96,30 @@ public class WormholeEntity extends Entity {
         builder.define(LIFETIME, 0);
         builder.define(RAINBOW, false);
         builder.define(SCALE, 1f);
+        builder.define(CLOSING, 0);
+        builder.define(ENTERED_BY, RideLegend.NONE.ordinal());
+    }
+
+    public boolean isClosing() {
+        return closingFor >= 0;
+    }
+
+    /** How many ticks it has been closing for, or less than 0. */
+    public float closingFor(float partialTick) {
+        return closingFor < 0 ? -1f : closingFor + partialTick;
+    }
+
+    /** The legend it's closing behind, if one went in. */
+    public RideLegend enteredBy() {
+        return RideLegend.byId(entityData.get(ENTERED_BY));
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (!CLOSING.equals(key) || !level().isClientSide) return;
+        int sent = entityData.get(CLOSING) - 1;
+        if (sent >= 0 && (closingFor < 0 || Math.abs(sent - closingFor) > CLOSING_SENT_EVERY)) closingFor = sent;
     }
 
     public float getScale() {
@@ -132,6 +171,10 @@ public class WormholeEntity extends Entity {
         this.order = order;
     }
 
+    public void setOrder(@Nullable WormholeOrder order) {
+        this.order = order;
+    }
+
     public void setDecorative(boolean decorative) {
         this.decorative = decorative;
     }
@@ -142,7 +185,7 @@ public class WormholeEntity extends Entity {
 
     @Override
     public boolean shouldBeSaved() {
-        return returnTo == null && !decorative && super.shouldBeSaved();
+        return returnTo == null && !decorative && !isClosing() && super.shouldBeSaved();
     }
 
     public boolean isNearWater() {
@@ -176,16 +219,28 @@ public class WormholeEntity extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide) {
-            spawnSwirlParticles();
+            if (isClosing()) closingFor++;
+            else spawnSwirlParticles();
             if (tickCount % 10 == 1) {
                 nearWater = findWater();
                 submerged = nearWater && findSubmerged();
             }
             return;
         }
+        if (isClosing()) {
+            closingFor++;
+            if (closingFor == BURST_TICKS) playClosed();
+            if (closingFor >= CLOSING_TICKS) discard();
+            else if (closingFor % CLOSING_SENT_EVERY == 0) entityData.set(CLOSING, closingFor + 1);
+            return;
+        }
         int lifetime = getLifetime();
-        if (lifetime > 0 && tickCount >= lifetime) {
-            closeAfterUse();
+        if (lifetime > 0 && tickCount >= (decorative ? lifetime - CLOSE_TICKS : lifetime)) {
+            close();
+            return;
+        }
+        if (closesAt > 0) {
+            if (tickCount >= closesAt) close();
             return;
         }
         if (!decorative && tickCount % 2 == 0) pullInRiders();
@@ -212,7 +267,8 @@ public class WormholeEntity extends Entity {
                         && inMouth(vehicle != null ? vehicle : player)) {
                     WaysHome.send(player, returnTo);
                     if (closesOnUse()) {
-                        closeAfterUse();
+                        enteredOn(vehicle);
+                        close();
                         return;
                     }
                 }
@@ -233,24 +289,47 @@ public class WormholeEntity extends Entity {
             UltraWarpRide.entering(player);
             if (order != null && !order.ride()) {
                 WormholeDestinations.visit(player, order, new HomePoint(level().dimension(), returnPos, yaw));
+                if (singleUse || closesOnUse()) {
+                    enteredOn(vehicle);
+                    close();
+                    return;
+                }
             } else {
-                UltraWarpRide.start(player, returnPos, yaw, order);
-            }
-            if (singleUse || closesOnUse()) {
-                closeAfterUse();
-                return;
+                UltraWarpRide.enter(player, returnPos, yaw, order);
+                if (singleUse || closesOnUse()) {
+                    enteredOn(vehicle);
+                    closesAt = tickCount + UltraWarpRide.ENTRY_DELAY_TICKS;
+                    return;
+                }
             }
         }
+    }
+
+    private void enteredOn(@Nullable Entity vehicle) {
+        RideLegend legend = vehicle instanceof PokemonEntity ridden ? Mounts.kindOf(ridden.getPokemon()) : RideLegend.NONE;
+        entityData.set(ENTERED_BY, legend.ordinal());
     }
 
     private boolean closesOnUse() {
         return !UltraDimensions.isUltra(level());
     }
 
-    private void closeAfterUse() {
+    /** Starts it closing, or closes it at once if there's nobody near to see it. */
+    public void close() {
+        if (isClosing() || isRemoved()) return;
+        boolean seen = level().hasNearbyAlivePlayer(getX(), getY(), getZ(), CLOSE_SEEN_FROM);
+        if (!seen || !(level() instanceof ServerLevel server) || !server.isPositionEntityTicking(blockPosition())) {
+            playClosed();
+            discard();
+            return;
+        }
+        closingFor = 0;
+        entityData.set(CLOSING, 1);
+    }
+
+    private void playClosed() {
         Vec3 c = center();
         level().playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.NEUTRAL, 1.5f, 1.4f);
-        discard();
     }
 
     private void spawnSwirlParticles() {
@@ -313,6 +392,7 @@ public class WormholeEntity extends Entity {
         setWormholeType(WormholeType.byId(tag.getInt("Type")));
         singleUse = tag.getBoolean("SingleUse");
         setLifetime(tag.getInt("LifeLeft"));
+        if (tag.getBoolean("Waystones")) order = WormholeOrder.WAYSTONES;
     }
 
     @Override
@@ -320,6 +400,7 @@ public class WormholeEntity extends Entity {
         tag.putInt("Rings", getRings());
         tag.putInt("Type", getWormholeType().ordinal());
         if (singleUse) tag.putBoolean("SingleUse", true);
+        if (order == WormholeOrder.WAYSTONES) tag.putBoolean("Waystones", true);
         if (getLifetime() > 0) tag.putInt("LifeLeft", Math.max(1, getLifetime() - tickCount));
     }
 }

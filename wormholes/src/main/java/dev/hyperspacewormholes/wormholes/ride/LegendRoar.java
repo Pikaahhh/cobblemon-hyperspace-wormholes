@@ -7,6 +7,8 @@ import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
 import dev.hyperspacewormholes.wormholes.network.RoarPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/** Your Solgaleo or Lunala roaring a wormhole open in front of it. Doesn't work in Hyperspace. */
+/** Your Solgaleo or Lunala roaring a wormhole open in front of it, to Ultra Space or to waystones. Doesn't work in Hyperspace. */
 public final class LegendRoar {
     public static final int ROAR_TICKS = 30;
     private static final int OPEN_AT = 16;
@@ -40,13 +42,13 @@ public final class LegendRoar {
     private static final Map<UUID, Long> COOLDOWN_UNTIL = new HashMap<>();
     private static final List<Pending> PENDING = new ArrayList<>();
 
-    private record Pending(PokemonEntity mount, int opensAt) {}
+    private record Pending(PokemonEntity mount, boolean waystones, int opensAt) {}
 
     private static int serverTicks;
 
     private LegendRoar() {}
 
-    public static void request(ServerPlayer player) {
+    public static void request(ServerPlayer player, boolean waystones) {
         if (UltraWarpRules.inWarp(player)) return;
         if (!(player.getVehicle() instanceof PokemonEntity mount) || mount.getControllingPassenger() != player) return;
         Pokemon pokemon = Mounts.pokemonOf(mount);
@@ -58,6 +60,11 @@ public final class LegendRoar {
         long now = player.serverLevel().getGameTime();
         Long until = COOLDOWN_UNTIL.get(player.getUUID());
         if (until != null && now < until) return;
+        if (waystones && WaystoneWormholes.destinations(player).isEmpty()) {
+            player.displayClientMessage(Component.translatable("hyperspace_wormholes.msg.no_waystones")
+                    .withStyle(ChatFormatting.RED), true);
+            return;
+        }
         COOLDOWN_UNTIL.put(player.getUUID(), now + COOLDOWN_TICKS);
 
         RoarPayload roar = new RoarPayload(mount.getId());
@@ -67,7 +74,7 @@ public final class LegendRoar {
 
         mount.level().playSound(null, mount.getX(), mount.getY(), mount.getZ(),
                 SoundEvent.createVariableRangeEvent(cryId(pokemon)), SoundSource.NEUTRAL, 3f, 1f);
-        PENDING.add(new Pending(mount, serverTicks + OPEN_AT));
+        PENDING.add(new Pending(mount, waystones, serverTicks + OPEN_AT));
     }
 
     public static ResourceLocation cryId(Pokemon pokemon) {
@@ -80,12 +87,12 @@ public final class LegendRoar {
         serverTicks++;
         PENDING.removeIf(p -> {
             if (serverTicks < p.opensAt()) return false;
-            if (!p.mount().isRemoved()) openWormhole(p.mount());
+            if (!p.mount().isRemoved()) openWormhole(p.mount(), p.waystones());
             return true;
         });
     }
 
-    private static void openWormhole(PokemonEntity mount) {
+    private static void openWormhole(PokemonEntity mount, boolean waystones) {
         Entity rider = mount.getControllingPassenger();
         if (UltraWarpRules.inHyperspace(mount)) {
             if (rider instanceof ServerPlayer player) UltraWarpRules.tellFailed(player, mount.getName());
@@ -103,6 +110,7 @@ public final class LegendRoar {
         wormhole.setWormholeType(WormholeType.BLUE);
         wormhole.setLifetime(200);
         wormhole.setSingleUse(true);
+        if (waystones) wormhole.setOrder(WormholeOrder.WAYSTONES);
         wormhole.moveTo(centre.x, centre.y - WormholeEntity.SIZE / 2, centre.z, yaw + 180f, -pitch);
         level.addFreshEntity(wormhole);
         WormholeSounds.open(level, centre, 0.8f, 1.6f);

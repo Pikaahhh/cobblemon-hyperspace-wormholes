@@ -30,13 +30,14 @@ import java.util.Arrays;
  * Hyperspace's legendary bosses; 0, the default, is Cobblemon's own shiny rate (specialShinyRate).
  * distortionStarWeights are relative weights for 1 to 5 stars. A power multiplier of 1 is normal
  * and 0 turns that power off. maxDistortionsPerPlayer is how many a player keeps around them where the world has most,
- * half that in the quieter areas. The legendary switches turn off each way of getting a legendary: Hyperspace's legendary
+ * half that in the quieter areas. distortionMinutes is how long a distortion stays. distortionsAvoidBases keeps new ones
+ * distortionBaseDistance blocks from online players' respawn points and out of chunks players have spent an hour around. The legendary switches turn off each way of getting a legendary: Hyperspace's legendary
  * spawns, legendaries past wormholes, catching a beaten boss, and the Item Analyser's Cosmog. legendaryMonuments is MONUMENTS (Legendary Monuments'
  * own legendaries are left out of Hyperspace when it is installed) or BOTH. A server's values go to its players (Sync),
  * because the wormhole tunnel is worked out on both sides and has to match.
  */
 public final class GameplayConfig {
-    public static final int RING_TIERS = 4, STARS = 5, MAX_DISTORTIONS = 16;
+    public static final int RING_TIERS = 4, STARS = 5, MAX_DISTORTIONS = 16, MAX_DISTORTION_MINUTES = 10080, MAX_BASE_DISTANCE = 1000;
     public static final String MONUMENTS = "monuments", BOTH = "both";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE = Wormholes.MOD_ID + "_gameplay.json";
@@ -64,6 +65,9 @@ public final class GameplayConfig {
     public double encounterPowerMultiplier = 1;
     public double catchingPowerMultiplier = 1;
     public int maxDistortionsPerPlayer = 2;
+    public int distortionMinutes = 60;
+    public boolean distortionsAvoidBases = false;
+    public int distortionBaseDistance = 128;
     public int[] distortionStarWeights = {35, 28, 20, 12, 5};
     public boolean bossHardModeAlwaysOn = false;
     public boolean monitorBreaksFromLightning = true;
@@ -217,6 +221,8 @@ public final class GameplayConfig {
         encounterPowerMultiplier = number(encounterPowerMultiplier);
         catchingPowerMultiplier = number(catchingPowerMultiplier);
         maxDistortionsPerPlayer = Math.max(0, Math.min(MAX_DISTORTIONS, maxDistortionsPerPlayer));
+        distortionMinutes = Math.max(1, Math.min(MAX_DISTORTION_MINUTES, distortionMinutes));
+        distortionBaseDistance = Math.max(0, Math.min(MAX_BASE_DISTANCE, distortionBaseDistance));
         if (distortionStarWeights == null || distortionStarWeights.length != STARS || Arrays.stream(distortionStarWeights).anyMatch(w -> w < 0)
                 || Arrays.stream(distortionStarWeights).sum() <= 0) distortionStarWeights = fresh.distortionStarWeights;
         if (!BOTH.equals(legendaryMonuments)) legendaryMonuments = MONUMENTS;

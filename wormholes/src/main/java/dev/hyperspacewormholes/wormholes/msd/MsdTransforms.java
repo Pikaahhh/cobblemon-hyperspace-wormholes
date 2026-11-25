@@ -28,10 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * What H&W changes in Mega Showdown's files, built at runtime so no copies are shipped. The jar holds only
- * msd_patches/: our settings, the core overlay and the rule for the Ultra glow; everything else comes from the
- * player's own Mega Showdown, read by {@link MsdDerivedPack}. Each output names its source and that source's
- * SHA-256, so a Mega Showdown update that changes a file skips that piece (the pack logs it) instead of patching
- * something else. No Minecraft classes here, so a plain JVM can run these against the stock jar.
+ * msd_patches/: our settings, the core overlay, the rule for the Ultra glow and Guzzlord's eating motion; everything else
+ * comes from the player's own Mega Showdown and ATM x MSD, read by {@link MsdDerivedPack}. Each output names its source
+ * and that source's SHA-256, so an update of theirs that changes a file skips that piece (the pack logs it) instead of
+ * patching something else. No Minecraft classes here, so a plain JVM can run these against the stock jar.
  */
 public final class MsdTransforms {
     private static final String PATCHES = "/msd_patches/";
@@ -78,6 +78,7 @@ public final class MsdTransforms {
             case "json" -> patchJson(piece, output.spec(), source);
             case "overlay" -> overlay(output.spec(), source);
             case "dim" -> dim(output.spec(), source);
+            case "motion" -> motion(output.spec(), source);
             default -> throw new IOException("unknown op in " + output.path());
         };
     }
@@ -261,6 +262,36 @@ public final class MsdTransforms {
             }
         }
         return write(image);
+    }
+
+    /** Our own motion, a bone's turns added to the source animation's first pose. Bones it leaves out hold that pose. */
+    private static byte[] motion(JsonObject spec, byte[] source) throws IOException {
+        JsonElement root = JsonParser.parseString(new String(patch(spec.get("motion").getAsString()), StandardCharsets.UTF_8));
+        JsonObject bones = walk(root, steps(spec.get("at").getAsString())).getAsJsonObject();
+        JsonObject pose = walk(JsonParser.parseString(new String(source, StandardCharsets.UTF_8)), steps(spec.get("pose").getAsString())).getAsJsonObject();
+        for (Map.Entry<String, JsonElement> entry : pose.entrySet()) {
+            JsonElement held = entry.getValue().getAsJsonObject().get("rotation");
+            if (held == null) continue;
+            JsonArray first = first(held);
+            if (!bones.has(entry.getKey())) {
+                JsonObject still = new JsonObject();
+                still.add("rotation", first);
+                bones.add(entry.getKey(), still);
+                continue;
+            }
+            for (Map.Entry<String, JsonElement> key : bones.getAsJsonObject(entry.getKey()).getAsJsonObject("rotation").entrySet()) {
+                JsonArray turn = key.getValue().getAsJsonArray(), sum = new JsonArray();
+                for (int i = 0; i < 3; i++) sum.add(Math.round((turn.get(i).getAsDouble() + first.get(i).getAsDouble()) * 100) / 100.0);
+                key.setValue(sum);
+            }
+        }
+        return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static JsonArray first(JsonElement rotation) {
+        if (rotation.isJsonArray()) return rotation.getAsJsonArray();
+        JsonElement key = rotation.getAsJsonObject().entrySet().iterator().next().getValue();
+        return key.isJsonArray() ? key.getAsJsonArray() : key.getAsJsonObject().getAsJsonArray("post");
     }
 
     private static double[] doubles(JsonArray array) {

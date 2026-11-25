@@ -46,7 +46,8 @@
         "locator": "seat_1"
       },
       { "locator": "seat_2" },
-      { "locator": "seat_3" }
+      { "locator": "seat_3" },
+      { "locator": "seat_4" }
     ]
   }
 }

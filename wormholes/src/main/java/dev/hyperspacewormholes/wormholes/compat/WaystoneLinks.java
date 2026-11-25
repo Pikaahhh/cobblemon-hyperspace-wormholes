@@ -4,18 +4,14 @@ import dev.hyperspacewormholes.wormholes.Wormholes;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -25,21 +21,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Optional Waystones support. A legend holding a Warp Stone flies you through wormholes that lead to your activated
- * waystones. All done with reflection.
+ * Optional Waystones support: the waystones a player has activated, for a legend's waystone wormhole (LegendRoar). All
+ * done with reflection.
  */
 public final class WaystoneLinks {
     private static final String API = "net.blay09.mods.waystones.api.WaystonesAPI";
-    private static final TagKey<Item> WARP_STONES =
-            TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("waystones", "warp_stones"));
 
-    public record Target(UUID id, String name, ResourceKey<Level> dimension, BlockPos pos) {}
+    /** Somewhere a ride can lead: a waystone by its id, or a named lodestone (Lodestones), which has none. */
+    public record Target(@Nullable UUID id, String name, ResourceKey<Level> dimension, BlockPos pos) {}
 
     public record Landing(ServerLevel level, Vec3 pos, float yaw) {}
-
-    public static boolean isWarpStone(ItemStack stack) {
-        return stack.is(WARP_STONES);
-    }
 
     private static boolean available() {
         return FabricLoader.getInstance().isModLoaded("waystones");

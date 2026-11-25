@@ -1,0 +1,18 @@
+{
+  "type": "hyperspace_wormholes:ultra_ruin",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "hyperspace_wormholes:ultra_ruin",
+      "layers": [
+        {
+          "block": "minecraft:cave_air",
+          "height": 1
+        }
+      ],
+      "features": true,
+      "lakes": false,
+      "structure_overrides": ["hyperspace_wormholes:ruin_288_north", "hyperspace_wormholes:ruin_288_south"]
+    }
+  }
+}

@@ -39,7 +39,7 @@ public class WormholesAdvancements extends SimpleCriterionTrigger<WormholesAdvan
             Wormholes.id("wormholes/ride_of_your_life"));
     public static final List<ResourceKey<Level>> ULTRA_WORLDS = List.of(Wormholes.ULTRA_WARP, Wormholes.ULTRA_DEEP_SEA,
             Wormholes.ULTRA_JUNGLE, Wormholes.ULTRA_PLANT, Wormholes.ULTRA_DESERT, Wormholes.ULTRA_CRATER,
-            Wormholes.ULTRA_MEGALOPOLIS, Wormholes.WILDS_CLIFF, Wormholes.WILDS_CRAG, Wormholes.WILDS_CAVE,
+            Wormholes.ULTRA_MEGALOPOLIS, Wormholes.ULTRA_RUIN, Wormholes.WILDS_CLIFF, Wormholes.WILDS_CRAG, Wormholes.WILDS_CAVE,
             Wormholes.WILDS_WATER);
     // rarity rings it takes for "Maximum Rings"; 3 is the game's top tier
     public static final int MAXIMUM_RINGS = 3;

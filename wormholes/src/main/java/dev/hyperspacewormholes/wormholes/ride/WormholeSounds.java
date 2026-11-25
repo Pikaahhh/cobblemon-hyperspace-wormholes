@@ -42,7 +42,7 @@ public final class WormholeSounds {
         SoundEvent cry = SoundEvent.createVariableRangeEvent(
                 ResourceLocation.fromNamespaceAndPath(species.getNamespace(), "pokemon." + species.getPath() + ".cry"));
         if (entity.level() instanceof ServerLevel level) {
-            send(level, Holder.direct(cry), entity.getEyePosition(), 1.5f, 1f, CRY_HEARD_WITHIN);
+            OwnEncounters.only(entity, () -> send(level, Holder.direct(cry), entity.getEyePosition(), 1.5f, 1f, CRY_HEARD_WITHIN));
         }
     }
 
@@ -50,6 +50,7 @@ public final class WormholeSounds {
         long seed = level.getRandom().nextLong();
         double earshot = 16 * Math.max(1f, volume) * 0.8;
         for (ServerPlayer player : level.players()) {
+            if (!OwnEncounters.heard(player)) continue;
             double across = Math.hypot(player.getX() - at.x, player.getZ() - at.z);
             if (across > heardWithin) continue;
             Vec3 ear = player.getEyePosition();

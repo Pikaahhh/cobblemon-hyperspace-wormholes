@@ -21,10 +21,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Blindness and Darkness fog still work.
  * The Ultra Plant gets the game's blue haze, from HAZE_START out to HAZE_REACH times the view distance, so the far edge
  * is about 60% hazed into the fog colour (the biome's blue, which UltraPlantSky's horizon meets).
+ * The Ultra Ruin is thick with haze: from RUIN_START to RUIN_END whatever the view distance, into the biome's fog colour,
+ * which is all its sky is too (WormholesClient's effects for it).
  */
 @Mixin(FogRenderer.class)
 public abstract class UltraNoFogMixin {
-    private static final float HAZE_START = 44, HAZE_REACH = 1.6f;
+    private static final float HAZE_START = 44, HAZE_REACH = 1.6f, RUIN_START = 4, RUIN_END = 96;
 
     @Inject(method = "setupFog", at = @At("RETURN"), require = 0)
     private static void hyperspace_wormholes$noUltraFog(Camera camera, FogRenderer.FogMode mode, float renderDistance,
@@ -46,6 +48,11 @@ public abstract class UltraNoFogMixin {
         if (camera.getEntity().level().dimension() == Wormholes.ULTRA_PLANT) {
             RenderSystem.setShaderFogStart(HAZE_START);
             RenderSystem.setShaderFogEnd(Math.max(renderDistance * HAZE_REACH, HAZE_START * 2));
+            return;
+        }
+        if (camera.getEntity().level().dimension() == Wormholes.ULTRA_RUIN) {
+            RenderSystem.setShaderFogStart(RUIN_START);
+            RenderSystem.setShaderFogEnd(Math.min(renderDistance, RUIN_END));
             return;
         }
         if (UltraZones.isZone(camera.getEntity().level())) return;

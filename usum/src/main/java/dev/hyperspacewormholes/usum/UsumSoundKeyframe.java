@@ -64,6 +64,10 @@ public class UsumSoundKeyframe implements ActionEffectKeyframe, EntityConditiona
         Runnable playIt = () -> {
             for (Entity entity : at) {
                 if (entity.isRemoved() || !(entity.level() instanceof ServerLevel level)) continue;
+                if (level.players().stream().anyMatch(p -> p != entity && !entity.broadcastToPlayer(p))) {
+                    level.playSound(null, entity, event, entity.getSoundSource(), vol, pit);
+                    continue;
+                }
                 level.playSound(null, entity.getX(), entity.getY() + entity.getBbHeight() / 2, entity.getZ(), event,
                         entity.getSoundSource(), vol, pit);
             }

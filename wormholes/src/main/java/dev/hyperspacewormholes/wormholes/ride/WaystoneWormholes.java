@@ -1,21 +1,36 @@
 package dev.hyperspacewormholes.wormholes.ride;
 
 import dev.hyperspacewormholes.wormholes.compat.WaystoneLinks;
+import dev.hyperspacewormholes.wormholes.lodestone.Lodestones;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
-/** The tunnel on a warp stone ride: one wormhole per waystone, as far along as it is away, coloured by dimension. */
+/** The tunnel on a waystone ride: one wormhole per waystone or named lodestone, as far along as it is away, coloured by dimension. */
 public final class WaystoneWormholes {
     private static final double FIRST = 150;
     private static final double MIN_GAP = 60;
     private static final float LATERAL_SPREAD = 11f;
 
     private WaystoneWormholes() {}
+
+    public static List<WaystoneLinks.Target> destinations(ServerPlayer player) {
+        List<WaystoneLinks.Target> targets = new ArrayList<>(WaystoneLinks.activated(player));
+        targets.addAll(Lodestones.destinations(player));
+        return targets;
+    }
+
+    /** Where to put someone beside a destination, or empty if it's gone. */
+    public static Optional<WaystoneLinks.Landing> landing(MinecraftServer server, WaystoneLinks.Target target) {
+        return target.id() == null ? Lodestones.landing(server, target) : WaystoneLinks.landing(server, target);
+    }
 
     private static double distance(WaystoneLinks.Target target, Vec3 from) {
         double dx = target.pos().getX() + 0.5 - from.x;

@@ -2,6 +2,7 @@ package dev.hyperspacewormholes.wormholes;
 
 import com.mojang.serialization.Codec;
 import dev.hyperspacewormholes.wormholes.entity.WormholeEntity;
+import dev.hyperspacewormholes.wormholes.lodestone.Lodestones;
 import dev.hyperspacewormholes.wormholes.network.RideEndPayload;
 import dev.hyperspacewormholes.wormholes.network.RideFollowPayload;
 import dev.hyperspacewormholes.wormholes.network.RideMusicPayload;
@@ -33,8 +34,10 @@ import dev.hyperspacewormholes.wormholes.ride.UltraDimensions;
 import dev.hyperspacewormholes.wormholes.ride.UltraNoBuilding;
 import dev.hyperspacewormholes.wormholes.ride.MegaloKeepOut;
 import dev.hyperspacewormholes.wormholes.ride.UltraStays;
+import dev.hyperspacewormholes.wormholes.ride.OwnEncounters;
 import dev.hyperspacewormholes.wormholes.ride.PlantXurkitrees;
 import dev.hyperspacewormholes.wormholes.ride.CraterGiants;
+import dev.hyperspacewormholes.wormholes.ride.RuinGuzzlord;
 import dev.hyperspacewormholes.wormholes.ride.ZoneLeaps;
 import dev.hyperspacewormholes.wormholes.ride.UltraBeastWorlds;
 import dev.hyperspacewormholes.wormholes.ride.UltraPlantLightning;
@@ -77,6 +80,7 @@ import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.Registry;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -91,6 +95,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
@@ -109,6 +114,7 @@ public class Wormholes implements ModInitializer {
     public static final ResourceKey<Level> ULTRA_DESERT = dimension("ultra_desert");
     public static final ResourceKey<Level> ULTRA_CRATER = dimension("ultra_crater");
     public static final ResourceKey<Level> ULTRA_MEGALOPOLIS = dimension("ultra_megalopolis");
+    public static final ResourceKey<Level> ULTRA_RUIN = dimension("ultra_ruin");
     public static final ResourceKey<Level> WILDS_CLIFF = dimension("ultra_wilds_cliff");
     public static final ResourceKey<Level> WILDS_CRAG = dimension("ultra_wilds_crag");
     public static final ResourceKey<Level> WILDS_CAVE = dimension("ultra_wilds_cave");
@@ -135,7 +141,7 @@ public class Wormholes implements ModInitializer {
         Registry.register(BuiltInRegistries.STRUCTURE_PROCESSOR, id("waterlog_in_water"), ZoneProcessors.WATERLOGGING);
         Registry.register(BuiltInRegistries.STRUCTURE_PROCESSOR, id("zone_carve"), ZoneProcessors.CARVING);
         for (String world : List.of("ultra_jungle", "ultra_deep_sea", "ultra_space_wilds", "ultra_crater", "ultra_desert", "ultra_plant",
-                "ultra_megalopolis")) {
+                "ultra_megalopolis", "ultra_ruin")) {
             Registry.register(BuiltInRegistries.SOUND_EVENT, id("music." + world), SoundEvent.createVariableRangeEvent(id("music." + world)));
         }
     }
@@ -151,6 +157,9 @@ public class Wormholes implements ModInitializer {
     public static final AttachmentType<Integer> SPLICES_WITHOUT_HOOPA = attachment("splices_without_hoopa", Codec.INT);
     /** Whether this player has picked up the Hoopa event's Prison Bottle (one copy ever). */
     public static final AttachmentType<Boolean> PRISON_BOTTLE_TAKEN = attachment("prison_bottle_taken", Codec.BOOL);
+
+    /** Whose own an encounter (and what belongs to it) is; nobody else can see or touch it (ride/OwnEncounters). */
+    public static final AttachmentType<UUID> OWN_PLAYER = attachment("own_player", UUIDUtil.CODEC);
 
     public static final EntityType<WormholeEntity> WORMHOLE = Registry.register(BuiltInRegistries.ENTITY_TYPE,
             id("wormhole"),
@@ -216,7 +225,7 @@ public class Wormholes implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 WormholeCommand.register(dispatcher));
         ServerPlayNetworking.registerGlobalReceiver(RoarRequestPayload.TYPE,
-                (payload, context) -> LegendRoar.request(context.player()));
+                (payload, context) -> LegendRoar.request(context.player(), payload.waystones()));
         ServerPlayNetworking.registerGlobalReceiver(RiderEmergeDonePayload.TYPE,
                 (payload, context) -> RiderArrival.onDone(context.player()));
 
@@ -234,9 +243,11 @@ public class Wormholes implements ModInitializer {
         UltraNoBuilding.register();
         UltraZones.register();
         MegaloKeepOut.register();
+        OwnEncounters.register();
         WildsShadows.register();
         ZoneLeaps.register();
         CraterGiants.register();
+        RuinGuzzlord.register();
         PlantXurkitrees.register();
         NecrozmaFight.register();
         Bosses.register();
@@ -244,6 +255,7 @@ public class Wormholes implements ModInitializer {
         UltraStays.register();
         UltraPlantLightning.register();
         WormholesAdvancements.register();
+        Lodestones.register();
         UseBlockCallback.EVENT.register(ItemAnalyser::onUse);
         ServerEntityEvents.ENTITY_LOAD.register(ItemAnalyser::onLightning);
         ServerTickEvents.END_SERVER_TICK.register(ItemAnalyser::tick);

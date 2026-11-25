@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Which wormholes a ride's tunnel has: an endless run from the seed (in the game's colours or the difficulty ones, as
- * the server's config says), or a fixed list on a warp stone ride. A ride to one destination (a /wormhole create
+ * the server's config says), or a fixed list on a waystone ride. A ride to one destination (a /wormhole create
  * order with ride=true) keeps the seeded run but every wormhole in it is the destination's colour with the order's
  * rings (only, onlyRings).
  */

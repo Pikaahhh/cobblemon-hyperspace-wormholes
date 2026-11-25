@@ -38,7 +38,7 @@ import java.util.UUID;
  * then jumps along an arc down to the spot (Cliff World's swoops down in a spiral, SWOOP_*) and lands as an ordinary wild
  * Pokemon. While hidden it can't be hurt, battled, caught or despawned and has no AI; that state lives on the entity (TAG
  * plus Cobblemon's saved Unbattleable and HideLabel flags), so it survives a reload. Each arrival's Pokemon carries ARRIVAL
- * and removes the last trip's from that world; every SWEEP_TICKS any older trip's Pokemon that isn't battling is removed.
+ * and removes its player's last one from that world; every SWEEP_TICKS any older trip's Pokemon that isn't battling is removed.
  */
 public final class WildsShadows {
     private static final String TAG = "hyperspace_wormholes.shadow";
@@ -85,8 +85,10 @@ public final class WildsShadows {
         }
     }
 
+    private record Trip(ResourceKey<Level> world, @Nullable UUID player) {}
+
     private static final List<Shadow> HIDDEN = new ArrayList<>();
-    private static final Map<ResourceKey<Level>, UUID> CURRENT = new HashMap<>();
+    private static final Map<Trip, UUID> CURRENT = new HashMap<>();
     private static final List<PokemonEntity> STALE = new ArrayList<>();
 
     private WildsShadows() {}
@@ -115,7 +117,9 @@ public final class WildsShadows {
         Zone zone = UltraZones.of(level);
         Hide hide = HIDES.get(level.dimension());
         if (zone == null || zone.spot() == null || hide == null) return;
-        level.getEntities(EntityTypeTest.forClass(PokemonEntity.class), WildsShadows::replaceable).forEach(Entity::discard);
+        Trip trip = trip(entity, level);
+        level.getEntities(EntityTypeTest.forClass(PokemonEntity.class), p -> trip.equals(trip(p, level)) && replaceable(p))
+                .forEach(Entity::discard);
         entity.addTag(TAG);
         entity.addTag(ARRIVAL);
         entity.setNoAi(true);
@@ -128,8 +132,12 @@ public final class WildsShadows {
         entity.moveTo(at.x, at.y, at.z, facing(at, arrival), 0f);
         entity.setYHeadRot(entity.getYRot());
         entity.setYBodyRot(entity.getYRot());
-        CURRENT.put(level.dimension(), entity.getUUID());
+        CURRENT.put(trip, entity.getUUID());
         level.addFreshEntity(entity);
+    }
+
+    private static Trip trip(Entity entity, ServerLevel level) {
+        return new Trip(level.dimension(), OwnEncounters.owner(entity));
     }
 
     private static boolean replaceable(PokemonEntity pokemon) {
@@ -146,7 +154,7 @@ public final class WildsShadows {
             release(pokemon);
             return;
         }
-        UUID current = CURRENT.putIfAbsent(level.dimension(), pokemon.getUUID());
+        UUID current = CURRENT.putIfAbsent(trip(pokemon, level), pokemon.getUUID());
         if (current != null && !current.equals(pokemon.getUUID())) {
             STALE.add(pokemon);
             return;
@@ -167,7 +175,7 @@ public final class WildsShadows {
                 continue;
             }
             s.age++;
-            Player near = s.level.getNearestPlayer(s.entity.getX(), s.entity.getY(), s.entity.getZ(), -1, false);
+            Player near = OwnEncounters.nearest(s.entity, s.level, s.entity.position(), -1);
             if (s.leap < 0) {
                 idle(s, near);
                 if (near != null && (near.distanceToSqr(s.spot) < REVEAL_RANGE * REVEAL_RANGE
@@ -195,12 +203,19 @@ public final class WildsShadows {
     }
 
     private static void sweep(MinecraftServer server) {
-        CURRENT.forEach((dimension, current) -> {
-            ServerLevel level = server.getLevel(dimension);
+        CURRENT.keySet().stream().map(Trip::world).distinct().forEach(world -> {
+            ServerLevel level = server.getLevel(world);
             if (level == null) return;
-            level.getEntities(EntityTypeTest.forClass(PokemonEntity.class), pokemon -> pokemon.getTags().contains(ARRIVAL)
-                    && !pokemon.getUUID().equals(current) && !pokemon.isBattling()).forEach(Entity::discard);
+            level.getEntities(EntityTypeTest.forClass(PokemonEntity.class), pokemon -> {
+                UUID current = pokemon.getTags().contains(ARRIVAL) ? CURRENT.get(trip(pokemon, level)) : null;
+                return current != null && !pokemon.getUUID().equals(current) && !pokemon.isBattling();
+            }).forEach(Entity::discard);
         });
+        CURRENT.keySet().removeIf(trip -> gone(server.getLevel(trip.world()), trip));
+    }
+
+    private static boolean gone(@Nullable ServerLevel level, Trip trip) {
+        return level == null || trip.player() != null && level.getPlayerByUUID(trip.player()) == null;
     }
 
     private static void idle(Shadow s, @Nullable Player near) {
@@ -220,7 +235,7 @@ public final class WildsShadows {
             place(s.entity, s.from.lerp(mouth, ticks / (double) run), facing(s.from, mouth));
             return false;
         }
-        if (ticks == run && wet(s.level, mouth)) splash(s.level, mouth);
+        if (ticks == run && wet(s.level, mouth)) OwnEncounters.only(s.entity, () -> splash(s.level, mouth));
         int leap = Math.max(1, (int) Math.ceil(mouth.distanceTo(s.spot) / LEAP_SPEED));
         double t = Math.min(1, (ticks - run) / (double) leap);
         place(s.entity, mouth.lerp(s.spot, t).add(0, s.hide.arc() * 4 * t * (1 - t), 0), facing(mouth, s.spot));
@@ -291,15 +306,17 @@ public final class WildsShadows {
     }
 
     private static void land(Shadow s) {
-        if (wet(s.level, s.spot)) {
-            splash(s.level, s.spot);
-        } else {
-            s.level.playSound(null, s.spot.x, s.spot.y, s.spot.z, SoundEvents.GENERIC_BIG_FALL, SoundSource.NEUTRAL, 1.5f, 0.8f);
-            s.level.sendParticles(ParticleTypes.POOF, s.spot.x, s.spot.y + 0.2, s.spot.z, 16, 0.6, 0.1, 0.6, 0.05);
-        }
+        OwnEncounters.only(s.entity, () -> {
+            if (wet(s.level, s.spot)) {
+                splash(s.level, s.spot);
+            } else {
+                s.level.playSound(null, s.spot.x, s.spot.y, s.spot.z, SoundEvents.GENERIC_BIG_FALL, SoundSource.NEUTRAL, 1.5f, 0.8f);
+                s.level.sendParticles(ParticleTypes.POOF, s.spot.x, s.spot.y + 0.2, s.spot.z, 16, 0.6, 0.1, 0.6, 0.05);
+            }
+        });
         ServerPlayer player = s.trigger != null && s.level.getPlayerByUUID(s.trigger) instanceof ServerPlayer p
                 && p.isAlive() && !p.isSpectator() ? p : null;
-        Player look = player != null ? player : s.level.getNearestPlayer(s.spot.x, s.spot.y, s.spot.z, -1, false);
+        Player look = player != null ? player : OwnEncounters.nearest(s.entity, s.level, s.spot, -1);
         if (look != null) place(s.entity, s.spot, facing(s.spot, look.position()));
         release(s.entity);
         Pokemon pokemon = s.entity.getPokemon();

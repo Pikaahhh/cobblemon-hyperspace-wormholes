@@ -4,10 +4,12 @@ import dev.hyperspacewormholes.wormholes.GameplayConfig;
 import dev.hyperspacewormholes.wormholes.CosmicJar;
 import dev.hyperspacewormholes.wormholes.LuminescentIce;
 import dev.hyperspacewormholes.wormholes.Wormholes;
+import dev.hyperspacewormholes.wormholes.client.render.LodestoneLabelRenderer;
 import dev.hyperspacewormholes.wormholes.client.render.TunnelRenderer;
 import dev.hyperspacewormholes.wormholes.client.cinematic.Cinematics;
 import dev.hyperspacewormholes.wormholes.client.render.WarpRenderTypes;
 import dev.hyperspacewormholes.wormholes.client.render.WormholeEntityRenderer;
+import dev.hyperspacewormholes.wormholes.lodestone.Lodestones;
 import dev.hyperspacewormholes.wormholes.network.BossHudPayload;
 import dev.hyperspacewormholes.wormholes.network.NecrozmaScenePayload;
 import dev.hyperspacewormholes.wormholes.network.BossTransitionPayload;
@@ -29,6 +31,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
@@ -38,8 +41,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Client entry point for the wormholes half. Hooks up renderers, dimension effects, keybinds, packet receivers, the HUD and
  * render hooks, the Ultra worlds' own music and skies, and Luminescent Ice's tint and gradient. The Ultra Jungle keeps the
- * overworld's sky with the clouds at y 260, over the tallest swole trees; the warp, Deep Sea, Cliff World, Plant, Desert and
- * Megalopolis have none of vanilla's. Also the Megalopolis fight's scenes (Cinematics) and Light That Burns the Sky's
+ * overworld's sky with the clouds at y 260, over the tallest swole trees; the warp, Deep Sea, Cliff World, Plant, Desert,
+ * Megalopolis and Ruin have none of vanilla's. Also the Megalopolis fight's scenes (Cinematics) and Light That Burns the Sky's
  * animation (BurnsSkyClient).
  */
 public class WormholesClient implements ClientModInitializer {
@@ -48,6 +51,7 @@ public class WormholesClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(GameplayConfig.Sync.TYPE, (payload, context) -> GameplayConfig.receive(payload));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GameplayConfig.forgetServer());
         EntityRendererRegistry.register(Wormholes.WORMHOLE, WormholeEntityRenderer::new);
+        BlockEntityRenderers.register(Lodestones.BLOCK_ENTITY, LodestoneLabelRenderer::new);
         Block[] ice = LuminescentIce.family().toArray(Block[]::new);
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(), ice);
         ColorProviderRegistry.BLOCK.register((state, level, pos, tint) -> LuminescentIce.colour(pos == null ? 64 : pos.getY()),
@@ -59,6 +63,7 @@ public class WormholesClient implements ClientModInitializer {
 
         DimensionRenderingRegistry.registerDimensionEffects(Wormholes.id("ultra_warp"), new UltraWarpEffects());
         DimensionRenderingRegistry.registerDimensionEffects(Wormholes.id("ultra_jungle"), new UltraJungleEffects());
+        DimensionRenderingRegistry.registerDimensionEffects(Wormholes.id("ultra_ruin"), new UltraRuinEffects());
         DimensionRenderingRegistry.registerSkyRenderer(Wormholes.ULTRA_WARP, TunnelRenderer::renderSky);
         DimensionRenderingRegistry.registerCloudRenderer(Wormholes.ULTRA_WARP, context -> {});
         DimensionRenderingRegistry.registerCloudRenderer(Wormholes.ULTRA_DEEP_SEA, context -> {});
@@ -126,6 +131,28 @@ public class WormholesClient implements ClientModInitializer {
         @Override
         public Vec3 getBrightnessDependentFogColor(Vec3 fogColor, float brightness) {
             return BACKDROP;
+        }
+
+        @Override
+        public boolean isFoggyAt(int x, int y) {
+            return false;
+        }
+
+        @Override
+        public float[] getSunriseColor(float timeOfDay, float partialTick) {
+            return null;
+        }
+    }
+
+    /** The Ultra Ruin's haze: its sky is nothing but the biome's fog colour, which no hour dims and no sunset tints. */
+    private static final class UltraRuinEffects extends DimensionSpecialEffects {
+        UltraRuinEffects() {
+            super(Float.NaN, true, SkyType.NONE, false, false);
+        }
+
+        @Override
+        public Vec3 getBrightnessDependentFogColor(Vec3 fogColor, float brightness) {
+            return fogColor;
         }
 
         @Override

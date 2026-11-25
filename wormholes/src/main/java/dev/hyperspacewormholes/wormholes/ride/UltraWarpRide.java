@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +60,11 @@ public final class UltraWarpRide {
     private static final int RUN_COOLDOWN_TICKS = 150 * 20;
     private static final int UNCHARTED_EXIT_TICKS = 60;
     private static final int FLASH_TICKS = 15;
+    private static final int CLOSE_TICKS = 34;
     private static final int ENTRY_GAP_TICKS = 40;
+    private static final int ENTRY_FLASH_TICKS = 8;
+    public static final int ENTRY_DELAY_TICKS = 10;
+    private static final int CLOCK_WAIT_TICKS = 200;
 
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
     private static final Map<UUID, Integer> STRAY_TICKS = new HashMap<>();
@@ -67,8 +72,12 @@ public final class UltraWarpRide {
     private static final Map<UUID, UUID> PASSENGER_OF = new HashMap<>();
     private static final BitSet USED_SLOTS = new BitSet();
     private static final Map<UUID, Integer> ENTERED = new HashMap<>();
+    private static final Map<UUID, Entry> ENTRIES = new LinkedHashMap<>();
 
     private UltraWarpRide() {}
+
+    private record Entry(Vec3 returnPos, float returnYaw, @Nullable WormholeOrder order, ResourceKey<Level> from,
+                         List<UUID> whitened, int at) {}
 
     private static final class Session {
         final long seed;
@@ -87,6 +96,7 @@ public final class UltraWarpRide {
         double warpDistance;
         int dragTarget = -1;
         int returnAt = -1;
+        int clockFrom = -1;
         WarpTunnel.@Nullable Wormhole through;
         WormholeDestinations.@Nullable Plan destination;
         WaystoneLinks.@Nullable Target waystoneDestination;
@@ -176,6 +186,43 @@ public final class UltraWarpRide {
         ENTERED.put(player.getUUID(), player.server.getTickCount());
     }
 
+    /**
+     * Takes a rider through a wormhole into a ride: their picture fades to white first, and the ride starts under it.
+     * The white is let go again if they can't start it any more.
+     */
+    public static void enter(ServerPlayer player, Vec3 returnPos, float returnYaw, @Nullable WormholeOrder order) {
+        List<UUID> whitened = new ArrayList<>(List.of(player.getUUID()));
+        ServerPlayNetworking.send(player, RideMusicPayload.INSTANCE);
+        for (ServerPlayer p : passengersOf(player)) {
+            whitened.add(p.getUUID());
+            ServerPlayNetworking.send(p, RideMusicPayload.INSTANCE);
+        }
+        flash(player, ENTRY_FLASH_TICKS);
+        ENTRIES.put(player.getUUID(), new Entry(returnPos, returnYaw, order, player.level().dimension(), whitened,
+                player.level().getServer().getTickCount() + ENTRY_DELAY_TICKS));
+    }
+
+    private static void startEntries(MinecraftServer server) {
+        List<UUID> due = ENTRIES.entrySet().stream().filter(e -> server.getTickCount() >= e.getValue().at())
+                .map(Map.Entry::getKey).toList();
+        for (UUID id : due) {
+            Entry entry = ENTRIES.remove(id);
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            if (player != null && player.isAlive() && !isRiding(player) && isDriving(player)
+                    && player.level().dimension() == entry.from()) {
+                start(player, entry.returnPos(), entry.returnYaw(), entry.order());
+            }
+            clearWhite(server, entry, null);
+        }
+    }
+
+    private static void clearWhite(MinecraftServer server, Entry entry, @Nullable ServerPlayer leaving) {
+        for (UUID whitened : entry.whitened()) {
+            ServerPlayer p = server.getPlayerList().getPlayer(whitened);
+            if (p != null && p != leaving && !isRiding(p)) ServerPlayNetworking.send(p, RideEndPayload.INSTANCE);
+        }
+    }
+
     private static boolean justEntered(ServerPlayer player) {
         Integer at = ENTERED.get(player.getUUID());
         return at != null && player.server.getTickCount() - at < ENTRY_GAP_TICKS;
@@ -225,8 +272,11 @@ public final class UltraWarpRide {
         if (mountEntity != null) Mounts.seatPassengers(passengers, mountEntity);
 
         long seed = warp.getRandom().nextLong();
-        List<WaystoneLinks.Target> waystones = order == null && carried != null && WaystoneLinks.isWarpStone(carried.heldItem())
-                ? WaystoneLinks.activated(player) : List.of();
+        List<WaystoneLinks.Target> waystones = List.of();
+        if (order == WormholeOrder.WAYSTONES) {
+            waystones = WaystoneWormholes.destinations(player);
+            order = null;
+        }
         List<RideStartPayload.WaystoneHole> holes = new ArrayList<>();
         TunnelLayout layout;
         if (order != null) {
@@ -291,15 +341,18 @@ public final class UltraWarpRide {
         ServerPlayNetworking.send(player, RideEndPayload.INSTANCE);
     }
 
-    private static void landPassengers(List<ServerPlayer> passengers, ServerLevel level, Vec3 pos, float yaw) {
-        float rad = yaw * Mth.DEG_TO_RAD;
-        Vec3 side = new Vec3(Mth.cos(rad), 0, Mth.sin(rad));
+    private static List<Vec3> landings(ServerPlayer driver, List<ServerPlayer> passengers, ServerLevel level, Vec3 pos,
+                                       float yaw, @Nullable WormholeEntity exit, boolean hold) {
+        List<ServerPlayer> ours = new ArrayList<>(passengers);
+        ours.add(driver);
+        return PassengerLandings.around(level, pos, yaw, ours.size(), ours, exit, hold);
+    }
+
+    private static void landPassengers(List<ServerPlayer> passengers, ServerLevel level, List<Vec3> spots, float yaw) {
         for (int i = 0; i < passengers.size(); i++) {
             ServerPlayer p = passengers.get(i);
-            Vec3 at = pos.add(side.scale((i % 2 == 0 ? 1.5 : -1.5) * (1 + i / 2)));
-            if (!level.noBlockCollision(p, p.getDimensions(p.getPose()).makeBoundingBox(at))) at = pos;
             p.removeAttached(Wormholes.RETURN_POINT);
-            landed(p, level, at, yaw);
+            landed(p, level, spots.get(i + 1), yaw);
             CosmicJar.maybeCharge(p);
         }
     }
@@ -344,9 +397,11 @@ public final class UltraWarpRide {
         }
 
         dest.getChunk(BlockPos.containing(point.pos()));
-        Vec3 pos = WormholeDestinations.groundBelow(dest, point.pos());
+        List<Vec3> spots = landings(player, passengers, dest, WormholeDestinations.groundBelow(dest, point.pos()),
+                point.yRot(), null, false);
+        Vec3 pos = spots.getFirst();
         place(player, dest, pos, point.yRot());
-        landPassengers(passengers, dest, pos, point.yRot());
+        landPassengers(passengers, dest, spots, point.yRot());
         CosmicJar.maybeCharge(player);
         PokemonEntity entity = carried != null && remount ? Mounts.mount(player, carried, dest, pos, point.yRot()) : null;
         if (entity != null) Mounts.seatPassengers(passengers, entity);
@@ -385,15 +440,15 @@ public final class UltraWarpRide {
         WormholeEntity exit = uncharted
                 ? WormholeDestinations.openBehind(arrival, type, UNCHARTED_EXIT_TICKS + WormholeEntity.CLOSE_TICKS, true)
                 : WormholeDestinations.openReturnWormhole(arrival, home, type, WormholeDestinations.RETURN_WORMHOLE_TICKS, player);
-        land(player, arrival, exit);
+        List<ServerPlayer> passengers = land(player, arrival, exit);
         if (uncharted) return;
         exit.setRainbow(s.through.rainbow());
-        WormholeDestinations.spawnWild(arrival, s.through.rainbow(), player);
+        WormholeDestinations.spawnWild(arrival, s.through.rainbow(), player, passengers);
     }
 
     private static void arriveAtWaystone(ServerPlayer player, WaystoneLinks.Target target) {
         HomePoint home = takeReturnPoint(player);
-        Arrival arrival = WaystoneLinks.landing(player.server, target)
+        Arrival arrival = WaystoneWormholes.landing(player.server, target)
                 .map(l -> WormholeDestinations.arrivalAt(l.level(), l.pos(), l.yaw()))
                 .orElseGet(() -> {
                     ServerLevel level = WormholeDestinations.levelOr(player.server, target.dimension());
@@ -417,11 +472,13 @@ public final class UltraWarpRide {
         Vec3 pos = spot.pos();
         boolean flying = carried != null && Mounts.canFly(carried);
         if (!flying) pos = WormholeDestinations.groundBelow(level, pos);
-        landed(player, level, pos, spot.yaw());
-        landPassengers(riders, level, pos, spot.yaw());
-        CosmicJar.maybeCharge(player);
 
         WormholeEntity exit = StructureWormholes.openWayHome(level, spot, home, player);
+        List<Vec3> spots = landings(player, riders, level, pos, spot.yaw(), exit, flying);
+        pos = spots.getFirst();
+        landed(player, level, pos, spot.yaw());
+        landPassengers(riders, level, spots, spot.yaw());
+        CosmicJar.maybeCharge(player);
         if (carried != null) {
             PokemonEntity ridden = Mounts.mount(player, carried, level, pos, spot.yaw());
             if (ridden != null) Mounts.seatPassengers(riders, ridden);
@@ -440,16 +497,17 @@ public final class UltraWarpRide {
         return home != null ? home : HomePoint.worldSpawn(player.server);
     }
 
-    public static void travel(ServerPlayer player, Arrival arrival, WormholeEntity exit) {
-        land(player, arrival, exit);
+    public static List<ServerPlayer> travel(ServerPlayer player, Arrival arrival, WormholeEntity exit) {
+        return land(player, arrival, exit);
     }
 
     private static List<ServerPlayer> land(ServerPlayer player, Arrival arrival, WormholeEntity exit) {
         List<ServerPlayer> passengers = passengersOf(player);
         leaveRide(player);
         recallAll(player);
-        landed(player, arrival.level(), arrival.pos(), exit.getYRot());
-        landPassengers(passengers, arrival.level(), arrival.pos(), exit.getYRot());
+        List<Vec3> spots = landings(player, passengers, arrival.level(), arrival.pos(), exit.getYRot(), exit, false);
+        landed(player, arrival.level(), spots.getFirst(), exit.getYRot());
+        landPassengers(passengers, arrival.level(), spots, exit.getYRot());
         CosmicJar.maybeCharge(player);
         return passengers;
     }
@@ -498,6 +556,7 @@ public final class UltraWarpRide {
     public static void onState(ServerPlayer player, RideStatePayload state) {
         Session s = SESSIONS.get(player.getUUID());
         if (s == null) return;
+        if (s.clockFrom < 0) s.clockFrom = s.ticks;
 
         double progress = state.progress();
         if (!Double.isFinite(progress)) return;
@@ -538,8 +597,8 @@ public final class UltraWarpRide {
         if (s.returnAt >= 0) return;
         boolean uncharted = s.layout.isUncharted(wormhole.index());
         if (s.layout.isFixed() && !uncharted && wormhole.index() >= s.waystones.size()) return;
-        s.returnAt = s.ticks + FLASH_TICKS;
-        flash(player, FLASH_TICKS);
+        s.returnAt = s.ticks + CLOSE_TICKS;
+        flash(player, CLOSE_TICKS);
         s.through = wormhole;
         WormholesAdvancements.wormholeEntered(player, wormhole.rings());
         for (ServerPlayer p : passengersOf(player)) WormholesAdvancements.wormholeEntered(p, wormhole.rings());
@@ -572,6 +631,7 @@ public final class UltraWarpRide {
     }
 
     public static void tick(MinecraftServer server) {
+        startEntries(server);
         List<ServerPlayer> returning = new ArrayList<>();
         Map<ServerPlayer, Session> arriving = new HashMap<>();
         for (Iterator<Map.Entry<UUID, Session>> it = SESSIONS.entrySet().iterator(); it.hasNext(); ) {
@@ -591,7 +651,9 @@ public final class UltraWarpRide {
                 return gone;
             });
             s.ticks++;
-            s.stamina.tick(s.ticks);
+            if (s.clockFrom < 0 && s.ticks >= CLOCK_WAIT_TICKS) s.clockFrom = s.ticks;
+            int flown = s.clockFrom < 0 ? 0 : s.ticks - s.clockFrom;
+            if (flown > WarpTunnel.OPENING_TICKS) s.stamina.tick(flown - WarpTunnel.OPENING_TICKS);
             if (s.stamina.exhausted() && s.dragTarget < 0 && s.returnAt < 0) {
                 s.dragTarget = s.layout.firstWormholeAfter(s.progress);
                 if (Double.isInfinite(s.layout.wormhole(s.dragTarget).distance())) {
@@ -662,6 +724,8 @@ public final class UltraWarpRide {
         STRAY_TICKS.remove(player.getUUID());
         COOLDOWN_UNTIL.remove(player.getUUID());
         ENTERED.remove(player.getUUID());
+        Entry entry = ENTRIES.remove(player.getUUID());
+        if (entry != null) clearWhite(player.server, entry, player);
     }
 
     private static void free(Session s) {

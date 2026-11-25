@@ -119,7 +119,8 @@ public final class CraterGiants {
     }
 
     public static boolean inReach(Player player, PokemonEntity giant) {
-        if (!fills(giant) || giant.getOwner() != null || player.level() != giant.level()) return false;
+        if (!fills(giant) || giant.getOwner() != null || player.level() != giant.level()
+                || OwnEncounters.hiddenFrom(giant, player)) return false;
         EntityDimensions body = body(giant);
         if (body == null) return false;
         Vec3 eye = player.getEyePosition();

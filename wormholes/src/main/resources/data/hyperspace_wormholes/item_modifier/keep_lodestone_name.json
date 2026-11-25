@@ -1,0 +1,13 @@
+{
+  "function": "minecraft:filtered",
+  "item_filter": {
+    "items": "minecraft:lodestone"
+  },
+  "modifier": {
+    "function": "minecraft:copy_components",
+    "source": "block_entity",
+    "include": [
+      "minecraft:custom_name"
+    ]
+  }
+}

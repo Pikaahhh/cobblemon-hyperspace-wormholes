@@ -18,22 +18,28 @@ import java.util.Map;
 public final class RoarClient {
     private static final Map<Integer, Long> ROARING_SINCE = new HashMap<>();
     private static KeyMapping key;
+    private static KeyMapping waystoneKey;
 
     private RoarClient() {}
 
     static void registerKey() {
         key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.roar",
                 InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.hyperspace_wormholes"));
+        waystoneKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hyperspace_wormholes.waystone_roar",
+                InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_COMMA, "key.categories.hyperspace_wormholes"));
     }
 
     static void tick(Minecraft mc) {
-        while (key.consumeClick()) {
-            if (mc.player != null && mc.player.getVehicle() != null && !UltraWarpRules.inWarp(mc.player)) {
-                ClientPlayNetworking.send(RoarRequestPayload.INSTANCE);
-            }
-        }
+        while (key.consumeClick()) request(mc, false);
+        while (waystoneKey.consumeClick()) request(mc, true);
         if (mc.level == null) ROARING_SINCE.clear();
         else ROARING_SINCE.values().removeIf(since -> mc.level.getGameTime() - since > LegendRoar.ROAR_TICKS);
+    }
+
+    private static void request(Minecraft mc, boolean waystones) {
+        if (mc.player != null && mc.player.getVehicle() != null && !UltraWarpRules.inWarp(mc.player)) {
+            ClientPlayNetworking.send(new RoarRequestPayload(waystones));
+        }
     }
 
     static void startRoar(int entityId) {

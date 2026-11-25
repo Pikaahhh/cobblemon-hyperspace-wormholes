@@ -12,10 +12,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.hyperspacewormholes.wormholes.Wormholes;
-import org.joml.Matrix4fStack;
-import org.lwjgl.opengl.GL11;
+import dev.hyperspacewormholes.wormholes.client.RideCamera;
 import dev.hyperspacewormholes.wormholes.client.RideClient;
+import dev.hyperspacewormholes.wormholes.client.RideOpening;
 import dev.hyperspacewormholes.wormholes.client.ShaderPacks;
+import dev.hyperspacewormholes.wormholes.client.WarpEntryCamera;
+import dev.hyperspacewormholes.wormholes.client.WarpEntryClose;
 import dev.hyperspacewormholes.wormholes.ride.TunnelLayout;
 import dev.hyperspacewormholes.wormholes.ride.WarpTunnel;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -34,39 +36,21 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**
- * Draws Ultra Space during the ride, pixel-art style: the nebula and starry sky, the swirly vortex tunnel, wormholes,
- * golden rings and crystal bits along it, and the light trail behind you as you steer.
+ * Draws Ultra Space during the ride, pixel-art style: the tunnel (UltraTunnel), the opening's corridor
+ * (RideOpeningRenderer), wormholes, golden rings and blocks drifting along it, and the light trail behind you as you steer.
  */
 public final class TunnelRenderer {
     private static final float Z_NEAR = -50f;
     private static final float MAX_LENGTH = 440f;
-    private static final int SIDES = 36;
-    private static final float[] SIDE_COS = new float[SIDES + 1];
-    private static final float[] SIDE_SIN = new float[SIDES + 1];
-    private static final float[] RING_NEAR = new float[(SIDES + 1) * 3];
-    private static final float[] RING_FAR = new float[(SIDES + 1) * 3];
-    private static final float SEGMENT = 12f;
-    private static final float SKY_RADIUS = 90f;
-
-    private static final float[][] LAYERS = {
-            {56f, 5f, 120f, 0.6f, 0.003f, 1f / (30 * 20), 0.95f},
-            {42f, 4f, 90f, 0.8f, -0.004f, 1f / (24 * 20), 0.8f},
-            {31f, 3f, 70f, 1.0f, 0.006f, 1f / (18 * 20), 0.55f},
-    };
-    private static final float STAR_SPIN = 1f / (40 * 20);
-    private static final float[][][] CLOUD_COLORS = {
-            {{0.08f, 0.12f, 0.40f}, {0.22f, 0.14f, 0.55f}, {0.50f, 0.16f, 0.50f}, {0.10f, 0.32f, 0.50f}},
-            {{0.10f, 0.10f, 0.38f}, {0.30f, 0.12f, 0.50f}, {0.60f, 0.20f, 0.40f}, {0.55f, 0.35f, 0.20f}},
-            {{0.08f, 0.10f, 0.42f}, {0.26f, 0.12f, 0.58f}, {0.55f, 0.14f, 0.55f}, {0.12f, 0.30f, 0.55f}},
-            {{0.10f, 0.08f, 0.36f}, {0.45f, 0.38f, 0.12f}, {0.55f, 0.50f, 0.60f}, {0.20f, 0.30f, 0.60f}},
-    };
+    private static float heldBack;
     private static final float[][][] TRAIL_COLORS = {
             {{1f, 1f, 1f}, {0.5f, 0.9f, 1f}, {0.3f, 0.4f, 1f}},
             {{1f, 0.9f, 0.4f}, {1f, 0.55f, 0.25f}, {1f, 0.35f, 0.5f}},
@@ -74,19 +58,7 @@ public final class TunnelRenderer {
             {{1f, 1f, 0.85f}, {1f, 0.8f, 0.3f}, {0.5f, 0.7f, 1f}},
     };
 
-    private static final int STARS = 1200;
-    private static final int NEBULAE = 16;
-    private static final Vector3f[] STAR_DIR = new Vector3f[STARS];
-    private static final float[] STAR_SIZE = new float[STARS];
-    private static final float[] STAR_PHASE = new float[STARS];
-    private static final Vector3f[] NEBULA_DIR = new Vector3f[NEBULAE];
-    private static final float[] NEBULA_SIZE = new float[NEBULAE];
-    private static final float[] NEBULA_UV = new float[NEBULAE];
-    private static final int[] NEBULA_TINT = new int[NEBULAE];
-
     private static final BlockState[] DEBRIS_BLOCKS = {
-            Blocks.AMETHYST_BLOCK.defaultBlockState(),
-            Blocks.BUDDING_AMETHYST.defaultBlockState(),
             Blocks.PURPLE_STAINED_GLASS.defaultBlockState(),
             Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(),
             Blocks.BLUE_ICE.defaultBlockState(),
@@ -94,35 +66,7 @@ public final class TunnelRenderer {
     };
     private static final float DEBRIS_SPACING = 16f;
     private static final float DEBRIS_RANGE = 240f;
-    private static final Vector3f AXIS_X = new Vector3f(1, 0, 0), AXIS_Y = new Vector3f(0, 1, 0);
     private static final Vector3f SCRATCH_A = new Vector3f(), SCRATCH_B = new Vector3f();
-
-    static {
-        for (int s = 0; s <= SIDES; s++) {
-            float t = s * Mth.TWO_PI / SIDES;
-            SIDE_COS[s] = Mth.cos(t);
-            SIDE_SIN[s] = Mth.sin(t);
-        }
-        Random random = new Random(1791);
-        for (int i = 0; i < STARS; i++) {
-            STAR_DIR[i] = randomDirection(random);
-            STAR_SIZE[i] = random.nextFloat() < 0.08f ? 1.2f : 0.4f + random.nextFloat() * 0.35f;
-            STAR_PHASE[i] = random.nextFloat() * 100f;
-        }
-        for (int i = 0; i < NEBULAE; i++) {
-            NEBULA_DIR[i] = randomDirection(random);
-            NEBULA_SIZE[i] = 55f + random.nextFloat() * 70f;
-            NEBULA_UV[i] = random.nextInt(4) * 0.25f;
-            NEBULA_TINT[i] = random.nextInt(4);
-        }
-    }
-
-    private static Vector3f randomDirection(Random random) {
-        float z = random.nextFloat() * 2 - 1;
-        float a = random.nextFloat() * Mth.TWO_PI;
-        float r = Mth.sqrt(1 - z * z);
-        return new Vector3f(r * Mth.cos(a), r * Mth.sin(a), z);
-    }
 
     private static float length() {
         return Math.min(MAX_LENGTH, Minecraft.getInstance().gameRenderer.getDepthFar() * 0.8f);
@@ -137,6 +81,42 @@ public final class TunnelRenderer {
         Entity body = body();
         return body.getPosition(partialTick).add(0, body.getBbHeight() * 0.5, 0);
     }
+
+    private static final RideOpeningRenderer.Batch OPENING = new RideOpeningRenderer.Batch() {
+        @Override
+        public VertexConsumer begin(int texture, boolean additive) {
+            if (additive) additive();
+            else RenderSystem.defaultBlendFunc();
+            return TunnelRenderer.begin(switch (texture) {
+                case RideOpeningRenderer.WALL -> WarpTextures.WALL;
+                case RideOpeningRenderer.RUSH_WALL -> WarpTextures.RUSH_WALL;
+                case RideOpeningRenderer.BANDS -> WarpTextures.BANDS;
+                case RideOpeningRenderer.CURTAINS -> WarpTextures.CURTAINS;
+                case RideOpeningRenderer.SPARKLES -> WarpTextures.SPARKLES;
+                case RideOpeningRenderer.SMOKE -> WarpTextures.SMOKE;
+                default -> WarpTextures.STAR;
+            });
+        }
+
+        @Override
+        public void end(VertexConsumer consumer) {
+            draw((BufferBuilder) consumer);
+        }
+    };
+
+    private static final UltraTunnel.Batch TUNNEL = new UltraTunnel.Batch() {
+        @Override
+        public VertexConsumer begin(ResourceLocation texture, boolean additive) {
+            if (additive) additive();
+            else RenderSystem.defaultBlendFunc();
+            return TunnelRenderer.begin(texture);
+        }
+
+        @Override
+        public void end(VertexConsumer consumer) {
+            draw((BufferBuilder) consumer);
+        }
+    };
 
     private static BufferBuilder begin(ResourceLocation texture) {
         RenderSystem.setShaderTexture(0, texture);
@@ -155,10 +135,6 @@ public final class TunnelRenderer {
     private static float smoothstep(float edge0, float edge1, float x) {
         float t = Mth.clamp((x - edge0) / (edge1 - edge0), 0f, 1f);
         return t * t * (3 - 2 * t);
-    }
-
-    private static float fade(float z, float length) {
-        return Mth.clamp(1 + z / 40f, 0f, 1f) * (1 - smoothstep(0.55f, 1f, z / length));
     }
 
     public static void renderSky(WorldRenderContext context) {
@@ -194,8 +170,10 @@ public final class TunnelRenderer {
     private static void drawSky(WorldRenderContext context) {
         boolean late = ShaderPacks.inUse();
         WarpTextures.ensureReady();
+        UltraTunnelTextures.ensureReady();
 
         float pt = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        heldBack = WarpEntryCamera.heldBack(pt);
         float time = RideClient.time(pt);
         RenderSystem.disableCull();
         if (late) {
@@ -208,12 +186,21 @@ public final class TunnelRenderer {
         RenderSystem.enableBlend();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
-
-        renderSpace(new Matrix4f(context.positionMatrix()).rotateZ(time * 0.0004f), time);
         Vec3 cam = context.camera().getPosition();
         Vec3 center = rideCenter(pt);
-        renderVortex(new Matrix4f(context.positionMatrix()).translate((float) (center.x - cam.x), (float) (center.y - cam.y),
-                (float) (center.z - cam.z)), time, pt);
+        float shrink = Math.min(1f, Minecraft.getInstance().gameRenderer.getDepthFar() * 0.8f / (MAX_LENGTH + (float) center.distanceTo(cam)));
+        Matrix4f atRide = new Matrix4f(context.positionMatrix()).scale(shrink).translate((float) (center.x - cam.x), (float) (center.y - cam.y),
+                (float) (center.z - cam.z));
+        boolean opening = RideOpening.playing(pt);
+        if (!opening || RideOpening.frame(pt) >= RideOpening.HOLE_OPENS) {
+            UltraTunnel.draw(TUNNEL, atRide, time, pt, MAX_LENGTH, heldBack);
+        }
+        if (opening) {
+            RideOpeningRenderer.render(OPENING, context.positionMatrix(), (float) (cam.x - center.x), (float) (cam.y - center.y),
+                    (float) (cam.z - center.z), RideCamera.unit(body()),
+                    Minecraft.getInstance().gameRenderer.getDepthFar(), RideOpening.frame(pt),
+                    UltraTunnel.CLOUDS);
+        }
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
@@ -222,143 +209,18 @@ public final class TunnelRenderer {
         RenderSystem.enableCull();
     }
 
-    private static void renderSpace(Matrix4f pose, float time) {
-        float[][] tints = CLOUD_COLORS[RideClient.mount().ordinal()];
-        additive();
-        BufferBuilder nebula = begin(WarpTextures.NEBULA);
-        for (int i = 0; i < NEBULAE; i++) {
-            float[] t = tints[NEBULA_TINT[i]];
-            float u = NEBULA_UV[i];
-            billboard(nebula, pose, NEBULA_DIR[i], SKY_RADIUS * 1.1f, NEBULA_SIZE[i], u, 0, u + 0.75f, 0.75f,
-                    t[0] * 1.6f, t[1] * 1.6f, t[2] * 1.6f, 0.6f);
-        }
-        draw(nebula);
-        BufferBuilder stars = begin(WarpTextures.STAR);
-        for (int i = 0; i < STARS; i++) {
-            float twinkle = Mth.sin(time * 0.03f + STAR_PHASE[i]) > 0.7f ? 0.7f : 0.9f;
-            billboard(stars, pose, STAR_DIR[i], SKY_RADIUS, STAR_SIZE[i], 0, 0, 1, 1, 0.85f, 0.9f, 1f, twinkle);
-        }
-        draw(stars);
-    }
-
-    private static void billboard(BufferBuilder bb, Matrix4f pose, Vector3f dir, float distance, float size,
-                                  float u0, float v0, float u1, float v1, float r, float g, float b, float a) {
-        Vector3f up = Math.abs(dir.y) > 0.95f ? AXIS_X : AXIS_Y;
-        Vector3f right = SCRATCH_A.set(dir).cross(up).normalize().mul(size / 2);
-        Vector3f upv = SCRATCH_B.set(right).cross(dir).normalize().mul(size / 2);
-        float cx = dir.x * distance, cy = dir.y * distance, cz = dir.z * distance;
-        bb.addVertex(pose, cx - right.x - upv.x, cy - right.y - upv.y, cz - right.z - upv.z).setUv(u0, v1).setColor(r, g, b, a);
-        bb.addVertex(pose, cx + right.x - upv.x, cy + right.y - upv.y, cz + right.z - upv.z).setUv(u1, v1).setColor(r, g, b, a);
-        bb.addVertex(pose, cx + right.x + upv.x, cy + right.y + upv.y, cz + right.z + upv.z).setUv(u1, v0).setColor(r, g, b, a);
-        bb.addVertex(pose, cx - right.x + upv.x, cy - right.y + upv.y, cz - right.z + upv.z).setUv(u0, v0).setColor(r, g, b, a);
-    }
-
-    private static void renderVortex(Matrix4f pose, float time, float pt) {
-        float progress = (float) RideClient.progress(pt);
-        float offX = RideClient.offX(pt), offY = RideClient.offY(pt);
-        float length = length();
-        float[][] colors = CLOUD_COLORS[RideClient.mount().ordinal()];
-        for (int l = 0; l < LAYERS.length; l++) {
-            if (l == LAYERS.length - 1) {
-                additive();
-                BufferBuilder stars = begin(WarpTextures.STARFIELD);
-                cylinder(stars, pose, 36f, 6f, 50f, 1.3f, 0.002f, STAR_SPIN, time, progress, offX, offY, length,
-                        null, 0.95f);
-                draw(stars);
-            }
-            RenderSystem.defaultBlendFunc();
-            float[] layer = LAYERS[l];
-            BufferBuilder clouds = begin(WarpTextures.CLOUD);
-            cylinder(clouds, pose, layer[0], layer[1], layer[2], layer[3], layer[4], layer[5], time, progress,
-                    offX, offY, length, colors, layer[6]);
-            draw(clouds);
-        }
-
-        additive();
-        float[] inner = LAYERS[LAYERS.length - 1];
-        BufferBuilder glowWisps = begin(WarpTextures.CLOUD);
-        cylinder(glowWisps, pose, inner[0] * 0.98f, inner[1], inner[2], inner[3], inner[4], inner[5], time,
-                progress, offX, offY, length, colors, 0.3f);
-        draw(glowWisps);
-
-        BufferBuilder sparks = begin(WarpTextures.STAR);
-        float stretch = RideClient.speed() / WarpTunnel.CRUISE_SPEED;
-        for (RideClient.Streak s : RideClient.streaks()) {
-            float z = Mth.lerp(pt, s.prevZ, s.z);
-            if (z > length) continue;
-            float base = s.brightness * fade(z, length);
-            float cos = Mth.cos(s.angle) * s.radius, sin = Mth.sin(s.angle) * s.radius;
-            for (int t = 0; t < 3; t++) {
-                float tz = z + t * s.length * 0.2f * stretch;
-                float x = WarpTunnel.bendX(tz, time) - offX + cos;
-                float y = WarpTunnel.bendY(tz, time) - offY + sin;
-                WormholeVisual.square(sparks, pose, x, y, tz, s.width * 2.4f * (1 - t * 0.25f), 0.85f, 0.9f, 1f,
-                        base * (1 - t * 0.35f));
-            }
-        }
-        draw(sparks);
-    }
-
-    private static void cylinder(BufferBuilder bb, Matrix4f pose, float radius, float uRepeat, float vScale,
-                                 float scroll, float twist, float spin, float time, float progress, float offX,
-                                 float offY, float length, float[][] colors, float alpha) {
-        float[] near = RING_NEAR, far = RING_FAR;
-        float nearZ = Float.NaN;
-        float turn = (float) (time * (double) spin - Math.floor(time * (double) spin));
-        float spun = turn * uRepeat;
-        float turnAngle = turn * Mth.TWO_PI;
-        float scrolled = Mth.floor(Mth.frac(progress * scroll / vScale) * 64f) / 64f;
-        for (float z0 = Z_NEAR; z0 < length; z0 += SEGMENT) {
-            float z1 = Math.min(length, z0 + SEGMENT);
-            float a0 = alpha * fade(z0, length), a1 = alpha * fade(z1, length);
-            if (a0 <= 0.001f && a1 <= 0.001f) continue;
-            float cx0 = WarpTunnel.bendX(z0, time) - offX, cy0 = WarpTunnel.bendY(z0, time) - offY;
-            float cx1 = WarpTunnel.bendX(z1, time) - offX, cy1 = WarpTunnel.bendY(z1, time) - offY;
-            float v0 = z0 / vScale + scrolled, v1 = z1 / vScale + scrolled;
-            float u0Base = spun + z0 * twist, u1Base = spun + z1 * twist;
-            if (nearZ != z0) ringColors(colors, turnAngle, z0, time, near);
-            ringColors(colors, turnAngle, z1, time, far);
-            for (int s = 0; s < SIDES; s++) {
-                int i0 = s * 3, i1 = i0 + 3;
-                float f0 = (float) s / SIDES, f1 = (float) (s + 1) / SIDES;
-                bb.addVertex(pose, cx0 + SIDE_COS[s] * radius, cy0 + SIDE_SIN[s] * radius, z0)
-                        .setUv(f0 * uRepeat + u0Base, v0).setColor(near[i0], near[i0 + 1], near[i0 + 2], a0);
-                bb.addVertex(pose, cx0 + SIDE_COS[s + 1] * radius, cy0 + SIDE_SIN[s + 1] * radius, z0)
-                        .setUv(f1 * uRepeat + u0Base, v0).setColor(near[i1], near[i1 + 1], near[i1 + 2], a0);
-                bb.addVertex(pose, cx1 + SIDE_COS[s + 1] * radius, cy1 + SIDE_SIN[s + 1] * radius, z1)
-                        .setUv(f1 * uRepeat + u1Base, v1).setColor(far[i1], far[i1 + 1], far[i1 + 2], a1);
-                bb.addVertex(pose, cx1 + SIDE_COS[s] * radius, cy1 + SIDE_SIN[s] * radius, z1)
-                        .setUv(f0 * uRepeat + u1Base, v1).setColor(far[i0], far[i0 + 1], far[i0 + 2], a1);
-            }
-            float[] swap = near;
-            near = far;
-            far = swap;
-            nearZ = z1;
-        }
-    }
-
-    private static void ringColors(float[][] colors, float turnAngle, float z, float time, float[] out) {
-        if (colors == null) {
-            Arrays.fill(out, 1f);
-            return;
-        }
-        for (int s = 0; s <= SIDES; s++) {
-            float t = s * Mth.TWO_PI / SIDES;
-            palette(colors, 0.5f + 0.5f * Mth.sin((t + turnAngle) * 2 + z * 0.012f + time * 0.01f), out, s * 3);
-        }
-    }
-
     public static void renderWorld(WorldRenderContext context) {
         if (!ShaderPacks.inUse()) drawWorld(context);
     }
 
     private static void drawWorld(WorldRenderContext context) {
         Minecraft mc = Minecraft.getInstance();
-        if (!RideClient.isActive() || mc.player == null
-                || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;
+        if (!RideClient.isActive() || mc.player == null || mc.player.level().dimension() != Wormholes.ULTRA_WARP) return;
         WarpTextures.ensureReady();
+        WarpCloseTextures.ensureReady();
 
         float pt = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        heldBack = WarpEntryCamera.heldBack(pt);
         float time = RideClient.time(pt);
         double progress = RideClient.progress(pt);
         float offX = RideClient.offX(pt);
@@ -372,13 +234,16 @@ public final class TunnelRenderer {
         Vector3f toCamera = new Vector3f((float) (cam.x - center.x), (float) (cam.y - center.y), (float) (cam.z - center.z));
 
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        renderDebris(mc, buffers, poseStack, time, progress, offX, offY);
+        renderDebris(mc, buffers, poseStack, toCamera, time, progress, offX, offY, pt);
         buffers.endBatch(Sheets.cutoutBlockSheet());
         buffers.endBatch(Sheets.translucentCullBlockSheet());
         buffers.endBatch(Sheets.translucentItemSheet());
-        renderWormholes(buffers, poseStack, cameraRotation, time, progress, offX, offY, length, pt);
-        renderGoldRings(buffers, poseStack, time, progress, offX, offY, length, pt);
-        renderTrail(buffers, poseStack.last().pose(), toCamera, progress, offX, offY);
+        float arrival = RideClient.arrival(pt);
+        if (arrival <= 0f) return;
+        renderWormholes(buffers, poseStack, cameraRotation, time, progress, offX, offY, length, pt, arrival,
+                context.projectionMatrix().m11());
+        renderGoldRings(buffers, poseStack, time, progress, offX, offY, length, pt, arrival);
+        renderTrail(buffers, poseStack.last().pose(), toCamera, progress, offX, offY, arrival * WarpEntryClose.trail(pt));
 
         for (ResourceLocation texture : new ResourceLocation[]{WarpTextures.GLOW, WarpTextures.FUNNEL,
                 WarpTextures.STAR, WarpTextures.RING, WarpTextures.RING_GLOW}) {
@@ -388,33 +253,44 @@ public final class TunnelRenderer {
     }
 
     private static void renderWormholes(MultiBufferSource buffers, PoseStack poseStack, Quaternionf cameraRotation,
-                                        float time, double progress, float offX, float offY, float length, float pt) {
+                                        float time, double progress, float offX, float offY, float length, float pt, float arrival, float zoom) {
         TunnelLayout layout = RideClient.layout();
+        Matrix4f light = null;
         for (int i = layout.firstIndexAtOrAfter(progress - 60); ; i++) {
             WarpTunnel.Wormhole w = layout.wormhole(i);
             float z = (float) (w.distance() - progress);
             if (z > length) break;
-            if (z < -60) continue;
+            if (z < -60 - heldBack) continue;
 
             float scale = 1f, alpha = 1f;
             int age = RideClient.touchedAge(i);
-            if (age >= 0) {
-                float f = (age + pt) / 14f;
-                if (f >= 1) continue;
-                scale = 1 + f * 2.5f;
-                alpha = 1 - f;
+            boolean closing = WarpEntryClose.of(i);
+            if (closing) {
+                scale = WarpEntryClose.holeScale(pt);
+                alpha = WarpEntryClose.holeLight(pt);
+            } else if (age >= 0) {
+                continue;
             }
-            alpha *= 1 - smoothstep(0.65f, 1f, z / length);
-            alpha *= Mth.clamp(1 + z / 40f, 0f, 1f);
-            if (alpha <= 0.01f) continue;
+            alpha *= arrival * (1 - smoothstep(0.65f, 1f, z / length));
+            alpha *= Mth.clamp(1 + (z + heldBack) / 40f, 0f, 1f);
+            if (WarpEntryClose.before(w.distance())) alpha *= WarpEntryClose.trail(pt);
+            if (alpha <= 0.01f && !closing) continue;
 
             poseStack.pushPose();
             poseStack.translate(w.x() - offX + WarpTunnel.bendX(z, time), w.y() - offY + WarpTunnel.bendY(z, time), z);
-            WormholeVisual.draw(buffers, poseStack.last().pose(), facing(z, time), cameraRotation, time + i * 37f,
-                    w.radius() * scale, w.rings(), w.type(), w.rainbow(), alpha);
+            if (alpha > 0.002f) {
+                WormholeVisual.draw(buffers, poseStack.last().pose(), facing(z, time), cameraRotation, time + i * 37f,
+                        w.radius() * scale, w.rings(), w.type(), w.rainbow(), alpha);
+            }
             String name = layout.name(i);
-            if (name != null && age < 0) drawName(buffers, poseStack, cameraRotation, name, w.radius() * 2.4f, alpha);
+            float named = alpha * (closing ? WarpEntryClose.trail(pt) : 1f);
+            if (name != null && named > 0.04f) drawName(buffers, poseStack, cameraRotation, name, w.radius() * 2.4f, named);
+            if (closing) light = new Matrix4f(poseStack.last().pose());
             poseStack.popPose();
+        }
+        if (light != null) {
+            WarpCloseLook.draw(buffers.getBuffer(WarpRenderTypes.additive(WarpCloseTextures.SHEET)), light, cameraRotation,
+                    zoom, WarpEntryClose.frame(pt), WarpEntryClose.strength(pt), WarpEntryClose.sun());
         }
     }
 
@@ -439,14 +315,14 @@ public final class TunnelRenderer {
     }
 
     private static void renderGoldRings(MultiBufferSource buffers, PoseStack poseStack, float time, double progress,
-                                        float offX, float offY, float length, float pt) {
+                                        float offX, float offY, float length, float pt, float arrival) {
         long seed = RideClient.seed();
         for (int i = WarpTunnel.firstGoldSlotAtOrAfter(progress - 60); ; i++) {
             WarpTunnel.GoldRing ring = WarpTunnel.goldRing(seed, i);
             double at = WarpTunnel.goldRingPassedAt(seed, i);
             float z = (float) (at - progress);
             if (z > length) break;
-            if (ring == null || z < -30) continue;
+            if (ring == null || z < -30 - heldBack) continue;
 
             float scale = 1f, alpha = 1f;
             int age = RideClient.collectedAge(i);
@@ -456,8 +332,9 @@ public final class TunnelRenderer {
                 scale = 1 + f * 1.8f;
                 alpha = 1 - f;
             }
-            alpha *= 1 - smoothstep(0.55f, 0.9f, z / length);
-            alpha *= Mth.clamp(1 + z / 20f, 0f, 1f);
+            alpha *= arrival * (1 - smoothstep(0.55f, 0.9f, z / length));
+            alpha *= Mth.clamp(1 + (z + heldBack) / 20f, 0f, 1f);
+            if (WarpEntryClose.before(at)) alpha *= WarpEntryClose.trail(pt);
             if (alpha <= 0.01f) continue;
             float pulse = 1f + 0.06f * Mth.sin(Mth.floor(time / 3) * 0.6f + i);
             poseStack.pushPose();
@@ -468,15 +345,28 @@ public final class TunnelRenderer {
         }
     }
 
-    private static void renderDebris(Minecraft mc, MultiBufferSource buffers, PoseStack poseStack, float time,
-                                     double progress, float offX, float offY) {
+    /** How much of something in the tunnel shows through the mouth of the opening's corridor, 0 to 1. */
+    private static float throughMouth(Vector3f toCamera, float x, float y, float z, float mouth, float rim) {
+        if (toCamera.z >= mouth) return 1f;
+        if (z <= mouth) return 0f;
+        float at = (mouth - toCamera.z) / (z - toCamera.z);
+        float across = Mth.sqrt(Mth.square(Mth.lerp(at, toCamera.x, x)) + Mth.square(Mth.lerp(at, toCamera.y, y)));
+        return Mth.clamp((0.9f - across / rim) / 0.25f, 0f, 1f);
+    }
+
+    private static void renderDebris(Minecraft mc, MultiBufferSource buffers, PoseStack poseStack, Vector3f toCamera,
+                                     float time, double progress, float offX, float offY, float pt) {
+        boolean opening = RideOpening.playing(pt);
+        float frame = RideOpening.frame(pt), unit = RideCamera.unit(body());
+        float mouth = RideOpening.mouth(frame) * unit, rim = RideOpening.MOUTH_RADIUS * RideOpening.scale(frame) * unit;
+        if (opening && mouth > DEBRIS_RANGE) return;
         long seed = RideClient.seed() ^ 0x5DEECE66DL;
-        int first = Math.max(0, Mth.floor((progress + Z_NEAR) / DEBRIS_SPACING) - 1);
+        int first = Mth.floor((progress + Z_NEAR - heldBack) / DEBRIS_SPACING) - 1;
         int last = Mth.floor((progress + DEBRIS_RANGE) / DEBRIS_SPACING) + 1;
         for (int i = first; i <= last; i++) {
             Random random = new Random(seed + i * 0x9E3779B97F4A7C15L);
             float z = (float) (i * DEBRIS_SPACING + random.nextFloat() * DEBRIS_SPACING - progress);
-            if (z < Z_NEAR || z > DEBRIS_RANGE) continue;
+            if (z < Z_NEAR - heldBack || z > DEBRIS_RANGE) continue;
             float angle = random.nextFloat() * Mth.TWO_PI;
             float r = 26f + random.nextFloat() * 10f;
             float size = 1.2f + random.nextFloat() * 1.6f;
@@ -486,9 +376,13 @@ public final class TunnelRenderer {
                     .normalize();
             float spinSpeed = 0.01f + random.nextFloat() * 0.03f;
 
+            float x = WarpTunnel.bendX(z, time) - offX + Mth.cos(angle) * r;
+            float y = WarpTunnel.bendY(z, time) - offY + Mth.sin(angle) * r;
+            if (opening) size *= throughMouth(toCamera, x, y, z, mouth, rim);
+            if (size < 0.05f) continue;
+
             poseStack.pushPose();
-            poseStack.translate(WarpTunnel.bendX(z, time) - offX + Mth.cos(angle) * r,
-                    WarpTunnel.bendY(z, time) - offY + Mth.sin(angle) * r, z);
+            poseStack.translate(x, y, z);
             poseStack.mulPose(Axis.of(axis).rotation(time * spinSpeed + i));
             poseStack.scale(size, size, size);
             for (int b = 0; b < count; b++) {
@@ -508,7 +402,7 @@ public final class TunnelRenderer {
     }
 
     private static void renderTrail(MultiBufferSource buffers, Matrix4f pose, Vector3f toCamera,
-                                    double progress, float offX, float offY) {
+                                    double progress, float offX, float offY, float arrival) {
         float[][] colors = TRAIL_COLORS[RideClient.mount().ordinal()];
         float drop = -body().getBbHeight() * 0.2f;
         int n = RideClient.TRAIL_LENGTH;
@@ -528,8 +422,8 @@ public final class TunnelRenderer {
             trailSide(points, k + 1, toCamera, (1.4f - f1) * 1.3f, side1);
             palette(colors, f0, c0, 0);
             palette(colors, f1, c1, 0);
-            float a0 = 0.9f * (1 - f0), a1 = 0.9f * (1 - f1);
             Vector3f p0 = points[k], p1 = points[k + 1];
+            float a0 = 0.9f * arrival * (1 - f0), a1 = 0.9f * arrival * (1 - f1);
             vc.addVertex(pose, p0.x - side0.x, p0.y - side0.y, p0.z - side0.z).setUv(0, 0.5f).setColor(c0[0], c0[1], c0[2], a0);
             vc.addVertex(pose, p0.x + side0.x, p0.y + side0.y, p0.z + side0.z).setUv(1, 0.5f).setColor(c0[0], c0[1], c0[2], a0);
             vc.addVertex(pose, p1.x + side1.x, p1.y + side1.y, p1.z + side1.z).setUv(1, 0.5f).setColor(c1[0], c1[1], c1[2], a1);

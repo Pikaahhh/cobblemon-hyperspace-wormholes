@@ -37,7 +37,9 @@ public final class RiderArrivalClient {
     private static final float LEVEL_OUT_FROM = 0.8f;
     private static final float CHASE_CLOSE_FROM = 0.55f;
     private static final Map<Integer, Emergence> ACTIVE = new HashMap<>();
+    private static final int HUD_TICKS = 10;
     private static @Nullable Emergence watching;
+    private static int hudAway;
 
     private static final class Emergence {
         final int riderId;
@@ -113,13 +115,20 @@ public final class RiderArrivalClient {
         return watching != null;
     }
 
+    /** How far the HUD still has to slide back in, 1 to 0. */
+    public static float hudAway(float partialTick) {
+        float t = Mth.clamp((hudAway - partialTick) / HUD_TICKS, 0f, 1f);
+        return t * t * (3 - 2 * t);
+    }
+
     public static void tick(Minecraft mc) {
+        if (hudAway > 0) hudAway--;
         if (ACTIVE.isEmpty()) return;
         if (mc.level == null || mc.player == null) {
             reset();
             return;
         }
-        if (mc.screen instanceof ReceivingLevelScreen) return;
+        if (mc.screen instanceof ReceivingLevelScreen || RideClient.isCovered()) return;
 
         for (Iterator<Emergence> it = ACTIVE.values().iterator(); it.hasNext(); ) {
             Emergence e = it.next();
@@ -160,6 +169,7 @@ public final class RiderArrivalClient {
         e.held.clear();
         if (e != watching) return;
         watching = null;
+        hudAway = HUD_TICKS;
         Minecraft mc = Minecraft.getInstance();
         mc.options.setCameraType(CameraType.FIRST_PERSON);
         if (e.airborne && mc.player != null) {

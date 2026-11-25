@@ -79,8 +79,10 @@ public final class PokemonArrivals {
                 e.noGravityBefore = e.entity.isNoGravity();
                 e.entity.setNoGravity(true);
                 e.level.addFreshEntity(e.entity);
-                e.level.playSound(null, e.from.x, e.from.y, e.from.z, SoundEvents.PORTAL_TRAVEL, SoundSource.NEUTRAL, 0.3f, 1.8f);
-                if (e.type == WormholeType.GOLD || e.type == WormholeType.WHITE) announce(e);
+                OwnEncounters.only(e.entity, () -> {
+                    e.level.playSound(null, e.from.x, e.from.y, e.from.z, SoundEvents.PORTAL_TRAVEL, SoundSource.NEUTRAL, 0.3f, 1.8f);
+                    if (e.type == WormholeType.GOLD || e.type == WormholeType.WHITE) announce(e);
+                });
                 continue;
             }
             if (e.entity.isRemoved() || e.entity.level() != e.level) {
@@ -123,8 +125,9 @@ public final class PokemonArrivals {
         portal.setLifetime(OPEN_TICKS + DESCENT_TICKS + LINGER_TICKS + WormholeEntity.CLOSE_TICKS);
         double mouthY = e.from.y + e.entity.getBbHeight() + MOUTH_GAP;
         portal.moveTo(e.from.x, mouthY - WormholeEntity.SIZE / 2, e.from.z, e.yaw, FACING_DOWN);
+        OwnEncounters.share(portal, e.entity);
         e.level.addFreshEntity(portal);
-        WormholeSounds.open(e.level, new Vec3(e.from.x, mouthY, e.from.z), 0.5f, 1.9f);
+        OwnEncounters.only(e.entity, () -> WormholeSounds.open(e.level, new Vec3(e.from.x, mouthY, e.from.z), 0.5f, 1.9f));
     }
 
     private static void announce(Emergence e) {
