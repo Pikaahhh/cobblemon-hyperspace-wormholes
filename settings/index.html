@@ -1481,6 +1481,8 @@
 <li>Data Monitor Griefing - turn it off if you don't want Data Monitors breaking.</li>
 <li>Max Distortions Per Player - raise it to see more spatial distortions around. At 4 you keep up to 4 around you in
   busy areas.</li>
+<li>Distortion Minutes - raise it to have distortions stay around for longer.</li>
+<li>Keep Distortions Away From Bases - turn it on if you don't want distortions showing up where you live.</li>
 <li>Distortion Star Weight - raise a rank's weight to make it more common, for example 5 Star from 5 to 20.</li>
 <li>Total Distortions for Hoopa Boss and Total White Wormholes for Necrozma Boss - lower them to find Hoopa Unbound or
   Necrozma sooner, for example from 12 to 6.</li>
@@ -1488,9 +1490,10 @@
 <p>Which Pokémon come out of each wormhole colour isn't a setting, you change that with a datapack. You can learn more
 about that <a href="../datapacks/wormhole-pools/">here</a>.</p>
 <h2 id="the-settings-screen">The Settings Screen<a class="headerlink" href="#the-settings-screen" title="Permanent link">&para;</a></h2>
-<p>With Mod Menu installed, open the mod's config button in your mod list to get the Hyperspace &amp; Wormholes Settings
-screen. Every setting has a tooltip that explains it and gives an example, so just hover its name. Reset to Defaults
-puts everything back.</p>
+<p>On Fabric, install Mod Menu and open the mod's config button in your mod list to get the Hyperspace &amp; Wormholes Settings
+screen. On NeoForge you don't need Mod Menu. Open Mods from the title screen or pause menu, pick H&amp;W and press Config.
+Every setting has a tooltip that explains it and gives an example, so just hover its name. Reset to Defaults puts
+everything back.</p>
 <p>The screen edits <code>config/hyperspace_wormholes_gameplay.json</code>. On a server, the server's own settings file is used. The
 server sends its settings to every player who joins, so changing them in your own game only changes your single-player
 worlds.</p>
@@ -1637,6 +1640,21 @@ and leave Cosmog Summon on, since that's how you get a mount for the Ultra Warp 
 <td>How many distortions a player keeps around them in the busier half of the map (half that, rounded up, in the rest). 0 to 16.</td>
 </tr>
 <tr>
+<td>Distortion Minutes</td>
+<td>60</td>
+<td>How many minutes a distortion stays before it disappears. Ones already there keep their time. 1 to 10080.</td>
+</tr>
+<tr>
+<td>Keep Distortions Away From Bases</td>
+<td>Off</td>
+<td>On: new distortions don't appear near where online players respawn or in chunks players have spent an hour around. Off: they can appear anywhere.</td>
+</tr>
+<tr>
+<td>Distance From Bases</td>
+<td>128</td>
+<td>How many blocks from online players' respawn points distortions keep when the setting above is on. 0 to 1000.</td>
+</tr>
+<tr>
 <td>Legendary Shiny Odds</td>
 <td>0</td>
 <td>The shiny chance of a Hyperspace legendary. Shiny rolls from donuts multiply it. 0 uses Cobblemon's own shiny rate.</td>
@@ -1695,8 +1713,35 @@ default to 1.</p>
 </table>
 <h2 id="settings-only-in-the-file">Settings Only In The File<a class="headerlink" href="#settings-only-in-the-file" title="Permanent link">&para;</a></h2>
 <p><code>config/hyperspace_wormholes_gameplay.json</code> has everything on the screen. The shiny odds are under
-<code>wormholeShinyOneIn</code>, and the Monuments setting is <code>legendaryMonuments</code> (<code>"monuments"</code> or <code>"both"</code>). It also has a few
-things the screen doesn't show:</p>
+<code>wormholeShinyOneIn</code>, and the Monuments setting is <code>legendaryMonuments</code> (<code>"monuments"</code> or <code>"both"</code>). Some
+of the others are:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>distortionMinutes</code></td>
+<td><code>60</code></td>
+<td>Distortion Minutes</td>
+</tr>
+<tr>
+<td><code>distortionsAvoidBases</code></td>
+<td><code>false</code></td>
+<td>Keep Distortions Away From Bases</td>
+</tr>
+<tr>
+<td><code>distortionBaseDistance</code></td>
+<td><code>128</code></td>
+<td>Distance From Bases</td>
+</tr>
+</tbody>
+</table>
+<p>It also has a few things the screen doesn't show:</p>
 <table>
 <thead>
 <tr>
